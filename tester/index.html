@@ -1,0 +1,42 @@
+<!Doctype html>
+<html>
+
+<head>
+    <meta charset="utf8">
+    <title>嘿嘿</title>
+    <script type="text/javascript">
+        function WebSocketTest() {
+            if ("WebSocket" in window) {
+                alert("您的浏览器支持 WebSocket!");
+                var ws = new WebSocket("ws://localhost:8080/")
+                ws.onopen = function () {
+                    ws.send("PING")
+                    alert("PING")
+                };
+                ws.onmessage = function (evt) {
+                    var received_msg = evt.data;
+                    alert("数据已接收")
+                };
+
+                ws.onclose = function () {
+                    alert("连接已关闭");
+                };
+            }
+
+        }
+
+
+    </script>
+</head>
+
+<body>
+
+    <div id="sse">
+        <a href="javascript:WebSocketTest()">运行 WebSocket</a>
+    </div>
+
+</body>
+
+</html>
+
+</html>
