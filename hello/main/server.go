@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"hello/dispatcher"
 	"hello/pb3"
 	"log"
@@ -33,17 +34,19 @@ func home(writer http.ResponseWriter, request *http.Request) {
 	defer connection.Close()
 	checkError(err)
 	for {
-		_, bytes, err2 := connection.ReadMessage()
+		messageType, bytes, err2 := connection.ReadMessage()
+		fmt.Println(messageType)
 		if err2 != nil {
 			log.Println("SocketClose:", err2)
 			break
 		}
-		code, _, _, err3 := pb3.SplitByte(bytes)
+
+		code, _, msgByte, err3 := pb3.SplitByte(bytes)
 		if err3 != nil {
 			log.Println("SplitByte:", err3)
 			break
 		}
-		err4 := dispatcher.Dispatch(code, bytes, connection)
+		err4 := dispatcher.Dispatch(code, msgByte, connection)
 		if err4 != nil {
 			log.Println("Dispatch:", err4)
 			break
@@ -53,6 +56,6 @@ func home(writer http.ResponseWriter, request *http.Request) {
 
 func main() {
 
-	http.HandleFunc("/", home)
+	http.HandleFunc("/echo", home)
 	log.Fatal(http.ListenAndServe(address, nil))
 }

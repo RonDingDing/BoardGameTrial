@@ -18,19 +18,4 @@ message Bail // 500 获取游戏版本信息
     int32  Error   = 5;
 }
 
-message Mail // 100 获取游戏版本信息
-{
-    message REQ {
-        string username = 1;
-        string password = 2;
-    }
-    message ANS {
-        string password = 2;
-    }
-
-    int32  Code    = 1;
-    bytes  Exdata  = 2;
-    REQ    Req     = 3;
-    ANS    Ans     = 4;
-    int32  Error   = 5;
-}
+ 

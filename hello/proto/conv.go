@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 )
@@ -43,7 +44,12 @@ func (s ProtoSlice) Less(i, j int) bool { return s[i].code < s[j].code }
 /////////////////////////////////////////////////////////////////
 
 func exeSysCommand(cmdStr string) string {
-	cmd := exec.Command("sh", "-c", cmdStr)
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "-c", cmdStr)
+	} else {
+		cmd = exec.Command("sh", "-c", cmdStr)
+	}
 	opBytes, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
@@ -72,8 +78,6 @@ func readProtoDir() ProtoSlice {
 		}
 
 		exeSysCommand("protoc --go_out=../pb3 " + eachFile)
-
-
 		fmt.Println("protoc --go_out=../pb3 " + eachFile)
 		buf := bufio.NewReader(f)
 		for {
@@ -221,7 +225,8 @@ func (m *%s) ToByte() ([]byte, error) {
 	binary.Write(buf, binary.LittleEndian, int32(m.Code))           // 以小端字节序写入Code，默认四字节（2 ^ (8*4) 取值范围够用了）
 	binary.Write(buf, binary.LittleEndian, int32(len(realBytes)+8)) // 写入整个字节的长度，方便校验是否丢包
 	buf.Write(realBytes)
-	return buf.Bytes(), err 
+	return buf.Bytes(), err
+	// return realBytes, err 
 }
 `, protoFiles.name)))
 
@@ -235,6 +240,7 @@ func (m *%s) FromByte(bytes []byte) error {
 		return errors.New("No good bytes for %s")
 	}
 	return proto.Unmarshal(msgByte, m)
+	// return proto.Unmarshal(bytes, m)
 }
 `, protoFiles.name, protoFiles.name)))
 		outputGo.Close()
@@ -261,6 +267,7 @@ func Dispatch(code int32, msgByte []byte, connection *websocket.Conn) error {
 	answer := false
 	switch code {`)))
 	for _, protoFiles := range protos {
+		fmt.Println(protoFiles)
 		outputGo.Write([]byte(fmt.Sprintf(`
 	case msg.%s:
 		answer = handle%s(msgByte, connection)`, protoFiles.name, protoFiles.name)))

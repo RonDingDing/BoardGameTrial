@@ -10,8 +10,6 @@ import (
 func Dispatch(code int32, msgByte []byte, connection *websocket.Conn) error {
 	answer := false
 	switch code {
-	case msg.Mail:
-		answer = handleMail(msgByte, connection)
 	case msg.Bail:
 		answer = handleBail(msgByte, connection)
     }
@@ -20,11 +18,6 @@ func Dispatch(code int32, msgByte []byte, connection *websocket.Conn) error {
 	}
 	return nil
 }
-
-func handleMail(msgByte []byte, connection *websocket.Conn) bool {
-	
-	return true
-}		
 
 func handleBail(msgByte []byte, connection *websocket.Conn) bool {
 	

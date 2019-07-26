@@ -62,7 +62,8 @@ func (m *Bail) ToByte() ([]byte, error) {
 	binary.Write(buf, binary.LittleEndian, int32(m.Code))           // 以小端字节序写入Code，默认四字节（2 ^ (8*4) 取值范围够用了）
 	binary.Write(buf, binary.LittleEndian, int32(len(realBytes)+8)) // 写入整个字节的长度，方便校验是否丢包
 	buf.Write(realBytes)
-	return buf.Bytes(), err 
+	return buf.Bytes(), err
+	// return realBytes, err 
 }
 
 func (m *Bail) FromByte(bytes []byte) error {
@@ -74,4 +75,5 @@ func (m *Bail) FromByte(bytes []byte) error {
 		return errors.New("No good bytes for Bail")
 	}
 	return proto.Unmarshal(msgByte, m)
+	// return proto.Unmarshal(bytes, m)
 }
