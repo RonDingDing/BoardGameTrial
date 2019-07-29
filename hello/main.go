@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"hello/pb3"
 )
 
 func task() {
@@ -17,16 +18,17 @@ func main() {
 	// gocron.Every(2).Hours().Do(task)
 	// gocron.Every(1).Day().Do(task)
 	// gocron.Every(2).Days().Do(task)
-	// message := new(pb3.Bail)
-	// message.New()
+	message := new(pb3.Bail)
+	message.New()
+	message.Req.Username = "apple"
+	message.Ans.Password = "apple"
+	fmt.Println(message)
 
-	// // req := new(pb3.Bail_REQ)
-	// // req.Username = "apple"
-	// // ans := new(pb3.Bail_ANS)
-	// // ans.Password = "3"
-	// // message.SetAns(ans)
-	// // message.SetReq(req)
-	// // message.SetError(-22)
+	// ans := new(pb3.Bail_ANS)
+	// ans.Password = "3"
+	// message.SetAns(ans)
+	// message.SetReq(req)
+	// message.SetError(-22)
 	// fmt.Println(message)
 	// fmt.Println(message.ToByte())
 

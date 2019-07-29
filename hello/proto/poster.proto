@@ -3,12 +3,20 @@ package pb3;
 
 message Bail // 500 获取游戏版本信息
 {
+
+
     message REQ {
-        string username = 1;
-        string password = 2;
+        string Username = 1;
+        string Password = 2;
     }
     message ANS {
-        string password = 0x01;
+        string Password = 0x01;
+        AB Ab  = 0x02;
+        message   AB {
+            string M = 0x01;
+
+        }
+        
     }
 
     int32  Code    = 1;
@@ -18,4 +26,5 @@ message Bail // 500 获取游戏版本信息
     int32  Error   = 5;
 }
 
- 
+
+    

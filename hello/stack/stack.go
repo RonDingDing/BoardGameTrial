@@ -36,3 +36,9 @@ func (stack *Stack) Pop() (interface{}, error) {
 	*stack = theStack[:len(theStack)-1]
 	return value, nil
 }
+
+func (stack *Stack) Copy() Stack {
+	theStack := *stack
+	clone := theStack[:]
+	return clone
+}
