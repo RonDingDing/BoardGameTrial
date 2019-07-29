@@ -8,14 +8,13 @@ message Bail // 500 获取游戏版本信息
     message REQ {
         string Username = 1;
         string Password = 2;
+        
+        repeated string able = 3;
+         
     }
     message ANS {
         string Password = 0x01;
-        AB Ab  = 0x02;
-        message   AB {
-            string M = 0x01;
-
-        }
+     
         
     }
 

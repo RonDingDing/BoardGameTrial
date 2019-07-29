@@ -1,24 +1,67 @@
 package pb3
 
-func (m *Bail_REQ) New() {
-	m.Username = ""
-	m.Password = ""
-
+func (self *Bail_REQ) New() {
+	self.Username = ""
+	self.Password = ""
+	self.Able = ""
 }
-func (m *Bail_ANS_AB) New() {
-	m.M = ""
 
+func (self *Bail_REQ) Clear() {
+	self.New()
 }
-func (m *Bail_ANS) New() {
-	m.Password = ""
-	m.Ab = new(Bail_ANS_AB)
 
+func (self *Bail_REQ) SetUsername(username string) {
+	self.Username = username
 }
-func (m *Bail) New() {
-	m.Code = 0
-	m.Exdata = []byte{'{', '}'}
-	m.Req = new(Bail_REQ)
-	m.Ans = new(Bail_ANS)
-	m.Error = 0
 
+func (self *Bail_REQ) SetPassword(password string) {
+	self.Password = password
+}
+
+func (self *Bail_REQ) SetAble(able string) {
+	self.Able = able
+}
+
+func (self *Bail_ANS) New() {
+	self.Password = ""
+}
+
+func (self *Bail_ANS) Clear() {
+	self.New()
+}
+
+func (self *Bail_ANS) SetPassword(password string) {
+	self.Password = password
+}
+
+func (self *Bail) New() {
+	self.Code = 0
+	self.Exdata = []byte{'{', '}'}
+	self.Req = new(Bail_REQ)
+	self.Ans = new(Bail_ANS)
+	self.Error = 0
+}
+
+func (self *Bail) Clear() {
+	self.New()
+}
+
+func (self *Bail) SetCode(code int32) {
+	self.Code = code
+}
+
+func (self *Bail) SetExdata(exdata []byte) {
+	self.Exdata = exdata
+}
+
+func (self *Bail) SetReq(req *Bail_REQ) {
+	self.Req = req
+}
+
+func (self *Bail) SetAns(ans *Bail_ANS) {
+	self.Ans = ans
+}
+
+func (self *Bail) SetError(err int32) {
+	self.Error = err
 }
