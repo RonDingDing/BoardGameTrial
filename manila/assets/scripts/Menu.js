@@ -8,17 +8,12 @@
 //  - [Chinese] http://docs.cocos.com/creator/manual/zh/scripting/life-cycle-callbacks.html
 //  - [English] http://www.cocos2d-x.org/docs/creator/en/scripting/life-cycle-callbacks.html
 
+
 cc.Class({
-    extends: cc.Component,
+    extends: require("Proto"),
 
     properties: {
-        // foo: {
-        //     // ATTRIBUTES:
-        //     default: null,        // The default value will be used only when the component attaching
-        //                           // to a node for the first time
-        //     type: cc.SpriteFrame, // optional, default is typeof default
-        //     serializable: true,   // optional, default is true
-        // },
+
         // bar: {
         //     get () {
         //         return this._bar;
@@ -31,10 +26,19 @@ cc.Class({
 
     // LIFE-CYCLE CALLBACKS:
 
-    // onLoad () {},
+    // onLoad() {
 
-    start () {
 
+
+
+    // },
+
+    start() {
+        var self = this;
+        self.onLoad();
+        console.log(self);
+        console.log(self.protos);
+        console.log(self.protos.bail);;
     },
 
     playGame: function () {

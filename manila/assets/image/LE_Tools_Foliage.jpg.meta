@@ -1,5 +1,5 @@
 {
-  "ver": "2.3.0",
+  "ver": "2.3.1",
   "uuid": "f0f8bc8e-529c-4224-80e8-12ab09828900",
   "type": "sprite",
   "wrapMode": "clamp",
@@ -8,7 +8,7 @@
   "platformSettings": {},
   "subMetas": {
     "LE_Tools_Foliage": {
-      "ver": "1.0.3",
+      "ver": "1.0.4",
       "uuid": "e67307c1-d948-4723-b280-fa38a0ec5ac2",
       "rawTextureUuid": "f0f8bc8e-529c-4224-80e8-12ab09828900",
       "trimType": "auto",

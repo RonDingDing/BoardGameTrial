@@ -1,17 +1,10 @@
-package pb3
-import (
-    "bytes"
-    "encoding/binary"
-    "encoding/json"
-    "errors"
-    "github.com/golang/protobuf/proto"    
-)
+package poster;
 
 
 func (self *Bail_REQ) New() {
     self.Username = ""
     self.Password = ""
-    self.Able = make([]int32, 10)
+    self.Able = make([]int32, 0)
 }
 
 func (self *Bail_REQ) Clear() {

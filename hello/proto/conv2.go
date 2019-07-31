@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+
 	"fmt"
 	"hello/stack"
 	"io"
@@ -30,7 +31,7 @@ type Protoinfo struct {
 func (p *Protoinfo) init(code string, name string, packages string, protofile string, comment string) {
 	p.code = code
 	p.name = name
-	p.packages = strings.ToUpper(string(packages[0])) + packages[1:]
+	p.packages = strings.ToLower(packages)
 	p.pkName = p.packages + "." + name
 	p.protoName = protofile + ".pb." + name
 	p.route = protofile
@@ -51,7 +52,9 @@ var basePath = ".."
 func exeSysCommand(cmdStr string) string {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "-c", cmdStr)
+		commands := strings.Split(cmdStr, " ")[0]
+		otherCmd := strings.Split(cmdStr, " ")[1:]
+		cmd = exec.Command(commands, otherCmd...)
 	} else {
 		cmd = exec.Command("sh", "-c", cmdStr)
 	}
@@ -81,9 +84,8 @@ func readProtoDir() ProtoSlice {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		exeSysCommand("protoc --go_out=" + basePath + "/pb3 " + eachFile)
-		fmt.Println("protoc --go_out=" + basePath + "/pb3 " + eachFile)
+		packages := "default"
+		comment := ""
 		buf := bufio.NewReader(f)
 		for {
 			line, err := buf.ReadString('\n')
@@ -92,16 +94,20 @@ func readProtoDir() ProtoSlice {
 			} else if err != nil {
 				log.Fatal(err)
 			}
+			if strings.HasPrefix(line, "package") {
+				reg := regexp.MustCompile(` [a-zA-Z0-9_]+;`)
+				packagesStr := reg.FindString(line)
+				packages = strings.Trim(strings.Trim(packagesStr, " "), ";")
 
-			if strings.HasPrefix(line, "message") {
+			} else if strings.HasPrefix(line, "message") {
 				linef := strings.Replace(line, "  ", " ", -1)
-				packages := strings.Split(eachFile, ".")[0]
 				line := strings.TrimSpace(linef)
 				values := strings.Split(line, " ")
 				code := string(values[3])
-
 				name := strings.TrimSpace(values[1])
-				comment := strings.TrimSpace(values[4])
+				if len(values) >= 5 {
+					comment = strings.TrimSpace(values[4])
+				}
 				protoPointer := new(Protoinfo)
 				protoPointer.init(code, name, packages, eachFile, comment)
 				protos = append(protos, protoPointer)
@@ -109,41 +115,51 @@ func readProtoDir() ProtoSlice {
 		}
 	}
 	sort.Sort(protos)
+
+	for _, p := range protos {
+		createFolder(fmt.Sprintf(basePath+"/%s", p.packages))
+		exeSysCommand("protoc --go_out=" + basePath + fmt.Sprintf("/%s ", p.packages) + p.route)
+		fmt.Println("protoc --go_out=" + basePath + fmt.Sprintf("/%s ", p.packages) + p.route)
+	}
+
 	return protos
 }
 
-func writeGoFile(protos ProtoSlice) {
+func writeProtocolFile(protos ProtoSlice) {
 
-	outputGo, err := os.OpenFile(basePath+"/msg/conv_protocols.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
+	outputGo, err := os.OpenFile(basePath+"/msg/convProtocols.go", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
 	if err != nil {
 		log.Fatal(err)
 	}
-	outputGo.Write([]byte("// conv_protocols.go : 通信协议(自动生成)\n "))
-	outputGo.Write([]byte("// !!!该文件自动生成，请勿直接编辑!!!\n\n"))
-	outputGo.Write([]byte("package msg\n\n"))
-	outputGo.Write([]byte("import (\n    \"hello/pb3\"\n     \n)"))
-
-	outputGo.Write([]byte("\n    // 协议码\n"))
-	outputGo.Write([]byte("const (\n"))
+	s := ""
+	s += "// conv_protocols.go : 通信协议(自动生成)\n "
+	s += "// !!!该文件自动生成，请勿直接编辑!!!\n\n"
+	s += "package msg\n\n"
 	for _, proto := range protos {
-		outputGo.Write([]byte(fmt.Sprintf("    %-32s = %s\t// %s\n", proto.name, proto.code, proto.comment)))
+		s += fmt.Sprintf("import (\n    \"hello/%s\"\n     \n)", proto.packages)
 	}
-	outputGo.Write([]byte(")\n\n\n"))
-
-	outputGo.Write([]byte("// 协议对照\n"))
-	outputGo.Write([]byte("var PROTOS map[int]interface{} = map[int]interface{} {\n"))
+	s += "\n    // 协议码\n"
+	s += "const (\n"
 	for _, proto := range protos {
-		outputGo.Write([]byte(fmt.Sprintf("%-4s%-28s : new(pb3.%s) ,\n", "", proto.name, proto.name)))
+		s += fmt.Sprintf("    %-32s = %s\t// %s\n", proto.name, proto.code, proto.comment)
 	}
-	outputGo.Write([]byte("}\n\n"))
+	s += ")\n\n\n"
 
-	outputGo.Write([]byte("// 协议名称\n"))
-	outputGo.Write([]byte("var PROTONAMES map[int]string = map[int]string {\n"))
+	s += "// 协议对照\n"
+	s += "var PROTOS map[int]interface{} = map[int]interface{} {\n"
+	for _, proto := range protos {
+		s += fmt.Sprintf("%-4s%-28s : new(%s.%s) ,\n", "", proto.name, proto.packages, proto.name)
+	}
+	s += "}\n\n"
+
+	s += "// 协议名称\n"
+	s += "var PROTONAMES map[int]string = map[int]string {\n"
 
 	for _, proto := range protos {
-		outputGo.Write([]byte(fmt.Sprintf("%-4s%-28s :  \"%s.%s\" ,\n", "", proto.name, proto.packages, proto.name)))
+		s += fmt.Sprintf("%-4s%-28s :  \"%s.%s\" ,\n", "", proto.name, proto.packages, proto.name)
 	}
-	outputGo.Write([]byte("}\n\n"))
+	s += "}\n\n"
+	outputGo.Write([]byte(s))
 	outputGo.Close()
 }
 
@@ -179,13 +195,7 @@ func strFirstToLower(str string) string {
 	return ""
 }
 
-func writeFunc(funcName string, paramsArray []string, fileName string) {
-	// fmt.Print(funcName)
-	// fmt.Print(": ")
-	// for _, p := range paramsArray {
-	// 	fmt.Print(p)
-	// 	fmt.Print(", ")
-	// }
+func writePb2GoFile(funcList []function, fileName string, packaging string) {
 	var defaultValue = map[string]string{
 		"float64": "0",
 		"float32": "0",
@@ -193,56 +203,133 @@ func writeFunc(funcName string, paramsArray []string, fileName string) {
 		"int64":   "0",
 		"uint32":  "0",
 		"uint64":  "0",
-		"bool":    "0",
+		"bool":    "false",
 		"string":  "\"\"",
 		"[]byte":  "[]byte{'{', '}'}",
+
+		"[]float64": "make([]float64, 0)",
+		"[]float32": "make([]float32, 0)",
+		"[]int32":   "make([]int32, 0)",
+		"[]int64":   "make([]int64, 0)",
+		"[]uint32":  "make([]uint32, 0)",
+		"[]uint64":  "make([]uint64, 0)",
+		"[]bool":    "make([]bool, 0)",
+		"[]string":  "make([]string, 0)",
+		"[][]byte":  "make([][]byte, 0)",
 	}
-	outputGo, err := os.OpenFile(basePath+fmt.Sprintf("/pb3/%s.pb2.go", strings.ToLower(fileName)), os.O_APPEND, 0777)
+	outputGo, err := os.OpenFile(basePath+fmt.Sprintf("/%s/%s.pb2.go", packaging, strings.ToLower(fileName)), os.O_RDONLY|os.O_CREATE|os.O_TRUNC, 0777)
 	if err != nil {
 		log.Fatal(err)
 	}
 	s := ""
-	// New() 方法
-	s += fmt.Sprintf("\n\nfunc (self *%s) New() {\n", funcName)
-	for _, p := range paramsArray {
-		paramName, typing := strings.Split(p, " ")[0], strings.Split(p, " ")[1]
-		paramName = strFirstToUpper(paramName)
-		dValue, ok := defaultValue[typing]
-		if ok {
-			s += fmt.Sprintf("    self.%s = %s\n", paramName, dValue)
-		} else {
-			s += fmt.Sprintf("    self.%s = new(%s)\n", paramName, strings.Replace(typing, "*", "", -1))
+	s += fmt.Sprintf("package %s;\n", packaging)
+	for _, fun := range funcList {
+		// New() 方法
+		funcName := fun.funcName
+		paramsArray := fun.paramsArray
+		s += fmt.Sprintf("\n\nfunc (self *%s) New() {\n", funcName)
+		for _, p := range paramsArray {
+			paramName, typing := strings.Split(p, " ")[0], strings.Split(p, " ")[1]
+			paramName = strFirstToUpper(paramName)
+			dValue, ok := defaultValue[typing]
+			if ok {
+				s += fmt.Sprintf("    self.%s = %s\n", paramName, dValue)
+			} else {
+				s += fmt.Sprintf("    self.%s = new(%s)\n", paramName, strings.Replace(typing, "*", "", -1))
+			}
 		}
-	}
-	s += fmt.Sprintf("}")
-
-	// Clear() 方法
-	s += fmt.Sprintf("\n\nfunc (self *%s) Clear() {\n    self.New()\n}", funcName)
-
-	// Set() 方法
-	for _, p := range paramsArray {
-
-		paramName, typing := strings.Split(p, " ")[0], strings.Split(p, " ")[1]
-		paramName = strFirstToUpper(paramName)
-		smallName := strFirstToLower(paramName)
-		if smallName == "error" {
-			smallName = "err"
-		}
-		if paramName == "error" {
-			paramName = "err"
-		}
-		s += fmt.Sprintf("\n\nfunc (self *%s) Set%s(%s %s) {\n", funcName, paramName, smallName, typing)
-		s += fmt.Sprintf("    self.%s = %s\n", paramName, smallName)
 		s += fmt.Sprintf("}")
+
+		// Clear() 方法
+		s += fmt.Sprintf("\n\nfunc (self *%s) Clear() {\n    self.New()\n}", funcName)
+
+		// Set() 方法
+		for _, p := range paramsArray {
+
+			paramName, typing := strings.Split(p, " ")[0], strings.Split(p, " ")[1]
+			paramName = strFirstToUpper(paramName)
+			smallName := strFirstToLower(paramName)
+			if smallName == "error" {
+				smallName = "err"
+			}
+			if paramName == "error" {
+				paramName = "err"
+			}
+			s += fmt.Sprintf("\n\nfunc (self *%s) Set%s(%s %s) {\n", funcName, paramName, smallName, typing)
+			s += fmt.Sprintf("    self.%s = %s\n", paramName, smallName)
+			s += fmt.Sprintf("}")
+		}
 	}
 
 	outputGo.Write([]byte(s))
-	// fmt.Print(s)
+	outputGo.Close()
+}
+
+func writePb2JsFile(funcList []function, fileName string, packaging string) {
+
+	// fmt.Println(funcName, ", ", paramsArray, ", ", fileName, ", ", packaging)
+	var defaultValue = map[string]string{
+		"float64": "0",
+		"float32": "0",
+		"int32":   "0",
+		"int64":   "0",
+		"uint32":  "0",
+		"uint64":  "0",
+		"bool":    "false",
+		"string":  "\"\"",
+		"[]byte":  "new Uint8Array([])",
+
+		"[]float64": "[]",
+		"[]float32": "[]",
+		"[]int32":   "[]",
+		"[]int64":   "[]",
+		"[]uint32":  "[]",
+		"[]uint64":  "[]",
+		"[]bool":    "[]",
+		"[]string":  "[]",
+		"[][]byte":  "[]",
+	}
+
+	s := ""
+	outputJs, err := os.OpenFile(fmt.Sprintf(basePath+"/proto/%s.js", strings.ToLower(fileName)), os.O_RDONLY|os.O_CREATE|os.O_TRUNC, 0777)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, fun := range funcList {
+		funcName := fun.funcName
+		paramsArray := fun.paramsArray
+
+		// New() 方法
+		s += fmt.Sprintf("\n\nfunction New%s(){\n    var self = {};\n", funcName)
+		for _, p := range paramsArray {
+			paramName, typing := strings.Split(p, " ")[0], strings.Split(p, " ")[1]
+			paramName = strFirstToUpper(paramName)
+			dValue, ok := defaultValue[typing]
+
+			if ok {
+				s += fmt.Sprintf("    self.%s = %s;\n", paramName, dValue)
+			} else {
+				s += fmt.Sprintf("    self.%s = New%s();\n", paramName, strings.Replace(typing, "*", "", -1))
+			}
+
+		}
+		s += fmt.Sprintf("    return self;\n}")
+	}
+
+	s += "\nmodule.exports = {\n"
+	for _, fun := range funcList {
+		if fun.isRoot {
+			s += fmt.Sprintf("    %s : New%s(), \n", fun.funcName, fun.funcName)
+		}
+	}
+	s += "\n}\n"
+	outputJs.Write([]byte(s))
+	outputJs.Close()
+
 }
 
 func preHandleContent(content string) []string {
 
-	// fmt.Println(content)
 	reg3 := regexp.MustCompile(` //.*\n`)
 	content = reg3.ReplaceAllString(content, ` `) // 去除注释//
 	reg1 := regexp.MustCompile(`#.*\n`)
@@ -257,27 +344,63 @@ func preHandleContent(content string) []string {
 	return text
 }
 
-func parseProto(text []string, fileName string) {
+func createFolder(filepath string) {
+	//递归创建文件夹
+	err := os.MkdirAll(filepath, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+// func newPb2GoFile(fileName string, packaging string) {
+
+// 	os.OpenFile(fmt.Sprintf(basePath+"/%s/%s.pb2.go", packaging, strings.ToLower(fileName)), os.O_TRUNC|os.O_CREATE, 0777)
+// 	fileStr := fmt.Sprintf("package %s\nimport (\n    \"bytes\"\n    \"encoding/binary\"\n    \"encoding/json\"\n    \"errors\"\n    \"github.com/golang/protobuf/proto\"    \n)\n", packaging)
+// 	outputGo, err := os.OpenFile(fmt.Sprintf(basePath+"/%s/%s.pb2.go", packaging, strings.ToLower(fileName)), os.O_APPEND, 0777)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	outputGo.Write([]byte(fileStr))
+// 	outputGo.Close()
+
+// }
+
+// func newPb2JsFile(fileName string, packaging string) {
+// 	outputJs2, err := os.OpenFile(fmt.Sprintf(basePath+"/proto/%s.js", strings.ToLower(fileName)), os.O_TRUNC|os.O_CREATE, 0777)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	outputJs2.Close()
+
+// }
+
+type function struct {
+	funcName    string
+	paramsArray []string
+	fileName    string
+	packaging   string
+	isRoot      bool
+}
+
+func parseProto(text []string, fileName string) ([]function, string, string) {
 	// 基于 Dijkstra 双栈求值法的递归解析
 	functionNames := make(stack.Stack, 0)
 	params := make(stack.Stack, 0)
 	insideMain := false // 已经进入message区
-	os.OpenFile(fmt.Sprintf(basePath+"/pb3/%s.pb2.go", strings.ToLower(fileName)), os.O_TRUNC|os.O_CREATE, 0777)
-	fileStr := "package pb3\nimport (\n    \"bytes\"\n    \"encoding/binary\"\n    \"encoding/json\"\n    \"errors\"\n    \"github.com/golang/protobuf/proto\"    \n)\n"
-	outputGo, err := os.OpenFile(fmt.Sprintf(basePath+"/pb3/%s.pb2.go", strings.ToLower(fileName)), os.O_APPEND, 0777)
-	outputGo.Write([]byte(fileStr))
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	addSquare := false
+	packaging := "default"
+	funcList := make([]function, 0)
 	for i, w := range text {
 		l := i - 1
 		n := i + 1
 		tmpStr := ""
-		addSquare := false
 		subString := regexp.MustCompile(`[a-zA-Z_][a-zA-Z0-9_]+`).FindString(text[i]) // 找变量
 
-		if w == "message" {
+		if w == "package" {
+			packaging = strings.ToLower(text[n])
+
+		} else if w == "message" {
 			// funtionName入栈
 			messageName := text[n]
 			popped, err := functionNames.Top()
@@ -295,6 +418,7 @@ func parseProto(text []string, fileName string) {
 			paramName := text[n]
 			if addSquare {
 				tmpStr = tmpStr + paramName + " []" + typing
+				addSquare = false
 			} else {
 				tmpStr = tmpStr + paramName + " " + typing
 			}
@@ -308,6 +432,7 @@ func parseProto(text []string, fileName string) {
 			paramName := text[n]
 			if addSquare {
 				tmpStr = tmpStr + paramName + " []" + subString
+				addSquare = false
 			} else {
 				tmpStr = tmpStr + paramName + " " + subString
 			}
@@ -329,12 +454,19 @@ func parseProto(text []string, fileName string) {
 				for i, j := 0, len(paramsArray)-1; i < j; i, j = i+1, j-1 {
 					paramsArray[i], paramsArray[j] = paramsArray[j], paramsArray[i]
 				} // 翻转params数组
+				isRoot := false
+				if functionNames.IsEmpty() {
+					isRoot = true
+				}
+				fun := function{funcName, paramsArray, fileName, packaging, isRoot}
+				funcList = append(funcList, fun)
 
-				writeFunc(funcName, paramsArray, fileName)
 			}
 
 		}
 	}
+
+	return funcList, fileName, packaging
 }
 
 func makeS() {
@@ -351,16 +483,29 @@ func makeS() {
 				return
 			}
 			content := preHandleContent(string(bytes))
-			parseProto(content, strings.Replace(file.Name(), ".proto", "", -1))
+			funcList, fileName, packaging := parseProto(content, strings.Replace(file.Name(), ".proto", "", -1))
+
+			writePb2GoFile(funcList, fileName, packaging)
+			writePb2JsFile(funcList, fileName, packaging)
 		}
 	}
-
 }
 
+//  使用方法
+//  message := new(pb3.Bail)
+// 	message.New()
+// 	message.Req.Username = "apple"
+// 	message.Ans.Password = "apple"
+// 	fmt.Println(message)
+
 func main() {
+	// a := strings.Split("protoc --go_out=../pb3 poster.proto", " ")
+	// c := exec.Command(a[:]...)
+	// c.Stdout = os.Stdout
+	// c.Run()
 	protos := readProtoDir()
-	writeGoFile(protos)
-	// writepbFile(protos)
-	// writeDispacherFile(protos)
+	writeProtocolFile(protos)
+	// // writepbFile(protos)
+	// // writeDispacherFile(protos)
 	makeS()
 }

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pb3;
+package poster;
 
 message Bail // 500 获取游戏版本信息
 {
@@ -7,9 +7,8 @@ message Bail // 500 获取游戏版本信息
 
     message REQ {
         string Username = 1;
-        string Password = 2;
-        
-        repeated string able = 3;
+        string Password = 2;        
+        repeated int32 able = 3;
          
     }
     message ANS {
