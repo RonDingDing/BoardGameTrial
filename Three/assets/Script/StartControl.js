@@ -24,9 +24,8 @@ cc.Class({
 
     },
 
-    onPlay(){
-        cc.director.loadScene('db://assets/Scene/gameMenu.fire' );
-        console.log(1);
+    onPlay() {
+        cc.director.loadScene('db://assets/Scene/gameMenu.fire');  
     }
 
     // update (dt) {},
