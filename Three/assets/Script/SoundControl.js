@@ -28,7 +28,7 @@ cc.Class({
         this.musicOn = true;
         this.soundOn = true;
     },
-    setMusicOnoff() {
+    setMusicOnOff() {
         this.musicOn = !this.musicOn;
         if (this.musicOn) {
             this.allMusicStart();
@@ -51,7 +51,7 @@ cc.Class({
             this.buttonSound.play();
         }
     },
-    setSoundOnoff() {
+    setSoundOnOff() {
         this.soundOn = !this.soundOn;
     },
     allSoundPause() {
