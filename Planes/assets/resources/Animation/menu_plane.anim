@@ -1,0 +1,42 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "menu_plane",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.25,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "props": {
+      "position": [
+        {
+          "frame": 0,
+          "value": [
+            609,
+            468
+          ],
+          "motionPath": [
+            [
+              66,
+              9,
+              243,
+              159,
+              9,
+              -38
+            ]
+          ]
+        },
+        {
+          "frame": 0.25,
+          "value": [
+            -8,
+            -42,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "events": []
+}
