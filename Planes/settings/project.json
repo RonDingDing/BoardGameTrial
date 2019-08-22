@@ -12,6 +12,19 @@
       false,
       false,
       false
+    ],
+    [
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false
     ]
   ],
   "design-resolution-height": 640,
@@ -32,7 +45,9 @@
   "group-list": [
     "HeroPlane",
     "HeroBullet",
-    "Default"
+    "Default",
+    "EnemyPlane",
+    "EnemyBullet"
   ],
   "last-module-event-record-time": 0,
   "simulator-orientation": false,
