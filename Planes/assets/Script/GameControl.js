@@ -1,3 +1,4 @@
+var GlobalHandle = require("Global");
 cc.Class({
     extends: cc.Component,
 
@@ -70,13 +71,16 @@ cc.Class({
             self.isMoving = false;
         }, self.node);
     },
+
+    enemyDes: function(index, enemy) {
+        this.enemyPools[index].put(enemy);
+    },
     createEnemyLogic: function () {
         this.enemyPools = [];
         for (var i = 1; i <= 5; ++i) {
             this.enemyPools[i] = new cc.NodePool();
             for (var j = 1; j <= 5; ++j) {
                 var enemy = cc.instantiate(this["enemyPrefabs" + i]);
-                cc.log("enemyPrefabs" + i);
                 enemy.getComponent("EnemyControl").setControlNode(this.canvas, i);
                 this.enemyPools[i].put(enemy);
             }
@@ -86,7 +90,7 @@ cc.Class({
             var enemyPool = this.enemyPools[enemyType];
             var enemy;
             if (enemyPool.size() > 0) {
-                enemy = enemy.Pool.get();
+                enemy = enemyPool.get();
             } else {
                 enemy = cc.instantiate(this["enemyPrefabs" + enemyType]);
                 enemy.getComponent("EnemyControl").setControlNode(self.canvas);
@@ -146,6 +150,14 @@ cc.Class({
     start() {
 
     },
+    onLoadSceneFinish: function () { },
+
+    onBack: function () {
+        cc.director.loadScene(
+            "db://assets/startMenu.fire",
+            this.onLoadSceneFinish.bind(this)
+        );
+    },
     moveBg11: function (node) {
         node.setPosition(cc.v2(0, -480));
         var finished = cc.callFunc(function (target) {
@@ -166,6 +178,10 @@ cc.Class({
             this.moveBg12(node);
         }, this);
         node.runAction(cc.sequence(cc.moveTo(3, 0, -960), finished));
+    },
+
+    setGameOver: function () {
+        this.gameOver.active = true;
     },
 
     updateHeroPos: function (dt) {

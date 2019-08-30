@@ -1,5 +1,5 @@
 import { ISocketDelegate } from "./SocketDelegate";
-import { Log } from "../utils/Log";
+ 
 
 export enum SocketState {
     CONNECTING = 1,
@@ -60,7 +60,7 @@ export class WbSocket implements ISocket {
         try {
             this._webSocket.close();
         } catch (err) {
-            Log.error('error while closing webSocket ', err.toString());
+            console.error('error while closing webSocket ', err.toString());
         }
         this._webSocket = null;
     }
@@ -85,63 +85,63 @@ export class WbSocket implements ISocket {
 /**
  * wx socket的具体实现
  */
-export class WxSocket implements ISocket {
-    private _url: string;
-    private _delegate: ISocketDelegate;
-    private _socketTask: wx.SocketTask;
-    private _state: SocketState = SocketState.CLOSED;
+// export class WxSocket implements ISocket {
+//     private _url: string;
+//     private _delegate: ISocketDelegate;
+//     private _socketTask: wx.SocketTask;
+//     private _state: SocketState = SocketState.CLOSED;
 
-    constructor(url: string, delegate: ISocketDelegate) {
-        this._url = url;
-        this._delegate = delegate;
-    }
+//     constructor(url: string, delegate: ISocketDelegate) {
+//         this._url = url;
+//         this._delegate = delegate;
+//     }
 
-    connect() {
-        this._state = SocketState.CONNECTING;
+//     connect() {
+//         this._state = SocketState.CONNECTING;
 
-        let ws = this._socketTask = wx.connectSocket({
-            url: this._url,
-        });
-        ws.onOpen = (res) => {
-            this._state = SocketState.OPEN;
-            this._delegate.onSocketOpen();
-        }
-        ws.onMessage = (res) => {
-            this._delegate.onSocketMessage(res.data);
-        };
-        ws.onError = (res) => {
-            this._delegate.onSocketError(res.errMsg);
-        };
-        ws.onClose = (res) => {
-            this._state = SocketState.CLOSED;
-            this._delegate.onSocketClosed(res);
-        }
-    }
+//         let ws = this._socketTask = wx.connectSocket({
+//             url: this._url,
+//         });
+//         ws.onOpen = (res) => {
+//             this._state = SocketState.OPEN;
+//             this._delegate.onSocketOpen();
+//         }
+//         ws.onMessage = (res) => {
+//             this._delegate.onSocketMessage(res.data);
+//         };
+//         ws.onError = (res) => {
+//             this._delegate.onSocketError(res.errMsg);
+//         };
+//         ws.onClose = (res) => {
+//             this._state = SocketState.CLOSED;
+//             this._delegate.onSocketClosed(res);
+//         }
+//     }
 
-    /**
-     * wx socket send 只接受string/ArrayBuffer
-     * @param data {string/ArrayBuffer}
-     */
-    send(data: string | ArrayBuffer) {
-        this._socketTask.send({
-            data: data
-        });
-    }
+//     /**
+//      * wx socket send 只接受string/ArrayBuffer
+//      * @param data {string/ArrayBuffer}
+//      */
+//     send(data: string | ArrayBuffer) {
+//         this._socketTask.send({
+//             data: data
+//         });
+//     }
 
-    close() {
-        if (!this._socketTask) {
-            return;
-        }
-        this._state = SocketState.CLOSING;
-        try {
-            this._socketTask.close();
-        } catch (err) {
-            Log.error('error while closing webSocket ', err);
-        }
-        this._socketTask = null;
-    }
+//     close() {
+//         if (!this._socketTask) {
+//             return;
+//         }
+//         this._state = SocketState.CLOSING;
+//         try {
+//             this._socketTask.close();
+//         } catch (err) {
+//             console.error('error while closing webSocket ', err);
+//         }
+//         this._socketTask = null;
+//     }
 
-    getState() {
-        return this._state;
-    }
-}
+//     getState() {
+//         return this._state;
+//     }
+// }
