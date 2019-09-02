@@ -2,60 +2,50 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"hello/dispatcher"
-	"hello/pb3"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 )
 
-var address = "localhost:8080"
+var addr = flag.String("addr", "localhost:8080", "http service address")
+
 var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
+	CheckOrigin: func(request *http.Request) bool {
 		return true
 	},
 }
 
-func checkError(err error) {
-	if err != nil {
-		log.Println("Err:", err)
-	}
-}
-
-func upgradeToWebSocket(writer http.ResponseWriter, request *http.Request) (*websocket.Conn, error) {
+func server(writer http.ResponseWriter, request *http.Request) {
 	connection, err := upgrader.Upgrade(writer, request, nil)
-	return connection, err
-}
 
-func home(writer http.ResponseWriter, request *http.Request) {
-	connection, err := upgradeToWebSocket(writer, request)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
 	defer connection.Close()
-	checkError(err)
 	for {
-		messageType, bytes, err2 := connection.ReadMessage()
-		fmt.Println(messageType)
-		if err2 != nil {
-			log.Println("SocketClose:", err2)
+		messageType, message, err := connection.ReadMessage()
+		if err != nil {
+			log.Printf("%-8s: %s\n", "read", err)
 			break
 		}
 
-		code, _, msgByte, err3 := pb3.SplitByte(bytes)
-		if err3 != nil {
-			log.Println("SplitByte:", err3)
-			break
-		}
-		err4 := dispatcher.Dispatch(code, msgByte, connection)
-		if err4 != nil {
-			log.Println("Dispatch:", err4)
+		log.Printf("%-8s: %s\n", "recv", string(message))
+		errorChannel := make(chan error)
+		err = dispatcher.Dispatch(messageType, message, connection, errorChannel)
+		if err != nil {
+			log.Printf("%-8s: %s\n", "write", err)
 			break
 		}
 	}
 }
 
 func main() {
-
-	http.HandleFunc("/echo", home)
-	log.Fatal(http.ListenAndServe(address, nil))
+	flag.Parse()
+	log.SetFlags(0)
+	http.HandleFunc("/", server)
+	log.Fatal(http.ListenAndServe(*addr, nil))
 }

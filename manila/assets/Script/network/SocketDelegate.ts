@@ -47,6 +47,7 @@ export class SocketDelegate implements ISocketDelegate {
     }
 
     onSocketOpen() {
+        console.log("Socket opened")
         EventMng.emit(SocketEvent.SOCKET_OPEN);
     }
 
@@ -58,6 +59,7 @@ export class SocketDelegate implements ISocketDelegate {
     onSocketClosed(msg: string) {
         this._socket.close();
         this._socket = null;
+        console.log("Socket closed")
         EventMng.emit(SocketEvent.SOCKET_CLOSE);
     }
 
@@ -67,7 +69,7 @@ export class SocketDelegate implements ISocketDelegate {
             return;
         }
         let msg = this.bufferToMsg(data);
-        EventMng.emit(msg.messageName, msg);
+        EventMng.emit(msg.Code, msg);
     }
 
     bufferToMsg(data) {

@@ -506,6 +506,6 @@ func main() {
 	protos := readProtoDir()
 	writeProtocolFile(protos)
 	// // writepbFile(protos)
-	// // writeDispacherFile(protos)
+	// writeDispacherFile(protos)
 	makeS()
 }
