@@ -4,12 +4,17 @@ import (
 	"hello/baseroom"
 )
 
-type ManilaStock baseroom.Card
+type ManilaStock struct{ card baseroom.Card }
 
 func (self ManilaStock) New(color int) ManilaStock {
-	return ManilaStock{A: color}
+	stock := ManilaStock{}
+	stock.card.SetA(color)
+	return stock
+}
+func (self *ManilaStock) SetColor(color int) {
+	self.card.SetA(color)
 }
 
 func (self ManilaStock) GetColor(card ManilaStock) int {
-	return card.A
+	return self.card.GetA()
 }

@@ -14,3 +14,7 @@ type Player struct {
 	Money4     int
 	Connection *websocket.Conn
 }
+
+func (self Player) GetName() string {
+	return self.Name
+}
