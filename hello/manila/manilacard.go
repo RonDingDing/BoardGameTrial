@@ -15,6 +15,6 @@ func (self *ManilaStock) SetColor(color int) {
 	self.card.SetA(color)
 }
 
-func (self ManilaStock) GetColor(card ManilaStock) int {
+func (self *ManilaStock) GetColor(card ManilaStock) int {
 	return self.card.GetA()
 }
