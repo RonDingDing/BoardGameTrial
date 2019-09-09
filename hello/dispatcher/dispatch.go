@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"hello/handler"
 	"hello/msg"
@@ -20,15 +19,14 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, error
 	if err != nil {
 		return err
 	}
-	fmt.Println("messageType: ", messageType)
-	fmt.Println("message: ", message)
+	fmt.Printf("%-8s: %s %4s %s\n", "receive", string(message), "from", connection.RemoteAddr())
 
 	switch code.Code {
-	case msg.Bail:
-		go handler.HandleBail(messageType, message, connection, errorChannel)
+
+	case msg.LoginMsg:
+		go handler.HandleLoginMsg(messageType, message, connection, errorChannel, code.Code)
 	default:
-		errStr := fmt.Sprintf("No handler for code %s.", code.Code)
-		return errors.New(errStr)
+		go handler.HandleErrors(messageType, message, connection, errorChannel, code.Code)
 	}
 
 	err2 := <-errorChannel

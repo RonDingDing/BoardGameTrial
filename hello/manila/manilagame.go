@@ -19,17 +19,21 @@ var (
 	GinsengPos = 0
 
 	MappingOrigin = map[string]ManilaSpot{
-		"1Tick":   ManilaSpot{"1Tick", "", 4, 6, true},
-		"2Tick":   ManilaSpot{"2Tick", "", 3, 8, true},
-		"3Tick":   ManilaSpot{"3Tick", "", 2, 15, true},
-		"1Fail":   ManilaSpot{"1Fail", "", 4, 6, true},
-		"2Fail":   ManilaSpot{"2Fail", "", 3, 8, true},
-		"3Fail":   ManilaSpot{"3Fail", "", 2, 15, true},
+		"1Tick": ManilaSpot{"1Tick", "", 4, 6, true},
+		"2Tick": ManilaSpot{"2Tick", "", 3, 8, true},
+		"3Tick": ManilaSpot{"3Tick", "", 2, 15, true},
+
+		"1Fail": ManilaSpot{"1Fail", "", 4, 6, true},
+		"2Fail": ManilaSpot{"2Fail", "", 3, 8, true},
+		"3Fail": ManilaSpot{"3Fail", "", 2, 15, true},
+
 		"1pirate": ManilaSpot{"1pirate", "", 5, 0, true},
 		"2pirate": ManilaSpot{"2pirate", "", 5, 0, true},
-		"1drag":   ManilaSpot{"1drag", "", 2, 0, true},
-		"2drag":   ManilaSpot{"2drag", "", 5, 0, true},
-		"repair":  ManilaSpot{"repair", "", 0, 10, true},
+
+		"1drag": ManilaSpot{"1drag", "", 2, 0, true},
+		"2drag": ManilaSpot{"2drag", "", 5, 0, true},
+
+		"repair": ManilaSpot{"repair", "", 0, 10, true},
 
 		"1silk": ManilaSpot{"1silk", "", 3, 0, false},
 		"2silk": ManilaSpot{"2silk", "", 4, 0, false},

@@ -21,9 +21,11 @@ export interface ISocketDelegate {
  */
 export class SocketDelegate implements ISocketDelegate {
     private _socket: ISocket;
+    private address: string
 
     constructor(address: string) {
         this.connect(address);
+        this.address = address;
 
     }
 
@@ -76,11 +78,14 @@ export class SocketDelegate implements ISocketDelegate {
         return JSON.parse(data);
     }
 
-    msgToBuffer(obj:object){
+    msgToBuffer(obj){
         return JSON.stringify(obj);
     }
     send(obj) {
         let msg = this.msgToBuffer(obj);
+        if (!this._socket){
+            this.connect(this.address);
+        }
         this._socket.send(msg);
     }
 

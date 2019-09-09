@@ -581,6 +581,8 @@
       "__id__": 12
     },
     "_enabled": true,
+    "usernameEditBox": null,
+    "passwordEditBox": null,
     "_id": "f0gv+7hSBHRYYLTOdMK9NG"
   },
   {

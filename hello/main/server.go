@@ -29,15 +29,13 @@ func server(writer http.ResponseWriter, request *http.Request) {
 	for {
 		messageType, message, err := connection.ReadMessage()
 		if err != nil {
-			log.Printf("%-8s: %s\n", "read", err)
+			log.Printf("%-8s: %s\n", "readerr", err)
 			break
 		}
-
-		log.Printf("%-8s: %s\n", "recv", string(message))
 		errorChannel := make(chan error)
 		err = dispatcher.Dispatch(messageType, message, connection, errorChannel)
 		if err != nil {
-			log.Printf("%-8s: %s\n", "write", err)
+			log.Printf("%-8s: %s\n", "writeerr", err)
 			break
 		}
 	}

@@ -5,6 +5,6 @@ package msg
 
 // 协议码
 const (
-	Bail = "500" // 获取游戏版本信息
-
+	Errors   = "000" // 获取游戏版本信息
+	LoginMsg = "001"
 )

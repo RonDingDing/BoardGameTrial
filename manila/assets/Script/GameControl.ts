@@ -1,32 +1,34 @@
-import { ManilaSocket, SocketEvents } from "./Global"
+import { ManilaSocket, SocketEvents, LoginMsg, Errors } from "./Global"
 import EventMng from "./Manager/EventMng";
 
 const { ccclass, property } = cc._decorator;
-const Bail = "500";
-const HeartBeat = "0001"
 
 
 @ccclass
 export default class GameControl extends cc.Component {
-
+ 
     onLoad() {
-        EventMng.on(SocketEvents.SOCKET_OPEN, this.sendHeartBeat, this);
-        EventMng.on(SocketEvents.SOCKET_CLOSE, function () {
-            console.log('Socket close');
-        }, this);
-        EventMng.on(Bail, function (data) {
-            console.log("L:", data);
-        }, this);
-
+        var self = this;
+    
+        EventMng.on(SocketEvents.SOCKET_OPEN, self.sendTest, self);
+        EventMng.on(SocketEvents.SOCKET_CLOSE, self.onSocketClose, self);
+        EventMng.on(Errors, self.onError, self);
+ 
     }
 
 
-    start() {
+    start() { }
 
+    onError(data) {
+        console.log("Error:", data);
     }
 
-    sendHeartBeat() {
-        var str = { "Code": Bail, "Number": 1 };
+    onSocketOpen() { }
+
+    onSocketClose() { }
+
+    sendTest() {
+        var str = { "Code": "001", "Number": 1 };
         console.log("Heartbeat: ", str)
         ManilaSocket.send(str);
     }
