@@ -7,4 +7,6 @@ package msg
 const (
 	Errors   = "000" // 获取游戏版本信息
 	LoginMsg = "001"
+
+	ErrNoHandler = -1
 )
