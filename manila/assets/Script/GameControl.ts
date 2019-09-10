@@ -1,4 +1,4 @@
-import { ManilaSocket, SocketEvents, LoginMsg, Errors } from "./Global"
+import { ManilaSocket, SocketEvents, LoginMsg, SignUpMsg, Errors } from "./Global"
 import EventMng from "./Manager/EventMng";
 
 const { ccclass, property } = cc._decorator;
@@ -14,6 +14,7 @@ export default class GameControl extends cc.Component {
         EventMng.on(SocketEvents.SOCKET_CLOSE, self.onSocketClose, self);
         EventMng.on(Errors, self.onError, self);
         EventMng.on(LoginMsg, self.onLoginMsg, self);
+        EventMng.on(SignUpMsg, self.onSignUpMsg, self);
 
     }
 
@@ -29,6 +30,10 @@ export default class GameControl extends cc.Component {
     onSocketClose() { }
 
     onLoginMsg(loginbin) {
+        console.log(loginbin);
+    }
+
+    onSignUpMsg(loginbin) {
         console.log(loginbin);
     }
     // sendTest() {

@@ -11,6 +11,7 @@ type PlayerUser struct {
 	Password string
 	Mobile   string
 	Email    string
+	Gold     int
 }
 
 func init() {

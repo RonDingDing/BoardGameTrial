@@ -23,12 +23,39 @@ export default class NewClass extends cc.Component {
         cc.director.loadScene("LoginMenu");
     }
 
+    pressGoToSignUp() {
+        cc.director.loadScene("SignUpMenu");
+    }
+
     pressLogin() {
         var self = this;
         var loginmsgobj = JSON.parse(JSON.stringify(loginmsg));
-        loginmsgobj.Req.Username = self.usernameEditBox.string;
-        loginmsgobj.Req.Password = self.passwordEditBox.string;
-        ManilaSocket.send(loginmsgobj);
+        let labelNode = self.popPup.getChildByName("AlertString");
+        let label = labelNode.getComponent(cc.Label);
+        label.string = "请填写所有信息！"
+        if (!self.usernameEditBox.string) {
+            self.popPup.active = true;
+            var seq = cc.sequence(
+
+                cc.scaleTo(0.2, 1.05, 1.05),
+                cc.scaleTo(0.2, 1, 1),
+            )
+            self.popPup.runAction(seq);
+            label.string = "用户名不能为空"
+        } else if (!self.passwordEditBox.string) {
+            self.popPup.active = true;
+            var seq = cc.sequence(
+
+                cc.scaleTo(0.2, 1.05, 1.05),
+                cc.scaleTo(0.2, 1, 1),
+            )
+            self.popPup.runAction(seq);
+            label.string = "密码不能为空"
+        } else {
+            loginmsgobj.Req.Username = self.usernameEditBox.string;
+            loginmsgobj.Req.Password = self.passwordEditBox.string;
+            ManilaSocket.send(loginmsgobj);
+        }
 
     }
 

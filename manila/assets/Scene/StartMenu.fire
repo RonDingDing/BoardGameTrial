@@ -583,6 +583,9 @@
     "_enabled": true,
     "usernameEditBox": null,
     "passwordEditBox": null,
+    "mobileEditBox": null,
+    "emailEditBox": null,
+    "popPup": null,
     "_id": "f0gv+7hSBHRYYLTOdMK9NG"
   },
   {

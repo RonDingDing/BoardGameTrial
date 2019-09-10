@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/gorilla/websocket"
 )
 
@@ -25,6 +26,9 @@ func server(writer http.ResponseWriter, request *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
+	ormManager := orm.NewOrm()
+	ormManager.Using("default")
+
 	defer connection.Close()
 	for {
 		messageType, message, err := connection.ReadMessage()
@@ -32,16 +36,13 @@ func server(writer http.ResponseWriter, request *http.Request) {
 			log.Printf("%-8s: %s\n", "readerr", err)
 			break
 		}
-		errorChannel := make(chan error)
-		err = dispatcher.Dispatch(messageType, message, connection, errorChannel)
-		if err != nil {
-			log.Printf("%-8s: %s\n", "writeerr", err)
-			break
-		}
+		dispatcher.Dispatch(messageType, message, connection, ormManager)
+
 	}
 }
 
 func main() {
+
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/", server)
