@@ -7,7 +7,7 @@ import (
 
 type PlayerUser struct {
 	Id       int64
-	Name     string
+	Name     string `orm:"unique"`
 	Password string
 	Mobile   string
 	Email    string

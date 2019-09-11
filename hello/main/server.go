@@ -33,7 +33,7 @@ func server(writer http.ResponseWriter, request *http.Request) {
 	for {
 		messageType, message, err := connection.ReadMessage()
 		if err != nil {
-			log.Printf("%-8s: %s\n", "readerr", err)
+			log.Printf("%-8s: %s %s\n", "readerr", err, connection.RemoteAddr())
 			break
 		}
 		dispatcher.Dispatch(messageType, message, connection, ormManager)
@@ -42,7 +42,6 @@ func server(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/", server)

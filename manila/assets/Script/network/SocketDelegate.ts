@@ -63,6 +63,10 @@ export class SocketDelegate implements ISocketDelegate {
         this._socket = null;
         console.log("Socket closed")
         EventMng.emit(SocketEvent.SOCKET_CLOSE);
+
+        // 加上的断线重连
+        this.connect(this.address);
+
     }
 
     onSocketMessage(data: string | ArrayBuffer) {
@@ -78,12 +82,12 @@ export class SocketDelegate implements ISocketDelegate {
         return JSON.parse(data);
     }
 
-    msgToBuffer(obj){
+    msgToBuffer(obj) {
         return JSON.stringify(obj);
     }
     send(obj) {
         let msg = this.msgToBuffer(obj);
-        if (!this._socket){
+        if (!this._socket) {
             this.connect(this.address);
         }
         this._socket.send(msg);

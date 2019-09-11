@@ -8,44 +8,51 @@ export const Errors = "000";
 export const LoginMsg = "001";
 export const SignUpMsg = "002";
 
+
+export const ErrNoHandler = -1
+export const ErrUserExit = -2
+export const ErrUserNotExit = -3
+
+
+
 export var errors = {
-    "Code": Errors,    
+    "Code": Errors,
     "Error": 0
 }
 
 export var loginmsg = {
-    "Code": LoginMsg, 
-    "Req": 
-        {
-            "Username": "", 
-            "Password": ""
-        }, 
-    "Ans": 
-        {
-            "Username": "", 
-            "Gold": 0,
-            "Mobile": "",   
-	        "Email": "",    
-        },
+    "Code": LoginMsg,
+    "Req":
+    {
+        "Username": "",
+        "Password": ""
+    },
+    "Ans":
+    {
+        "Username": "",
+        "Gold": 0,
+        "Mobile": "",
+        "Email": "",
+    },
     "Error": 0
 }
 
 export var signupmsg = {
-    "Code": SignUpMsg, 
-    "Req": 
-        {
-            "Username": "", 
-            "Password": "",
-            "Mobile": "",   
-            "Email": "",   
+    "Code": SignUpMsg,
+    "Req":
+    {
+        "Username": "",
+        "Password": "",
+        "Mobile": "",
+        "Email": "",
 
-        }, 
-    "Ans": 
-        {
-            "Username": "", 
-            "Gold": 0,
-            "Mobile": "",   
-	        "Email": "",    
-        },
+    },
+    "Ans":
+    {
+        "Username": "",
+        "Gold": 0,
+        "Mobile": "",
+        "Email": "",
+    },
     "Error": 0
 }

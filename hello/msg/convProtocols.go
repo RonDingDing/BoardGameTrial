@@ -9,6 +9,7 @@ const (
 	LoginMsg  = "001"
 	SignUpMsg = "002"
 
-	ErrNoHandler = -1
-	ErrUserExit  = -2
+	ErrNoHandler   = -1
+	ErrUserExit    = -2
+	ErrUserNotExit = -3
 )

@@ -441,7 +441,7 @@
       "__id__": 7
     },
     "_enabled": true,
-    "duration": 0.1,
+    "duration": 1.5,
     "zoomScale": 0.6,
     "clickEvents": [
       {
@@ -517,7 +517,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "ButtonControl",
+    "_name": "GameControl",
     "_objFlags": 0,
     "_parent": {
       "__id__": 2
