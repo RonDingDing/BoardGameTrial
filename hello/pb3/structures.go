@@ -5,6 +5,8 @@ type Errors struct {
 	Error int
 }
 
+////////
+
 type LoginMsgReq struct {
 	Username string
 	Password string
@@ -15,6 +17,7 @@ type LoginMsgAns struct {
 	Gold     int
 	Mobile   string
 	Email    string
+	RoomNum  int
 }
 
 type LoginMsg struct {
@@ -24,24 +27,30 @@ type LoginMsg struct {
 	Error int
 }
 
-func (self *LoginMsgReq) New() {
+func (self *LoginMsgReq) New() *LoginMsgReq {
 	self.Username = ""
 	self.Password = ""
+	return self
 }
 
-func (self *LoginMsgAns) New() {
+func (self *LoginMsgAns) New() *LoginMsgAns {
 	self.Username = ""
 	self.Gold = 0
 	self.Mobile = ""
 	self.Email = ""
+	self.RoomNum = 0
+	return self
 }
 
-func (self *LoginMsg) New() {
+func (self *LoginMsg) New() *LoginMsg {
 	self.Code = ""
-	self.Req = new(LoginMsgReq)
-	self.Ans = new(LoginMsgAns)
+	self.Req = new(LoginMsgReq).New()
+	self.Ans = new(LoginMsgAns).New()
 	self.Error = 0
+	return self
 }
+
+////////
 
 type SignUpMsgReq struct {
 	Username string
@@ -64,23 +73,63 @@ type SignUpMsg struct {
 	Error int
 }
 
-func (self *SignUpMsgReq) New() {
+func (self *SignUpMsgReq) New() *SignUpMsgReq {
 	self.Username = ""
 	self.Password = ""
 	self.Mobile = ""
 	self.Email = ""
+	return self
 }
 
-func (self *SignUpMsgAns) New() {
+func (self *SignUpMsgAns) New() *SignUpMsgAns {
 	self.Username = ""
 	self.Gold = 0
 	self.Mobile = ""
 	self.Email = ""
+	return self
 }
 
-func (self *SignUpMsg) New() {
+func (self *SignUpMsg) New() *SignUpMsg {
 	self.Code = ""
-	self.Req = new(SignUpMsgReq)
-	self.Ans = new(SignUpMsgAns)
+	self.Req = new(SignUpMsgReq).New()
+	self.Ans = new(SignUpMsgAns).New()
 	self.Error = 0
+	return self
+}
+
+////
+
+type EnterRoomMsgReq struct {
+	Username string
+	RoomNum  int
+}
+
+type EnterRoomMsgAns struct {
+	RoomNum int
+}
+
+type EnterRoomMsg struct {
+	Code  string
+	Req   *EnterRoomMsgReq
+	Ans   *EnterRoomMsgAns
+	Error int
+}
+
+func (self *EnterRoomMsgReq) New() *EnterRoomMsgReq {
+	self.Username = ""
+	self.RoomNum = 0
+	return self
+}
+
+func (self *EnterRoomMsgAns) New() *EnterRoomMsgAns {
+	self.RoomNum = 0
+	return self
+}
+
+func (self *EnterRoomMsg) New() *EnterRoomMsg {
+	self.Code = ""
+	self.Req = new(EnterRoomMsgReq).New()
+	self.Ans = new(EnterRoomMsgAns).New()
+	self.Error = 0
+	return self
 }

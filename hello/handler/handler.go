@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"hello/baseroom"
+	"hello/global"
 	"hello/models"
 	"hello/msg"
 	"hello/pb3"
@@ -29,45 +31,8 @@ func HandleErrors(messageType int, message []byte, connection *websocket.Conn, c
 
 }
 
-func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
-	loginmsg := pb3.LoginMsg{}
-	loginmsg.New()
-	err := json.Unmarshal(message, &loginmsg)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	username := loginmsg.Req.Username
-	password := loginmsg.Req.Password
-	query := models.PlayerUser{Name: username, Password: password}
-	dataerr := ormManager.Read(&query, "Name", "Password")
-	if dataerr == orm.ErrNoRows {
-		loginmsg.Req.Password = ""
-		loginmsg.Error = msg.ErrUserNotExit
-	} else {
-		loginmsg.Req.Password = ""
-		loginmsg.Ans.Username = username
-		loginmsg.Ans.Gold = query.Gold
-		loginmsg.Ans.Mobile = query.Mobile
-		loginmsg.Ans.Email = query.Email
-	}
-	messageReturn, err := json.Marshal(loginmsg)
-	if err != nil {
-		log.Print(err)
-		return
-	}
-	err = connection.WriteMessage(messageType, []byte(messageReturn))
-	log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
-	if err != nil {
-		log.Print(err)
-		return
-	}
-
-}
-
 func HandleSignUpMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
-	signupmsg := pb3.SignUpMsg{}
-	signupmsg.New()
+	signupmsg := new(pb3.SignUpMsg).New()
 	err := json.Unmarshal(message, &signupmsg)
 	if err != nil {
 		log.Println(err)
@@ -98,6 +63,104 @@ func HandleSignUpMsg(messageType int, message []byte, connection *websocket.Conn
 	log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
 	if err != nil {
 		log.Println(err)
+		return
+	}
+}
+
+func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	loginmsg := new(pb3.LoginMsg).New()
+	err := json.Unmarshal(message, &loginmsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := loginmsg.Req.Username
+	password := loginmsg.Req.Password
+	// 查找对应的用户
+	query := models.PlayerUser{Name: username, Password: password}
+	dataerr := ormManager.Read(&query, "Name", "Password")
+
+	if dataerr == orm.ErrNoRows {
+		// 找不到，返回错误
+		loginmsg.Req.Password = ""
+		loginmsg.Error = msg.ErrUserNotExit
+	} else {
+		// 找到
+		loginmsg.Req.Password = ""
+		loginmsg.Ans.Username = username
+		loginmsg.Ans.Gold = query.Gold
+		loginmsg.Ans.Mobile = query.Mobile
+		loginmsg.Ans.Email = query.Email
+
+		// 创建玩家对象
+		player := new(baseroom.Player).New(username, connection)
+		player.SetGold(query.Gold)
+
+		// 在马尼拉房间和大厅中寻找玩家对象
+		roomNum := global.FindUserInManila(username)
+		global.UserTrace[username] = roomNum
+
+		// 将原来连接的用户挤下线
+		if originPlayer, exist := global.UserPlayerMap[username]; exist {
+			originPlayer.ConnectionClose()
+		}
+		// 记录当前用户的玩家对象
+		global.UserPlayerMap[username] = *player
+		loginmsg.Ans.RoomNum = roomNum
+		log.Println(global.EntranceLoungeString())
+
+	}
+	messageReturn, err := json.Marshal(loginmsg)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	err = connection.WriteMessage(messageType, []byte(messageReturn))
+	log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+}
+
+func HandleEnterRoomMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	enterroommsg := new(pb3.EnterRoomMsg).New()
+	err := json.Unmarshal(message, &enterroommsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := enterroommsg.Req.Username
+	roomNum := enterroommsg.Req.RoomNum
+	if player, exist := global.UserPlayerMap[username]; exist {
+		if roomNum == 0 {
+			// 进入大厅
+			lounge := global.EntranceLounge[0]
+			_, entered := lounge.Enter(&player)
+			if entered == false {
+				enterroommsg.Error = msg.ErrCannotEnterRoom
+			}
+		} else {
+			// 进入其他房间
+
+		}
+
+	} else {
+		// 极小概率，玩家字典中没有此玩家
+		enterroommsg.Error = msg.ErrNoSuchPlayer
+	}
+	log.Println(global.EntranceLoungeString())
+
+	messageReturn, err := json.Marshal(enterroommsg)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	err = connection.WriteMessage(messageType, []byte(messageReturn))
+	log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
+	if err != nil {
+		log.Print(err)
 		return
 	}
 

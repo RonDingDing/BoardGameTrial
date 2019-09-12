@@ -48,7 +48,7 @@ export class SocketDelegate implements ISocketDelegate {
         }
     }
 
-    onSocketOpen() {
+    onSocketOpen() {       
         console.log("Socket opened")
         EventMng.emit(SocketEvent.SOCKET_OPEN);
     }

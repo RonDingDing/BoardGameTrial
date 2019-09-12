@@ -7,14 +7,16 @@ type ManilaRoom struct {
 	mapp map[string]ManilaSpot
 }
 
-func (self ManilaRoom) New(roomNum int, gameNum int, playerNumForStart int, playerNumMax int) ManilaRoom {
-	self.room = baseroom.Room{}.New(roomNum, gameNum, playerNumForStart, playerNumMax)
+func (self *ManilaRoom) New(roomNum int) *ManilaRoom {
+	self.room = *(new(baseroom.Room).New(roomNum, 1, 3, 5))
 	self.Reset()
 	return self
 }
 
-func (self *ManilaRoom) Enter(player ManilaPlayer) bool {
-	return self.room.Enter(baseroom.Player(player.Player))
+func (self *ManilaRoom) Enter(player *ManilaPlayer) (*ManilaPlayer, bool) {
+	baseplayer, entered := self.room.Enter(&player.Player)
+	player.Player = *baseplayer
+	return player, entered
 }
 
 func (self *ManilaRoom) Exit(name string) bool {
@@ -28,4 +30,12 @@ func (self *ManilaRoom) StartGame() bool {
 func (self *ManilaRoom) Reset() {
 	self.mapp = DeepCopy(MappingOrigin)
 
+}
+
+func (self *ManilaRoom) GetRoom() baseroom.Room {
+	return self.room
+}
+
+func (self *ManilaRoom) GetMap() map[string]ManilaSpot {
+	return self.mapp
 }

@@ -121,37 +121,35 @@ def make_new(content):
             new_str = e.split("struct")[1].replace("\n", ",").replace("{", "") \
                 .replace("}", "").strip(",").strip(" ").strip(", ").replace("    ", " ").replace("   ", " ") \
                 .replace("  ", " ").replace(" ,", ",")
-            result += "func (self *%s) New() {\n" % (obj_name)
+            result += "func (self *%s) New() *%s {\n" % (obj_name, obj_name)
             for m in new_str.split(", "):
                 param = m.split(" ")[0]
                 typing = m.split(" ")[1]
                 if typing in dic_make:
                     result += "    self.%s = %s\n" % (param, dic_make[typing])
                 else:
-                    result += "    self.%s =  new(%s)\n" % (param, typing.replace("*", ""))
+                    result += "    self.%s =  new(%s).New()\n" % (param, typing.replace("*", ""))
 
-            result += "}\n\n"
+            result += "    return self\n}\n\n"
     return result
 
 
 if __name__ == '__main__':
-    obj = {
-        "Code": 1,
+    EnterRoomMsg = "003"
+    obj = enterroommsg = {
+        "Code": EnterRoomMsg,
         "Req":
             {
                 "Username": "",
-                "Password": ""
+                "RoomNum": 0
             },
         "Ans":
             {
-                "Username": "",
-                "Gold": 0,
-                "Mobile": "",
-                "Email": "",
+                "RoomNum": 0
             },
         "Error": 0
     }
-    content = to_go(obj, 'LoginMsg')
+    content = to_go(obj, 'EnterRoomMsg')
 
     print(content)
     new_content = make_new(content)

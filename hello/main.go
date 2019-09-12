@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"hello/baseroom"
 )
 
 func main() {
-	fmt.Println(1)
+	player := baseroom.Player{}
+
 }
