@@ -1,8 +1,14 @@
 package baseroom
 
 import (
-	"errors"
 	"fmt"
+)
+
+const (
+	AlreadyInRoom  = 1
+	NewEntered     = 2
+	FailedEntering = 0
+	LoungeNum      = 0
 )
 
 type Room struct {
@@ -12,23 +18,24 @@ type Room struct {
 	playerNumForStart int
 	playerNumMax      int
 	players           map[string]*Player
-	deck1             []Card
-	deck2             []Card
-	deck3             []Card
-	deck4             []Card
+}
+
+func (self *Room) GetRoomNum() int {
+	return self.roomNum
 }
 
 func (self *Room) String() string {
 	str := ""
 	str += "{"
-	str += fmt.Sprintf("%s: %d, ", "RoomNum", self.roomNum)
-	str += fmt.Sprintf("%s: %d, ", "GameNum", self.gameNum)
-	str += "Players: [ \n"
+	str += fmt.Sprintf("\n    \"%s\": %d, ", "RoomNum", self.roomNum)
+	str += fmt.Sprintf("\n    \"%s\": %d, ", "GameNum", self.gameNum)
+	str += fmt.Sprintf("\n    \"%s\": %d, ", "Started", self.started)
+	str += "\n    \"Players\": {\n"
 	for _, player := range self.players {
+		str += "      "
 		str += player.String()
-		str += "\n"
 	}
-	str += "]}"
+	str += "    }"
 	return str
 }
 
@@ -50,26 +57,6 @@ func (self *Room) GetPlayerNames() map[string]int {
 	return dic
 }
 
-func (self *Room) SetDeck(cards []Card, num int) error {
-	switch num {
-	case 1:
-		self.deck1 = cards
-		return nil
-	case 2:
-		self.deck2 = cards
-		return nil
-	case 3:
-		self.deck3 = cards
-		return nil
-	case 4:
-		self.deck4 = cards
-		return nil
-	default:
-		return errors.New("Not a good num")
-	}
-
-}
-
 func (self *Room) StartGame() bool {
 	playerNum := len(self.players)
 
@@ -80,20 +67,20 @@ func (self *Room) StartGame() bool {
 	return false
 }
 
-func (self *Room) Enter(player *Player) (*Player, bool) {
+func (self *Room) Enter(player *Player) (*Player, int) {
 	name := player.GetName()
 	if playerOrigin, exist := self.players[name]; exist {
-		return playerOrigin, true
+		return playerOrigin, AlreadyInRoom
 	} else if self.playerNumMax > 0 {
 		if len(self.players) < self.playerNumMax {
 			self.players[name] = player
-			return player, true
+			return player, NewEntered
 		}
 	} else {
 		self.players[name] = player
-		return player, true
+		return player, NewEntered
 	}
-	return player, false
+	return player, FailedEntering
 }
 
 func (self *Room) Exit(name string) bool {

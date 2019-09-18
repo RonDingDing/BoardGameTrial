@@ -1,20 +1,14 @@
 package manila
 
-import (
-	"hello/baseroom"
-)
-
-type ManilaStock struct{ card baseroom.Card }
-
-func (self ManilaStock) New(color int) ManilaStock {
-	stock := ManilaStock{}
-	stock.card.SetA(color)
-	return stock
+type ManilaStock struct {
+	color int
 }
-func (self *ManilaStock) SetColor(color int) {
-	self.card.SetA(color)
+
+func (self *ManilaStock) New(color int) *ManilaStock {
+	self.color = color
+	return self
 }
 
 func (self *ManilaStock) GetColor(card ManilaStock) int {
-	return self.card.GetA()
+	return self.color
 }

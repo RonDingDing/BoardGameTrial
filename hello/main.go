@@ -1,10 +1,8 @@
 package main
 
-import (
-	"hello/baseroom"
-)
+import "hello/global"
 
 func main() {
-	player := baseroom.Player{}
 
+	global.NewManilaRoom(2222)
 }

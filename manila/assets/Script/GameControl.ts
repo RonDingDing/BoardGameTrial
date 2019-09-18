@@ -17,6 +17,10 @@ export default class GameControl extends cc.Component {
     @property(cc.EditBox)
     emailEditBox: cc.EditBox = null
 
+
+    @property(cc.EditBox)
+    roomNumEditBox: cc.EditBox = null
+
     @property(cc.Node)
     popPup: cc.Node = null
 
@@ -24,13 +28,15 @@ export default class GameControl extends cc.Component {
     popPupString: cc.Label = null
 
 
+
+
     onLoad() {
-        var self = this;
+        let self = this;
         EventMng.on(SocketEvents.SOCKET_OPEN, self.onSocketOpen, self);
         EventMng.on(SocketEvents.SOCKET_CLOSE, self.onSocketClose, self);
         EventMng.on(Errors, self.onError, self);
-        EventMng.on(LoginMsg, self.onLoginMsg, self);
         EventMng.on(SignUpMsg, self.onSignUpMsg, self);
+        EventMng.on(LoginMsg, self.onLoginMsg, self);
         EventMng.on(EnterRoomMsg, self.onEnterRoomMsg, self);
 
     }
@@ -45,9 +51,9 @@ export default class GameControl extends cc.Component {
     onSocketOpen() {
         Global.online = true;
         // if (Global.password && Global.playerUser) {
-        //     var self = this;
+        //     let self = this;
         //     console.log("Password: ", Global.password);
-        //     var loginmsgobj = JSON.parse(JSON.stringify(loginmsg));
+        //     let loginmsgobj = JSON.parse(JSON.stringify(loginmsg));
         //     loginmsgobj.Req.Username = Global.playerUser
         //     loginmsgobj.Req.Password = Global.password;
         //     ManilaSocket.send(loginmsgobj);
@@ -59,14 +65,15 @@ export default class GameControl extends cc.Component {
 
     onSocketClose() {
         cc.director.loadScene("StartMenu");
+        Global.playerUser = ""
         Global.online = false;
     }
 
     onLoginMsg(message) {
-        var self = this;
-        var username = message.Ans.Username;
-        var gold = message.Ans.Gold;
-        var roomnum = message.Ans.RoomNum;
+        let self = this;
+        let username = message.Ans.Username;
+        let gold = message.Ans.Gold;
+        let roomnum = message.Ans.RoomNum;
         if (message.Error == ErrUserNotExit) {
             self.playPopUp("用户名或密码错误！");
             self.usernameEditBox.string = "";
@@ -76,24 +83,30 @@ export default class GameControl extends cc.Component {
             Global.playerUser = username;
             Global.playerGold = gold;
             Global.online = true;
-
-            var enterroommsgobj = JSON.parse(JSON.stringify(enterroommsg));
+            let enterroommsgobj = JSON.parse(JSON.stringify(enterroommsg));
             enterroommsgobj.Req.Username = username;
             enterroommsgobj.Req.RoomNum = roomnum;
             ManilaSocket.send(enterroommsgobj)
-
-            self.scheduleOnce(function () {
-                cc.director.loadScene("ManilaMain");
-            }, 2);
+            if (roomnum != 0) {
+                self.scheduleOnce(function () {
+                    cc.director.loadScene("ManilaMain");
+                }, 2);
+            } else {
+                self.scheduleOnce(function () {
+                    cc.director.loadScene("SelectRoom");
+                }, 2);
+            }
         }
     }
 
+
+
     onSignUpMsg(message) {
-        var self = this;
+        let self = this;
         if (message.Error == ErrUserExit) {
             self.playPopUp("用户名已存在！");
         } else {
-            var username = message.Ans.Username;
+            let username = message.Ans.Username;
             self.playPopUp("用户名 " + username + " 创建成功！\n跳转登录页…");
             self.scheduleOnce(function () {
                 cc.director.loadScene("LoginMenu");
@@ -106,8 +119,8 @@ export default class GameControl extends cc.Component {
     }
 
     pressStart() {
-        var self = this;
-        if (ManilaSocket.isSocketOpened()){
+        let self = this;
+        if (ManilaSocket.isSocketOpened()) {
             cc.director.loadScene("LoginMenu");
         } else {
             self.playPopUp("未连接网络！")
@@ -119,8 +132,8 @@ export default class GameControl extends cc.Component {
     }
 
     pressLogin() {
-        var self = this;
-        var loginmsgobj = JSON.parse(JSON.stringify(loginmsg));
+        let self = this;
+        let loginmsgobj = JSON.parse(JSON.stringify(loginmsg));
 
         if (!self.usernameEditBox.string) {
             self.playPopUp("用户名不能为空");
@@ -138,8 +151,8 @@ export default class GameControl extends cc.Component {
     }
 
     pressSignUp() {
-        var self = this;
-        var signupmsgobj = JSON.parse(JSON.stringify(signupmsg));
+        let self = this;
+        let signupmsgobj = JSON.parse(JSON.stringify(signupmsg));
         if (self.usernameEditBox.string && self.passwordEditBox.string && self.emailEditBox.string && self.mobileEditBox.string) {
             signupmsgobj.Req.Username = self.usernameEditBox.string;
             signupmsgobj.Req.Password = self.passwordEditBox.string;
@@ -150,15 +163,43 @@ export default class GameControl extends cc.Component {
             self.playPopUp("请填写所有信息！");
         }
     }
+
+    pressEnterRoom() {
+        let self = this;
+        if (Global.playerUser === "") {
+            ManilaSocket.closeConnect();
+            return;
+        }
+        let roomnum = parseInt(self.roomNumEditBox.string);
+        console.log(roomnum);
+        if (isNaN(roomnum)) {
+            self.playPopUp("请输入大于0的整数！");
+            self.roomNumEditBox.string = "";
+            return;
+        }
+
+        let enterroommsgobj = JSON.parse(JSON.stringify(enterroommsg));
+        enterroommsgobj.Req.Username = Global.playerUser;
+        enterroommsgobj.Req.RoomNum = roomnum;
+        console.log(enterroommsg);
+        ManilaSocket.send(enterroommsgobj)
+
+        if (roomnum != 0) {
+            self.scheduleOnce(function () {
+                cc.director.loadScene("ManilaMain");
+            }, 2);
+        }
+
+    }
     pressExit() {
-        var self = this;
+        let self = this;
         self.popPup.active = false;
     }
 
     playPopUp(content: string) {
-        var self = this;
+        let self = this;
         self.popPup.active = true;
-        var seq = cc.sequence(
+        let seq = cc.sequence(
             cc.scaleTo(0.2, 1.05, 1.05),
             cc.scaleTo(0.2, 1, 1),
         )

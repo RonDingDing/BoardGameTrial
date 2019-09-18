@@ -1,10 +1,18 @@
 package manila
 
+import "fmt"
+
 const (
 	SilkVend    = 30
 	JadeVend    = 36
 	CoffeeVend  = 24
 	GinsengVend = 18
+
+	EmptyColor   = 0
+	SilkColor    = 1
+	JadeColor    = 2
+	CoffeeColor  = 3
+	GinsengColor = 4
 )
 
 var (
@@ -19,13 +27,13 @@ var (
 	GinsengPos = 0
 
 	MappingOrigin = map[string]ManilaSpot{
-		"1Tick": ManilaSpot{"1Tick", "", 4, 6, true},
-		"2Tick": ManilaSpot{"2Tick", "", 3, 8, true},
-		"3Tick": ManilaSpot{"3Tick", "", 2, 15, true},
+		"1tick": ManilaSpot{"1tick", "", 4, 6, true},
+		"2tick": ManilaSpot{"2tick", "", 3, 8, true},
+		"3tick": ManilaSpot{"3tick", "", 2, 15, true},
 
-		"1Fail": ManilaSpot{"1Fail", "", 4, 6, true},
-		"2Fail": ManilaSpot{"2Fail", "", 3, 8, true},
-		"3Fail": ManilaSpot{"3Fail", "", 2, 15, true},
+		"1fail": ManilaSpot{"1fail", "", 4, 6, true},
+		"2fail": ManilaSpot{"2fail", "", 3, 8, true},
+		"3fail": ManilaSpot{"3fail", "", 2, 15, true},
 
 		"1pirate": ManilaSpot{"1pirate", "", 5, 0, true},
 		"2pirate": ManilaSpot{"2pirate", "", 5, 0, true},
@@ -60,6 +68,10 @@ type ManilaSpot struct {
 	price   int
 	award   int
 	onboard bool
+}
+
+func (self *ManilaSpot) String() string {
+	return fmt.Sprintf("\n      {\"SpotName\": \"%-8s\", \"Taken\": \"%10s\", \"Price\": %2d, \"Award\": %2d, \"Onboard\": %5t}", self.name, self.taken, self.price, self.award, self.onboard)
 }
 
 func (self *ManilaSpot) SetTaken(name string) {

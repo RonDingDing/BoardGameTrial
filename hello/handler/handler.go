@@ -93,8 +93,7 @@ func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn,
 		loginmsg.Ans.Email = query.Email
 
 		// 创建玩家对象
-		player := new(baseroom.Player).New(username, connection)
-		player.SetGold(query.Gold)
+		player := new(baseroom.Player).New(username, connection, query.Gold)
 
 		// 在马尼拉房间和大厅中寻找玩家对象
 		roomNum := global.FindUserInManila(username)
@@ -107,7 +106,6 @@ func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn,
 		// 记录当前用户的玩家对象
 		global.UserPlayerMap[username] = *player
 		loginmsg.Ans.RoomNum = roomNum
-		log.Println(global.EntranceLoungeString())
 
 	}
 	messageReturn, err := json.Marshal(loginmsg)
@@ -134,23 +132,32 @@ func HandleEnterRoomMsg(messageType int, message []byte, connection *websocket.C
 	username := enterroommsg.Req.Username
 	roomNum := enterroommsg.Req.RoomNum
 	if player, exist := global.UserPlayerMap[username]; exist {
-		if roomNum == 0 {
+		enterState := baseroom.FailedEntering
+		if roomNum == baseroom.LoungeNum {
 			// 进入大厅
-			lounge := global.EntranceLounge[0]
-			_, entered := lounge.Enter(&player)
-			if entered == false {
-				enterroommsg.Error = msg.ErrCannotEnterRoom
-			}
-		} else {
+			lounge := global.EntranceLounge[baseroom.LoungeNum]
+			_, enterState = lounge.Enter(&player)
+
+		} else if room, ok := global.ManilaLounge[roomNum]; ok {
 			// 进入其他房间
+			mPlayer := global.ToManilaPlayer(&player)
+			_, enterState = room.Enter(mPlayer)
 
+		} else {
+			// 无此房间号，新建房间
+			room := global.NewManilaRoom()
+			mPlayer := global.ToManilaPlayer(&player)
+			_, enterState = room.Enter(mPlayer)
 		}
-
+		enterroommsg.Ans.RoomNum = roomNum
+		if enterState == baseroom.FailedEntering {
+			enterroommsg.Error = msg.ErrCannotEnterRoom
+			enterroommsg.Ans.RoomNum = 0
+		}
 	} else {
 		// 极小概率，玩家字典中没有此玩家
 		enterroommsg.Error = msg.ErrNoSuchPlayer
 	}
-	log.Println(global.EntranceLoungeString())
 
 	messageReturn, err := json.Marshal(enterroommsg)
 	if err != nil {
