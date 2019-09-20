@@ -74,6 +74,25 @@ func (self *ManilaSpot) String() string {
 	return fmt.Sprintf("\n      {\"SpotName\": \"%-8s\", \"Taken\": \"%10s\", \"Price\": %2d, \"Award\": %2d, \"Onboard\": %5t}", self.name, self.taken, self.price, self.award, self.onboard)
 }
 
+func (self *ManilaSpot) GetTaken() string {
+	return self.taken
+}
+
+func (self *ManilaSpot) GetName() string {
+	return self.name
+}
+
+func (self *ManilaSpot) GetPrice() int {
+	return self.price
+}
+func (self *ManilaSpot) GetAward() int {
+	return self.award
+}
+
+func (self *ManilaSpot) GetOnboard() bool {
+	return self.onboard
+}
+
 func (self *ManilaSpot) SetTaken(name string) {
 	self.taken = name
 }

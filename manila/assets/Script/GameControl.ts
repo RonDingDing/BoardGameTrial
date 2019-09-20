@@ -58,7 +58,7 @@ export default class GameControl extends cc.Component {
         //     loginmsgobj.Req.Password = Global.password;
         //     ManilaSocket.send(loginmsgobj);
         //     self.scheduleOnce(function () {
-        //         cc.director.loadScene("ManilaMain");
+        //         cc.director.loadScene("ManilaRoom");
         //     }, 2);
         // }
     }
@@ -87,14 +87,10 @@ export default class GameControl extends cc.Component {
             enterroommsgobj.Req.Username = username;
             enterroommsgobj.Req.RoomNum = roomnum;
             ManilaSocket.send(enterroommsgobj)
-            if (roomnum != 0) {
-                self.scheduleOnce(function () {
-                    cc.director.loadScene("ManilaMain");
-                }, 2);
+            if (roomnum != 0) {        
+                cc.director.loadScene("ManilaRoom");
             } else {
-                self.scheduleOnce(function () {
-                    cc.director.loadScene("SelectRoom");
-                }, 2);
+                cc.director.loadScene("SelectRoom");
             }
         }
     }
@@ -110,7 +106,7 @@ export default class GameControl extends cc.Component {
             self.playPopUp("用户名 " + username + " 创建成功！\n跳转登录页…");
             self.scheduleOnce(function () {
                 cc.director.loadScene("LoginMenu");
-            }, 2);
+            }, 1);
         }
     }
 
@@ -186,8 +182,8 @@ export default class GameControl extends cc.Component {
 
         if (roomnum != 0) {
             self.scheduleOnce(function () {
-                cc.director.loadScene("ManilaMain");
-            }, 2);
+                cc.director.loadScene("ManilaRoom");
+            }, 1);
         }
 
     }

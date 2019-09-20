@@ -63,11 +63,29 @@ export var enterroommsg = {
     "Req":
     {
         "Username": "",
-        "RoomNum": 0         
+        "RoomNum": 0
     },
     "Ans":
     {
-        "RoomNum": 0
+        "CoffeeDeck": 0,
+        "GameNum": 0,
+        "GinsengDeck": 0,
+        "JadeDeck": 0,
+        "Mapp": [
+            // {Name: "", Taken: "", Price: 0, Award: 0, Onboard: false}
+        ],
+        "PlayerName": [
+            // ""
+        ],
+        "PlayerNumForStart": 0,
+        "PlayerNumMax": 0,
+        "Players": [
+            // {"Money": 0, "Name": "", "Online": true, "Stock":  [0, 0, 0, 0], "Seat": 0}
+        ],
+        "RoomNum": 0,
+        "Round": 0,
+        "SilkDeck": 0,
+        "Started": false
     },
     "Error": 0
 }

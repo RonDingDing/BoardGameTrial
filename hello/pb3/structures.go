@@ -98,14 +98,41 @@ func (self *SignUpMsg) New() *SignUpMsg {
 }
 
 ////
-
 type EnterRoomMsgReq struct {
 	Username string
 	RoomNum  int
 }
 
+type PlayersS struct {
+	Name   string
+	Money  int
+	Stock  []int
+	Online bool
+	Seat   int
+}
+
+type MappS struct {
+	Name    string
+	Taken   string
+	Price   int
+	Award   int
+	Onboard bool
+}
+
 type EnterRoomMsgAns struct {
-	RoomNum int
+	RoomNum           int
+	GameNum           int
+	Started           bool
+	PlayerNumForStart int
+	PlayerNumMax      int
+	PlayerName        []string
+	Players           []PlayersS
+	SilkDeck          int
+	CoffeeDeck        int
+	GinsengDeck       int
+	JadeDeck          int
+	Round             int
+	Mapp              []MappS
 }
 
 type EnterRoomMsg struct {
@@ -121,8 +148,38 @@ func (self *EnterRoomMsgReq) New() *EnterRoomMsgReq {
 	return self
 }
 
+func (self *PlayersS) New() *PlayersS {
+	self.Name = ""
+	self.Money = 0
+	self.Stock = make([]int, 0)
+	self.Online = false
+	self.Seat = 0
+	return self
+}
+
+func (self *MappS) New() *MappS {
+	self.Name = ""
+	self.Taken = ""
+	self.Price = 0
+	self.Award = 0
+	self.Onboard = false
+	return self
+}
+
 func (self *EnterRoomMsgAns) New() *EnterRoomMsgAns {
 	self.RoomNum = 0
+	self.GameNum = 0
+	self.Started = false
+	self.PlayerNumForStart = 0
+	self.PlayerNumMax = 0
+	self.PlayerName = make([]string, 0)
+	self.Players = make([]PlayersS, 0)
+	self.SilkDeck = 0
+	self.CoffeeDeck = 0
+	self.GinsengDeck = 0
+	self.JadeDeck = 0
+	self.Round = 0
+	self.Mapp = make([]MappS, 0)
 	return self
 }
 

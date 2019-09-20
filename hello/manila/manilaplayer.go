@@ -7,13 +7,17 @@ import (
 )
 
 type OtherProps struct {
-	hand  []ManilaStock
-	money int
+	hand   []ManilaStock
+	money  int
+	online bool
+	seat   int
 }
 
 func (self *OtherProps) New() *OtherProps {
 	self.hand = []ManilaStock{}
 	self.money = 0
+	self.online = true
+	self.seat = 0
 	return self
 }
 
@@ -36,6 +40,22 @@ func (self *ManilaPlayer) New(name string, connection *websocket.Conn, gold int)
 	return self
 }
 
+func (self *OtherProps) GetStocks() []int {
+	stocks := []int{0, 0, 0, 0, 0}
+	for _, v := range self.GetHand() {
+		switch v.GetColor() {
+		case SilkColor:
+			stocks[SilkColor] += 1
+		case JadeColor:
+			stocks[JadeColor] += 1
+		case CoffeeColor:
+			stocks[CoffeeColor] += 1
+		case GinsengColor:
+			stocks[GinsengColor] += 1
+		}
+	}
+	return stocks[1:]
+}
 func (self *ManilaPlayer) GetPlayer() *baseroom.Player {
 	return self.player
 }
@@ -66,4 +86,19 @@ func (self *ManilaPlayer) GetOtherProps() *OtherProps {
 
 func (self *ManilaPlayer) SetOtherProps(OtherProps *OtherProps) {
 	self.otherProps = OtherProps
+}
+
+func (self *OtherProps) GetOnline() bool {
+	return self.online
+}
+func (self *OtherProps) SetOnline(online bool) {
+	self.online = online
+}
+
+func (self *OtherProps) GetSeat() int {
+	return self.seat
+}
+
+func (self *OtherProps) SetSeat(seat int) int {
+	self.seat = seat
 }

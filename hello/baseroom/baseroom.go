@@ -18,10 +18,27 @@ type Room struct {
 	playerNumForStart int
 	playerNumMax      int
 	players           map[string]*Player
+	sorted            []string
 }
 
 func (self *Room) GetRoomNum() int {
 	return self.roomNum
+}
+
+func (self *Room) GetGameNum() int {
+	return self.gameNum
+}
+
+func (self *Room) GetStarted() bool {
+	return self.started
+}
+
+func (self *Room) GetPlayerNumForStart() int {
+	return self.playerNumForStart
+}
+
+func (self *Room) GetPlayerNumMax() int {
+	return self.playerNumMax
 }
 
 func (self *Room) String() string {
@@ -67,29 +84,65 @@ func (self *Room) StartGame() bool {
 	return false
 }
 
-func (self *Room) Enter(player *Player) (*Player, int) {
-	name := player.GetName()
-	if playerOrigin, exist := self.players[name]; exist {
-		return playerOrigin, AlreadyInRoom
-	} else if self.playerNumMax > 0 {
-		if len(self.players) < self.playerNumMax {
+func (self *Room) Enter(player interface{}) int {
+	switch player := player.(type) {
+	case *Player:
+		name := player.GetName()
+		if _, exist := self.players[name]; exist {
+			return AlreadyInRoom
+		} else if self.playerNumMax > 0 {
+			if len(self.players) < self.playerNumMax {
+				self.players[name] = player
+				self.enterSort(name)
+				return NewEntered
+			}
+		} else {
 			self.players[name] = player
-			return player, NewEntered
+			self.enterSort(name)
+			return NewEntered
 		}
-	} else {
-		self.players[name] = player
-		return player, NewEntered
 	}
-	return player, FailedEntering
+	return FailedEntering
+}
+
+func (self *Room) enterSort(name string) {
+	self.sorted = append(self.sorted, name)
 }
 
 func (self *Room) Exit(name string) bool {
 	_, ok := self.players[name]
 	if ok && (!self.started) {
 		delete(self.players, name)
+		self.exitSort(name)
 		return true
 	} else {
 		return false
 	}
+}
 
+func (self *Room) exitSort(name string) {
+	breakPoint := -1
+	array := self.sorted[:]
+	for i, v := range self.sorted {
+		if v == name {
+			breakPoint = i
+		}
+	}
+	if breakPoint != -1 {
+		if len(self.sorted) == 1 {
+			array = make([]string, 0)
+		} else if breakPoint == len(self.sorted)-1 {
+			array = self.sorted[:len(self.sorted)-1]
+		} else {
+			for m := breakPoint; m < len(self.sorted)-1; m++ {
+				array[m] = array[m+1]
+			}
+			array = self.sorted[:len(self.sorted)-1]
+		}
+		self.sorted = array
+	}
+}
+
+func (self *Room) GetPlayerName() []string {
+	return self.sorted
 }

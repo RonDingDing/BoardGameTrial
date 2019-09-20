@@ -9,6 +9,6 @@ func (self *ManilaStock) New(color int) *ManilaStock {
 	return self
 }
 
-func (self *ManilaStock) GetColor(card ManilaStock) int {
+func (self *ManilaStock) GetColor() int {
 	return self.color
 }

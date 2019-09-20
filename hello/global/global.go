@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"hello/baseroom"
 	"hello/manila"
-	"math/rand"
-	"time"
 )
 
 var ManilaLounge = map[int]manila.ManilaRoom{}
@@ -26,19 +24,7 @@ func FindUserInManila(name string) int {
 	return 0
 }
 
-func NewManilaRoom() *manila.ManilaRoom {
-	roomNum := 0
-	for {
-		rand.Seed(time.Now().UnixNano())
-		roomNum = rand.Intn(10000)
-		if _, ok := ManilaLounge[roomNum]; ok {
-			continue
-		} else if roomNum == 0 {
-			continue
-		} else {
-			break
-		}
-	}
+func NewManilaRoom(roomNum int) *manila.ManilaRoom {
 	room := *new(manila.ManilaRoom).New(roomNum)
 	ManilaLounge[roomNum] = room
 	return &room

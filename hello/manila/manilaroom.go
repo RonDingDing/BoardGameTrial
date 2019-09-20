@@ -16,6 +16,30 @@ type ManilaRoom struct {
 	round       int
 }
 
+func (self *ManilaRoom) GetRound() int {
+	return self.round
+}
+
+func (self *ManilaRoom) GetRoomNum() int {
+	return self.room.GetRoomNum()
+}
+
+func (self *ManilaRoom) GetGameNum() int {
+	return self.room.GetGameNum()
+}
+
+func (self *ManilaRoom) GetStarted() bool {
+	return self.room.GetStarted()
+}
+
+func (self *ManilaRoom) GetPlayerNumForStart() int {
+	return self.room.GetPlayerNumForStart()
+}
+
+func (self *ManilaRoom) GetPlayerNumMax() int {
+	return self.room.GetPlayerNumMax()
+}
+
 func (self *ManilaRoom) String() string {
 	str := self.room.String()
 
@@ -45,20 +69,22 @@ func (self *ManilaRoom) New(roomNum int) *ManilaRoom {
 	return self
 }
 
-func (self *ManilaRoom) Enter(player *ManilaPlayer) (*ManilaPlayer, int) {
-	p := player.GetPlayer()
-	baseplayer, entered := self.room.Enter(p)
+func (self *ManilaRoom) Enter(player *ManilaPlayer) int {
+	baseplayer := player.GetPlayer()
+	entered := self.room.Enter(baseplayer)
 	username := player.GetPlayer().GetName()
 	player.SetPlayer(baseplayer)
 	if entered == baseroom.AlreadyInRoom {
 		otherProps, _ := self.otherProps[username]
 		player.SetOtherProps(otherProps)
 	} else if entered == baseroom.NewEntered {
+		seat := len(self.room.GetPlayerNames())
 		otherProps := new(OtherProps).New()
+		otherProps.SetSeat(seat)
 		player.SetOtherProps(otherProps)
 		self.otherProps[username] = otherProps
 	}
-	return player, entered
+	return entered
 }
 
 func (self *ManilaRoom) Exit(name string) bool {
@@ -110,5 +136,32 @@ func (self *ManilaRoom) ResetDecks() {
 			}
 		}
 	}
+}
 
+func (self *ManilaRoom) GetPlayerName() []string {
+	return self.room.GetPlayerName()
+}
+
+func (self *ManilaRoom) GetSilkDeck() int {
+	return len(self.silkdeck)
+}
+
+func (self *ManilaRoom) GetCoffeeDeck() int {
+	return len(self.coffeedeck)
+}
+
+func (self *ManilaRoom) GetGinsengDeck() int {
+	return len(self.ginsengdeck)
+}
+
+func (self *ManilaRoom) GetJadeDeck() int {
+	return len(self.jadedeck)
+}
+
+func (self *ManilaRoom) GetDecks() []int {
+	return []int{self.GetSilkDeck(), self.GetCoffeeDeck(), self.GetGinsengDeck(), self.GetJadeDeck()}
+}
+
+func (self *ManilaRoom) GetOtherProps() map[string]*OtherProps {
+	return self.otherProps
 }
