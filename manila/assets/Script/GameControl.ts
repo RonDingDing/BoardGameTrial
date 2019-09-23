@@ -27,7 +27,11 @@ export default class GameControl extends cc.Component {
     @property(cc.Label)
     popPupString: cc.Label = null
 
+    @property(cc.Prefab)
+    nameScript: cc.Prefab = null
 
+    @property(cc.Canvas)
+    canvas: cc.Canvas = null
 
 
     onLoad() {
@@ -87,7 +91,7 @@ export default class GameControl extends cc.Component {
             enterroommsgobj.Req.Username = username;
             enterroommsgobj.Req.RoomNum = roomnum;
             ManilaSocket.send(enterroommsgobj)
-            if (roomnum != 0) {        
+            if (roomnum != 0) {
                 cc.director.loadScene("ManilaRoom");
             } else {
                 cc.director.loadScene("SelectRoom");
@@ -112,6 +116,29 @@ export default class GameControl extends cc.Component {
 
     onEnterRoomMsg(message) {
         console.log(message)
+        let self = this;
+        let username = Global.playerUser;
+        let players = message.Ans.Players || [];
+        for (var j = 0, len = players.length; j < len; j++) {
+            if (players[j].Name === username) {
+                break
+            }
+        }
+        let viewOrdered = players.splice(j, len).concat(players.splice(0, j));
+        console.log(viewOrdered);
+        for (var i = 0, len = viewOrdered.length; i < len; i++) {
+            var newNameScript = cc.instantiate(self.nameScript);
+            // self.canvas.node.addChild(newNameScript);
+            // newNameScript.position.x = 0;
+            // newNameScript.position.y = 0;
+
+        }
+
+
+
+
+
+
     }
 
     pressStart() {

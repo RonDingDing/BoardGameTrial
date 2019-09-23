@@ -869,7 +869,7 @@
     "groupIndex": 0,
     "_rotationX": 0,
     "_rotationY": 0,
-    "_id": "61SxU8LpZHqpv+VowU4FWU"
+    "_id": "eddg2Eb49K/IlzTklZyQs8"
   },
   {
     "__type__": "cc.Button",
@@ -932,28 +932,16 @@
       "b": 120,
       "a": 200
     },
-    "_N$normalSprite": {
-      "__uuid__": "0ff31330-9e8d-40bd-acc3-07f6d7a99045"
-    },
-    "_N$pressedSprite": {
-      "__uuid__": "0ff31330-9e8d-40bd-acc3-07f6d7a99045"
-    },
-    "pressedSprite": {
-      "__uuid__": "0ff31330-9e8d-40bd-acc3-07f6d7a99045"
-    },
-    "_N$hoverSprite": {
-      "__uuid__": "0ff31330-9e8d-40bd-acc3-07f6d7a99045"
-    },
-    "hoverSprite": {
-      "__uuid__": "0ff31330-9e8d-40bd-acc3-07f6d7a99045"
-    },
-    "_N$disabledSprite": {
-      "__uuid__": "0ff31330-9e8d-40bd-acc3-07f6d7a99045"
-    },
+    "_N$normalSprite": null,
+    "_N$pressedSprite": null,
+    "pressedSprite": null,
+    "_N$hoverSprite": null,
+    "hoverSprite": null,
+    "_N$disabledSprite": null,
     "_N$target": {
       "__id__": 19
     },
-    "_id": "aaO3cRhF9E14qz6UcVC59X"
+    "_id": "5aXs92qQ5Pq7ZXolvpTT9a"
   },
   {
     "__type__": "cc.ClickEvent",
@@ -1487,7 +1475,7 @@
     "_atlas": {
       "__uuid__": "71aed597-d8af-4add-90ee-9e6ddacafba4"
     },
-    "_id": "99/KllQ4BGPI/FP6em2Yhs"
+    "_id": "3eg55+q59J6YvqABG3njGz"
   },
   {
     "__type__": "cc.Widget",
@@ -1514,7 +1502,7 @@
     "_isAbsVerticalCenter": true,
     "_originalWidth": 0,
     "_originalHeight": 0,
-    "_id": "90avg6LrtF44dSvo68t29y"
+    "_id": "11Nx+JtvlKGp6tOpLKHnJK"
   },
   {
     "__type__": "cc.Canvas",

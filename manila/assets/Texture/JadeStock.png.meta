@@ -1,0 +1,32 @@
+{
+  "ver": "2.3.1",
+  "uuid": "87e9587a-da77-4566-b91e-23e982b341a8",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "platformSettings": {},
+  "subMetas": {
+    "JadeStock": {
+      "ver": "1.0.4",
+      "uuid": "5a04ff3d-063e-4c44-9fe5-afedd4f9df44",
+      "rawTextureUuid": "87e9587a-da77-4566-b91e-23e982b341a8",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 260,
+      "height": 426,
+      "rawWidth": 260,
+      "rawHeight": 426,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
