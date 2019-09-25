@@ -23,7 +23,7 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 		log.Print(err)
 		return
 	}
-	fmt.Printf("%-8s: %s %4s %s\n", "receive", string(message), "from", connection.RemoteAddr())
+	fmt.Printf("%-8s: %s %4s %s\n\n", "receive", string(message), "from", connection.RemoteAddr())
 
 	switch code.Code {
 
@@ -33,8 +33,14 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 		go handler.HandleSignUpMsg(messageType, message, connection, code.Code, ormManager)
 	case msg.EnterRoomMsg:
 		go handler.HandleEnterRoomMsg(messageType, message, connection, code.Code, ormManager)
+	case msg.ReadyMsg:
+		go handler.HandleReadyMsg(messageType, message, connection, code.Code, ormManager)
 	default:
 		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
 	}
 
+}
+
+func ClearState(ip string, connection *websocket.Conn, ormManager orm.Ormer) {
+	go handler.ClearState(ip, connection, ormManager)
 }

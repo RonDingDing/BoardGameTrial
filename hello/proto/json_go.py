@@ -1,5 +1,7 @@
 def go_inside(key, obj, lst, content, stack):
-    if isinstance(obj, int):
+    if isinstance(obj, bool):
+        content = handle_bool(key, obj, lst, content, stack)
+    elif isinstance(obj, int):
         content = handle_int(key, obj, lst, content, stack)
     elif isinstance(obj, (str, bytes)):
         content = handle_str(key, obj, lst, content, stack)
@@ -13,18 +15,27 @@ def go_inside(key, obj, lst, content, stack):
     return content
 
 
+def handle_bool(key, obj, lst, content, stack):
+    content += "    %-10s %2s%-6s\n" % (capitalize(key),
+                                        "" if not lst else "[]", "bool")
+    return content
+
+
 def handle_int(key, obj, lst, content, stack):
-    content += "    %-10s %2s%-6s\n" % (capitalize(key), "" if not lst else "[]", "int")
+    content += "    %-10s %2s%-6s\n" % (capitalize(key),
+                                        "" if not lst else "[]", "int")
     return content
 
 
 def handle_str(key, obj, lst, content, stack):
-    content += "    %-10s %2s%-6s\n" % (capitalize(key), "" if not lst else "[]", "string")
+    content += "    %-10s %2s%-6s\n" % (capitalize(key),
+                                        "" if not lst else "[]", "string")
     return content
 
 
 def handle_float(key, obj, lst, content, stack):
-    content += "    %-10s %2s%-6s\n" % (capitalize(key), "" if not lst else "[]", "float")
+    content += "    %-10s %2s%-6s\n" % (capitalize(key),
+                                        "" if not lst else "[]", "float")
     return content
 
 
@@ -34,7 +45,8 @@ def handle_list(key, obj, lst, content, stack):
         content = go_inside(capitalize(key), v, True, content, stack)
     else:
         new_key = capitalize(key)
-        content += "    %-10s []%-6s\n" % (capitalize(key), "*" + capitalize(key) + "S")
+        content += "    %-10s []%-6s\n" % (capitalize(key),
+                                           "*" + capitalize(key) + "S")
         string = ""
         string = go_inside(new_key + "S", v, lst, string, stack)
         stack.append(string)
@@ -52,7 +64,8 @@ def handle_dict(key, obj, lst, content, stack):
 
         else:
             new_key = capitalize(key) + capitalize(k)
-            content += "    %-10s %-6s\n" % (capitalize(k), "*" + capitalize(new_key))
+            content += "    %-10s %-6s\n" % (capitalize(k),
+                                             "*" + capitalize(new_key))
             string = ""
             string = go_inside(new_key, v, lst, string, stack)
             stack.append(string)
@@ -128,28 +141,52 @@ def make_new(content):
                 if typing in dic_make:
                     result += "    self.%s = %s\n" % (param, dic_make[typing])
                 else:
-                    result += "    self.%s =  new(%s).New()\n" % (param, typing.replace("*", ""))
+                    result += "    self.%s =  new(%s).New()\n" % (
+                        param, typing.replace("*", ""))
 
             result += "    return self\n}\n\n"
     return result
 
 
 if __name__ == '__main__':
-    EnterRoomMsg = "003"
-    obj = enterroommsg = {
-        "Code": EnterRoomMsg,
+    RoomDetailMsg = "005"
+    false = False
+    true = True
+    obj = readymsg = {
+        "Code": RoomDetailMsg,
         "Req":
-            {
-                "Username": "",
-                "RoomNum": 0
-            },
+        {
+            "Username": "",
+            "RoomNum": 0
+        },
         "Ans":
-            {
-                "RoomNum": 0
-            },
+        {
+
+            "CoffeeDeck": 0,
+            "GameNum": 0,
+            "GinsengDeck": 0,
+            "JadeDeck": 0,
+            "Mapp": [
+                {"Name": "", "Taken": "", "Price": 0,
+                 "Award": 0, "Onboard": false}
+            ],
+            "PlayerName": [
+                ""
+            ],
+            "PlayerNumForStart": 0,
+            "PlayerNumMax": 0,
+            "Players": [
+                {"Money": 0, "Name": "", "Online": true,
+                 "Stock": 0, "Seat": 0, "Ready": false}
+            ],
+            "RoomNum": 0,
+            "Round": 0,
+            "SilkDeck": 0,
+            "Started": false
+        },
         "Error": 0
     }
-    content = to_go(obj, 'EnterRoomMsg')
+    content = to_go(obj, 'RoomDetailMsg')
 
     print(content)
     new_content = make_new(content)

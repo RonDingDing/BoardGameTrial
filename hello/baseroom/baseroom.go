@@ -2,13 +2,9 @@ package baseroom
 
 import (
 	"fmt"
-)
+	"hello/msg"
 
-const (
-	AlreadyInRoom  = 1
-	NewEntered     = 2
-	FailedEntering = 0
-	LoungeNum      = 0
+	"github.com/gorilla/websocket"
 )
 
 type Room struct {
@@ -18,7 +14,7 @@ type Room struct {
 	playerNumForStart int
 	playerNumMax      int
 	players           map[string]*Player
-	sorted            []string
+	seats             []string
 }
 
 func (self *Room) GetRoomNum() int {
@@ -55,6 +51,9 @@ func (self *Room) String() string {
 	str += "    }"
 	return str
 }
+func (self *Room) GetRoom() *Room {
+	return self
+}
 
 func (self *Room) New(roomNum int, gameNum int, playerNumForStart int, playerNumMax int) *Room {
 	self.roomNum = roomNum
@@ -63,6 +62,11 @@ func (self *Room) New(roomNum int, gameNum int, playerNumForStart int, playerNum
 	self.playerNumMax = playerNumMax
 	self.started = false
 	self.players = make(map[string]*Player)
+	seatNum := 0
+	if playerNumMax > 0 {
+		seatNum = playerNumMax
+	}
+	self.seats = make([]string, seatNum)
 	return self
 }
 
@@ -75,74 +79,97 @@ func (self *Room) GetPlayerNames() map[string]int {
 }
 
 func (self *Room) StartGame() bool {
-	playerNum := len(self.players)
-
-	if (self.playerNumForStart > 0) && (!self.started) && (playerNum >= self.playerNumForStart) {
+	if self.playerNumForStart > 0 {
 		self.started = true
 		return true
 	}
 	return false
 }
 
-func (self *Room) Enter(player interface{}) int {
-	switch player := player.(type) {
-	case *Player:
-		name := player.GetName()
-		if _, exist := self.players[name]; exist {
-			return AlreadyInRoom
-		} else if self.playerNumMax > 0 {
-			if len(self.players) < self.playerNumMax {
-				self.players[name] = player
-				self.enterSort(name)
-				return NewEntered
-			}
-		} else {
+func (self *Room) Enter(player *Player) int {
+	name := player.GetName()
+	if playerInRoom, exist := self.players[name]; exist {
+		playerInRoom.SetConnection(player.GetConnection())
+		return msg.NorAlreadyInRoom
+	} else if self.playerNumMax > 0 {
+		if len(self.players) < self.playerNumMax && (!self.started) {
 			self.players[name] = player
 			self.enterSort(name)
-			return NewEntered
+			return msg.NorNewEntered
 		}
+	} else {
+		self.players[name] = player
+		self.enterSort(name)
+		return msg.NorNewEntered
 	}
-	return FailedEntering
+
+	return msg.ErrFailedEntering
 }
 
 func (self *Room) enterSort(name string) {
-	self.sorted = append(self.sorted, name)
+	if self.playerNumMax > 0 {
+		for _, v := range self.seats {
+			if v == name {
+				return
+			}
+		}
+
+		for k, v := range self.seats {
+			if v == "" {
+				self.seats[k] = name
+				self.players[name].SetSeat(k + 1)
+				break
+			}
+		}
+	} else {
+		self.seats = make([]string, 0)
+		for k, _ := range self.players {
+			self.seats = append(self.seats, k)
+		}
+
+	}
 }
 
-func (self *Room) Exit(name string) bool {
+func (self *Room) Exit(name string) int {
 	_, ok := self.players[name]
-	if ok && (!self.started) {
-		delete(self.players, name)
-		self.exitSort(name)
-		return true
+	if ok {
+		if !self.started {
+			delete(self.players, name)
+			self.exitSort(name)
+			return msg.ErrNormal
+		} else {
+			return msg.ErrGameStarted
+		}
 	} else {
-		return false
+		return msg.ErrUserNotInRoom
 	}
 }
 
 func (self *Room) exitSort(name string) {
-	breakPoint := -1
-	array := self.sorted[:]
-	for i, v := range self.sorted {
-		if v == name {
-			breakPoint = i
-		}
-	}
-	if breakPoint != -1 {
-		if len(self.sorted) == 1 {
-			array = make([]string, 0)
-		} else if breakPoint == len(self.sorted)-1 {
-			array = self.sorted[:len(self.sorted)-1]
-		} else {
-			for m := breakPoint; m < len(self.sorted)-1; m++ {
-				array[m] = array[m+1]
+	if self.playerNumMax > 0 {
+		for k, v := range self.seats {
+			if v == name {
+				self.seats[k] = ""
+				break
 			}
-			array = self.sorted[:len(self.sorted)-1]
 		}
-		self.sorted = array
+	} else {
+		self.seats = make([]string, 0)
+		for k, _ := range self.players {
+			self.seats = append(self.seats, k)
+		}
 	}
 }
 
 func (self *Room) GetPlayerName() []string {
-	return self.sorted
+	return self.seats
+}
+
+func (self *Room) GetAllConnections() []*websocket.Conn {
+	allConnections := make([]*websocket.Conn, 0)
+	for _, player := range self.players {
+		connection := player.GetConnection()
+		allConnections = append(allConnections, connection)
+	}
+	return allConnections
 }

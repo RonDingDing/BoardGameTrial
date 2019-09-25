@@ -1,6 +1,6 @@
 {
   "ver": "2.3.1",
-  "uuid": "68c5b329-dcbb-4051-b2f3-5acdf3781881",
+  "uuid": "c0f11aec-9492-4ca0-bbfb-9a6a09df073b",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -9,8 +9,8 @@
   "subMetas": {
     "ManilaBackground": {
       "ver": "1.0.4",
-      "uuid": "81f439dc-2f8c-47da-bce8-3ceafc2c4537",
-      "rawTextureUuid": "68c5b329-dcbb-4051-b2f3-5acdf3781881",
+      "uuid": "ec0d3ab7-2312-4fe3-915d-77107399686f",
+      "rawTextureUuid": "c0f11aec-9492-4ca0-bbfb-9a6a09df073b",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

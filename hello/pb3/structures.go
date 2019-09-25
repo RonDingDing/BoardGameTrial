@@ -1,11 +1,16 @@
 package pb3
 
+import (
+	"hello/msg"
+)
+
+// Errors
 type Errors struct {
 	Code  string
 	Error int
 }
 
-////////
+// LoginMsg
 
 type LoginMsgReq struct {
 	Username string
@@ -43,14 +48,14 @@ func (self *LoginMsgAns) New() *LoginMsgAns {
 }
 
 func (self *LoginMsg) New() *LoginMsg {
-	self.Code = ""
+	self.Code = msg.LoginMsg
 	self.Req = new(LoginMsgReq).New()
 	self.Ans = new(LoginMsgAns).New()
 	self.Error = 0
 	return self
 }
 
-////////
+// SignUpMsg
 
 type SignUpMsgReq struct {
 	Username string
@@ -90,49 +95,23 @@ func (self *SignUpMsgAns) New() *SignUpMsgAns {
 }
 
 func (self *SignUpMsg) New() *SignUpMsg {
-	self.Code = ""
+	self.Code = msg.SignUpMsg
 	self.Req = new(SignUpMsgReq).New()
 	self.Ans = new(SignUpMsgAns).New()
 	self.Error = 0
 	return self
 }
 
-////
+// EnterRoomMsg
+
 type EnterRoomMsgReq struct {
 	Username string
 	RoomNum  int
 }
 
-type PlayersS struct {
-	Name   string
-	Money  int
-	Stock  []int
-	Online bool
-	Seat   int
-}
-
-type MappS struct {
-	Name    string
-	Taken   string
-	Price   int
-	Award   int
-	Onboard bool
-}
-
 type EnterRoomMsgAns struct {
-	RoomNum           int
-	GameNum           int
-	Started           bool
-	PlayerNumForStart int
-	PlayerNumMax      int
-	PlayerName        []string
-	Players           []PlayersS
-	SilkDeck          int
-	CoffeeDeck        int
-	GinsengDeck       int
-	JadeDeck          int
-	Round             int
-	Mapp              []MappS
+	GameNum int
+	RoomNum int
 }
 
 type EnterRoomMsg struct {
@@ -148,12 +127,106 @@ func (self *EnterRoomMsgReq) New() *EnterRoomMsgReq {
 	return self
 }
 
-func (self *PlayersS) New() *PlayersS {
-	self.Name = ""
-	self.Money = 0
-	self.Stock = make([]int, 0)
-	self.Online = false
-	self.Seat = 0
+func (self *EnterRoomMsgAns) New() *EnterRoomMsgAns {
+	self.GameNum = 0
+	self.RoomNum = 0
+	return self
+}
+
+func (self *EnterRoomMsg) New() *EnterRoomMsg {
+	self.Code = msg.EnterRoomMsg
+	self.Req = new(EnterRoomMsgReq).New()
+	self.Ans = new(EnterRoomMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// ReadyMsg
+
+type ReadyMsgReq struct {
+	Username string
+	Ready    bool
+}
+
+type ReadyMsgAns struct {
+	Username string
+	Ready    bool
+	RoomNum  int
+}
+
+type ReadyMsg struct {
+	Code  string
+	Req   *ReadyMsgReq
+	Ans   *ReadyMsgAns
+	Error int
+}
+
+func (self *ReadyMsgReq) New() *ReadyMsgReq {
+	self.Username = ""
+	self.Ready = false
+	return self
+}
+
+func (self *ReadyMsgAns) New() *ReadyMsgAns {
+	self.Username = ""
+	self.Ready = false
+	self.RoomNum = 0
+	return self
+}
+
+func (self *ReadyMsg) New() *ReadyMsg {
+	self.Code = msg.ReadyMsg
+	self.Req = new(ReadyMsgReq).New()
+	self.Ans = new(ReadyMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// RoomDetailMsg
+type RoomDetailMsgReq struct {
+}
+
+type MappS struct {
+	Name    string
+	Taken   string
+	Price   int
+	Award   int
+	Onboard bool
+}
+
+type PlayersS struct {
+	Money  int
+	Name   string
+	Online bool
+	Stock  int
+	Seat   int
+	Ready  bool
+}
+
+type RoomDetailMsgAns struct {
+	CoffeeDeck        int
+	GameNum           int
+	GinsengDeck       int
+	JadeDeck          int
+	Mapp              []MappS
+	PlayerName        []string
+	PlayerNumForStart int
+	PlayerNumMax      int
+	Players           []PlayersS
+	RoomNum           int
+	Round             int
+	SilkDeck          int
+	Started           bool
+}
+
+type RoomDetailMsg struct {
+	Code  string
+	Req   *RoomDetailMsgReq
+	Ans   *RoomDetailMsgAns
+	Error int
+}
+
+func (self *RoomDetailMsgReq) New() *RoomDetailMsgReq {
 	return self
 }
 
@@ -166,27 +239,37 @@ func (self *MappS) New() *MappS {
 	return self
 }
 
-func (self *EnterRoomMsgAns) New() *EnterRoomMsgAns {
-	self.RoomNum = 0
-	self.GameNum = 0
-	self.Started = false
-	self.PlayerNumForStart = 0
-	self.PlayerNumMax = 0
-	self.PlayerName = make([]string, 0)
-	self.Players = make([]PlayersS, 0)
-	self.SilkDeck = 0
-	self.CoffeeDeck = 0
-	self.GinsengDeck = 0
-	self.JadeDeck = 0
-	self.Round = 0
-	self.Mapp = make([]MappS, 0)
+func (self *PlayersS) New() *PlayersS {
+	self.Money = 0
+	self.Name = ""
+	self.Online = false
+	self.Stock = 0
+	self.Seat = 0
+	self.Ready = false
 	return self
 }
 
-func (self *EnterRoomMsg) New() *EnterRoomMsg {
-	self.Code = ""
-	self.Req = new(EnterRoomMsgReq).New()
-	self.Ans = new(EnterRoomMsgAns).New()
+func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
+	self.CoffeeDeck = 0
+	self.GameNum = 0
+	self.GinsengDeck = 0
+	self.JadeDeck = 0
+	self.Mapp = make([]MappS, 0)
+	self.PlayerName = make([]string, 0)
+	self.PlayerNumForStart = 0
+	self.PlayerNumMax = 0
+	self.Players = make([]PlayersS, 0)
+	self.RoomNum = 0
+	self.Round = 0
+	self.SilkDeck = 0
+	self.Started = false
+	return self
+}
+
+func (self *RoomDetailMsg) New() *RoomDetailMsg {
+	self.Code = msg.RoomDetailMsg
+	self.Req = new(RoomDetailMsgReq).New()
+	self.Ans = new(RoomDetailMsgAns).New()
 	self.Error = 0
 	return self
 }

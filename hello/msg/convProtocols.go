@@ -5,14 +5,25 @@ package msg
 
 // 协议码
 const (
-	Errors       = "000" // 获取游戏版本信息
-	LoginMsg     = "001"
-	SignUpMsg    = "002"
-	EnterRoomMsg = "003"
+	Errors        = "000" // 获取游戏版本信息
+	LoginMsg      = "001"
+	SignUpMsg     = "002"
+	EnterRoomMsg  = "003"
+	ReadyMsg      = "004"
+	RoomDetailMsg = "005"
 
+	NorAlreadyInRoom   = 1
+	NorNewEntered      = 2
+	ErrNormal          = 0
 	ErrNoHandler       = -1
 	ErrUserExit        = -2
 	ErrUserNotExit     = -3
 	ErrCannotEnterRoom = -4
 	ErrNoSuchPlayer    = -5
+	ErrCannotExitRoom  = -6
+	ErrGameStarted     = -7
+	ErrUserNotInRoom   = -8
+	ErrFailedEntering  = -9
+
+	LoungeNum = 0
 )

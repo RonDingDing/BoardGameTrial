@@ -1,6 +1,6 @@
 {
   "ver": "2.3.1",
-  "uuid": "f3b4eafe-c000-45bf-9757-9a8a29b8c547",
+  "uuid": "178b2d15-e086-4e57-a3f6-66a3b8660ad8",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -9,8 +9,8 @@
   "subMetas": {
     "SelectRoomBackground": {
       "ver": "1.0.4",
-      "uuid": "2d96fcf2-3e34-41bb-8f96-3a79e653f263",
-      "rawTextureUuid": "f3b4eafe-c000-45bf-9757-9a8a29b8c547",
+      "uuid": "f81b3748-436a-4090-a3cb-a2edcdec2247",
+      "rawTextureUuid": "178b2d15-e086-4e57-a3f6-66a3b8660ad8",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

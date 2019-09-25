@@ -7,17 +7,13 @@ import (
 )
 
 type OtherProps struct {
-	hand   []ManilaStock
-	money  int
-	online bool
-	seat   int
+	hand  []ManilaStock
+	money int
 }
 
 func (self *OtherProps) New() *OtherProps {
 	self.hand = []ManilaStock{}
 	self.money = 0
-	self.online = true
-	self.seat = 0
 	return self
 }
 
@@ -27,17 +23,6 @@ func (self *OtherProps) GetMoney() int {
 
 func (self *OtherProps) GetHand() []ManilaStock {
 	return self.hand
-}
-
-type ManilaPlayer struct {
-	player     *baseroom.Player
-	otherProps *OtherProps
-}
-
-func (self *ManilaPlayer) New(name string, connection *websocket.Conn, gold int) *ManilaPlayer {
-	self.player = new(baseroom.Player).New(name, connection, gold)
-	self.otherProps = new(OtherProps).New()
-	return self
 }
 
 func (self *OtherProps) GetStocks() []int {
@@ -56,6 +41,22 @@ func (self *OtherProps) GetStocks() []int {
 	}
 	return stocks[1:]
 }
+
+func (self *OtherProps) GetStockNum() int {
+	return len(self.GetHand())
+}
+
+type ManilaPlayer struct {
+	player     *baseroom.Player
+	otherProps *OtherProps
+}
+
+func (self *ManilaPlayer) New(name string, connection *websocket.Conn, gold int) *ManilaPlayer {
+	self.player = new(baseroom.Player).New(name, connection, gold)
+	self.otherProps = new(OtherProps).New()
+	return self
+}
+
 func (self *ManilaPlayer) GetPlayer() *baseroom.Player {
 	return self.player
 }
@@ -88,17 +89,37 @@ func (self *ManilaPlayer) SetOtherProps(OtherProps *OtherProps) {
 	self.otherProps = OtherProps
 }
 
-func (self *OtherProps) GetOnline() bool {
-	return self.online
+func (self *ManilaPlayer) GetOnline() bool {
+	return self.player.GetOnline()
 }
-func (self *OtherProps) SetOnline(online bool) {
-	self.online = online
-}
-
-func (self *OtherProps) GetSeat() int {
-	return self.seat
+func (self *ManilaPlayer) SetOnline(online bool) {
+	self.player.SetOnline(online)
 }
 
-func (self *OtherProps) SetSeat(seat int) int {
-	self.seat = seat
+func (self *ManilaPlayer) GetSeat() int {
+	return self.player.GetSeat()
+}
+
+func (self *ManilaPlayer) SetSeat(seat int) {
+	self.player.SetSeat(seat)
+}
+
+func (self *ManilaPlayer) GetReadyOrNot() bool {
+	return self.player.GetReadyOrNot()
+}
+
+func (self *ManilaPlayer) SetReady(readied bool) {
+	self.player.SetReady(readied)
+}
+
+func (self *ManilaPlayer) GetStockNum() int {
+	return self.otherProps.GetStockNum()
+}
+
+func (self *ManilaPlayer) GetConnection() *websocket.Conn {
+	return self.player.GetConnection()
+}
+
+func (self *ManilaPlayer) SetConnection(conn *websocket.Conn) {
+	self.player.SetConnection(conn)
 }

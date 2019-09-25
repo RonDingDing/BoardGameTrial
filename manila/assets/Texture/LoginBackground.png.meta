@@ -1,6 +1,6 @@
 {
   "ver": "2.3.1",
-  "uuid": "c34fd6a2-d65e-4910-9e93-5a8622fec161",
+  "uuid": "7f74d1d6-f32c-445d-aab3-e20ab4b149a6",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -9,8 +9,8 @@
   "subMetas": {
     "LoginBackground": {
       "ver": "1.0.4",
-      "uuid": "054f5edb-3b52-454c-ae98-efedccf943f0",
-      "rawTextureUuid": "c34fd6a2-d65e-4910-9e93-5a8622fec161",
+      "uuid": "2cdd0a9c-edc7-4522-a812-46eb9c518005",
+      "rawTextureUuid": "7f74d1d6-f32c-445d-aab3-e20ab4b149a6",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

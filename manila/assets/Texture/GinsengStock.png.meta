@@ -1,6 +1,6 @@
 {
   "ver": "2.3.1",
-  "uuid": "1a36b860-6d6a-4b4a-8f2d-7bfd9b60d51f",
+  "uuid": "a330b280-4356-4bc0-b35f-45ef0381e0aa",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -9,8 +9,8 @@
   "subMetas": {
     "GinsengStock": {
       "ver": "1.0.4",
-      "uuid": "42e719a9-f505-4488-9e99-d818fa9f4c45",
-      "rawTextureUuid": "1a36b860-6d6a-4b4a-8f2d-7bfd9b60d51f",
+      "uuid": "1e388c97-5b58-455b-b2e2-84d79c0912bf",
+      "rawTextureUuid": "a330b280-4356-4bc0-b35f-45ef0381e0aa",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

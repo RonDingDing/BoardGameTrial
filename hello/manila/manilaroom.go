@@ -3,17 +3,20 @@ package manila
 import (
 	"fmt"
 	"hello/baseroom"
+	"hello/msg"
+
+	"github.com/gorilla/websocket"
 )
 
 type ManilaRoom struct {
-	room        *baseroom.Room
-	mapp        map[string]ManilaSpot
-	silkdeck    []ManilaStock
-	coffeedeck  []ManilaStock
-	ginsengdeck []ManilaStock
-	jadedeck    []ManilaStock
-	otherProps  map[string]*OtherProps
-	round       int
+	room          *baseroom.Room
+	mapp          map[string]ManilaSpot
+	silkdeck      []ManilaStock
+	coffeedeck    []ManilaStock
+	ginsengdeck   []ManilaStock
+	jadedeck      []ManilaStock
+	manilaplayers map[string]*ManilaPlayer
+	round         int
 }
 
 func (self *ManilaRoom) GetRound() int {
@@ -44,7 +47,7 @@ func (self *ManilaRoom) String() string {
 	str := self.room.String()
 
 	str += ",\n    \"OtherProp\": {"
-	for name, v := range self.otherProps {
+	for name, v := range self.manilaplayers {
 		str += fmt.Sprintf("\n      \"%s\": {\"money\": %d, \"hand\": %s", name, v.GetMoney(), v.GetHand())
 	}
 	str += "}"
@@ -63,7 +66,7 @@ func (self *ManilaRoom) String() string {
 }
 func (self *ManilaRoom) New(roomNum int) *ManilaRoom {
 	self.room = new(baseroom.Room).New(roomNum, 1, 3, 5)
-	self.otherProps = make(map[string]*OtherProps)
+	self.manilaplayers = make(map[string]*ManilaPlayer)
 	self.ResetMap()
 	self.ResetDecks()
 	return self
@@ -73,24 +76,18 @@ func (self *ManilaRoom) Enter(player *ManilaPlayer) int {
 	baseplayer := player.GetPlayer()
 	entered := self.room.Enter(baseplayer)
 	username := player.GetPlayer().GetName()
-	player.SetPlayer(baseplayer)
-	if entered == baseroom.AlreadyInRoom {
-		otherProps, _ := self.otherProps[username]
-		player.SetOtherProps(otherProps)
-	} else if entered == baseroom.NewEntered {
-		seat := len(self.room.GetPlayerNames())
-		otherProps := new(OtherProps).New()
-		otherProps.SetSeat(seat)
-		player.SetOtherProps(otherProps)
-		self.otherProps[username] = otherProps
+	if entered == msg.NorAlreadyInRoom {
+
+	} else if entered == msg.NorNewEntered {
+		self.manilaplayers[username] = player
 	}
 	return entered
 }
 
-func (self *ManilaRoom) Exit(name string) bool {
+func (self *ManilaRoom) Exit(name string) int {
 	exited := self.room.Exit(name)
-	if exited {
-		delete(self.otherProps, name)
+	if exited == msg.ErrNormal {
+		delete(self.manilaplayers, name)
 	}
 	return exited
 }
@@ -98,10 +95,29 @@ func (self *ManilaRoom) Exit(name string) bool {
 func (self *ManilaRoom) StartGame() bool {
 	started := self.room.StartGame()
 	if started {
+		for _, v := range self.GetManilaPlayers() {
+			v.SetReady(false)
+		}
 		self.ResetDecks()
 		self.ResetMap()
 	}
 	return started
+}
+
+func (self *ManilaRoom) CanStartGame() bool {
+	started := self.room.GetStarted()
+	numForStart := self.room.GetPlayerNumForStart()
+	numMax := self.room.GetPlayerNumMax()
+	playerLen := len(self.GetManilaPlayers())
+	if (playerLen >= numForStart) && (started == false) && (playerLen <= numMax) {
+		for _, v := range self.GetManilaPlayers() {
+			if v.GetReadyOrNot() == false {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func (self *ManilaRoom) ResetMap() {
@@ -162,6 +178,10 @@ func (self *ManilaRoom) GetDecks() []int {
 	return []int{self.GetSilkDeck(), self.GetCoffeeDeck(), self.GetGinsengDeck(), self.GetJadeDeck()}
 }
 
-func (self *ManilaRoom) GetOtherProps() map[string]*OtherProps {
-	return self.otherProps
+func (self *ManilaRoom) GetManilaPlayers() map[string]*ManilaPlayer {
+	return self.manilaplayers
+}
+
+func (self *ManilaRoom) GetAllConnections() []*websocket.Conn {
+	return self.room.GetAllConnections()
 }

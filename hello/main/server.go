@@ -34,6 +34,7 @@ func server(writer http.ResponseWriter, request *http.Request) {
 		messageType, message, err := connection.ReadMessage()
 		if err != nil {
 			log.Printf("%-8s: %s %s\n", "readerr", err, connection.RemoteAddr())
+			dispatcher.ClearState(connection.RemoteAddr().String(), connection, ormManager)
 			break
 		}
 		dispatcher.Dispatch(messageType, message, connection, ormManager)

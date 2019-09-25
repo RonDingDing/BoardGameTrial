@@ -1,6 +1,6 @@
 {
   "ver": "2.3.1",
-  "uuid": "87e9587a-da77-4566-b91e-23e982b341a8",
+  "uuid": "3202993f-0777-456a-80e9-dbfcb46da946",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -9,8 +9,8 @@
   "subMetas": {
     "JadeStock": {
       "ver": "1.0.4",
-      "uuid": "5a04ff3d-063e-4c44-9fe5-afedd4f9df44",
-      "rawTextureUuid": "87e9587a-da77-4566-b91e-23e982b341a8",
+      "uuid": "5a74bc0c-0c27-4b54-bef1-c70f0fdcef93",
+      "rawTextureUuid": "3202993f-0777-456a-80e9-dbfcb46da946",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

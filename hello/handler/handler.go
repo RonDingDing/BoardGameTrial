@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"hello/baseroom"
 	"hello/global"
-	"hello/manila"
 	"hello/models"
 	"hello/msg"
 	"hello/pb3"
@@ -15,6 +14,28 @@ import (
 
 	"github.com/gorilla/websocket"
 )
+
+func ClearState(ip string, connection *websocket.Conn, ormManager orm.Ormer) {
+	if username, ok := global.IpUserMap[ip]; ok {
+		manilaroom, loungeroom, roomNum := global.FindUserInManila(username)
+		messageType := 1
+		if loungeroom != nil {
+			// delete(global.UserPlayerMap, username)
+			delete(global.IpUserMap, ip)
+			loungeroom.Exit(username)
+			roomdetailmsg := new(pb3.RoomDetailMsg).New()
+			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+			RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+		} else if manilaroom != nil && manilaroom.GetStarted() == false {
+			// delete(global.UserPlayerMap, username)
+			delete(global.IpUserMap, ip)
+			manilaroom.Exit(username)
+			roomdetailmsg := new(pb3.RoomDetailMsg).New()
+			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+			RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+		}
+	}
+}
 
 func HandleErrors(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
 	errObj := pb3.Errors{Code: code, Error: msg.ErrNoHandler}
@@ -59,13 +80,6 @@ func HandleSignUpMsg(messageType int, message []byte, connection *websocket.Conn
 		signupmsg.Error = msg.ErrUserExit
 	}
 
-	// messageReturn, err := json.Marshal(signupmsg)
-	// err = connection.WriteMessage(messageType, []byte(messageReturn))
-	// log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
 	SendMessage(messageType, signupmsg, connection)
 }
 
@@ -76,9 +90,10 @@ func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn,
 		log.Println(err)
 		return
 	}
+	ClearState(connection.RemoteAddr().String(), connection, ormManager)
 	username := loginmsg.Req.Username
 	password := loginmsg.Req.Password
-	// 查找对应的用户
+	// 数据库查找对应的用户
 	query := models.PlayerUser{Name: username, Password: password}
 	dataerr := ormManager.Read(&query, "Name", "Password")
 
@@ -98,8 +113,7 @@ func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn,
 		player := new(baseroom.Player).New(username, connection, query.Gold)
 
 		// 在马尼拉房间和大厅中寻找玩家对象
-		roomNum := global.FindUserInManila(username)
-		global.UserTrace[username] = roomNum
+		_, _, roomNum := global.FindUserInManila(username)
 
 		// 将原来连接的用户挤下线
 		if originPlayer, exist := global.UserPlayerMap[username]; exist {
@@ -107,21 +121,11 @@ func HandleLoginMsg(messageType int, message []byte, connection *websocket.Conn,
 		}
 		// 记录当前用户的玩家对象
 		global.UserPlayerMap[username] = *player
+		global.IpUserMap[connection.RemoteAddr().String()] = username
 		loginmsg.Ans.RoomNum = roomNum
 
 	}
 	SendMessage(messageType, loginmsg, connection)
-	// messageReturn, err := json.Marshal(loginmsg)
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
-	// err = connection.WriteMessage(messageType, []byte(messageReturn))
-	// log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
 
 }
 
@@ -132,85 +136,143 @@ func HandleEnterRoomMsg(messageType int, message []byte, connection *websocket.C
 		log.Println(err)
 		return
 	}
+
 	username := enterroommsg.Req.Username
-	roomNum := enterroommsg.Req.RoomNum
-	if player, exist := global.UserPlayerMap[username]; exist {
-		enterState := baseroom.FailedEntering
-		if roomNum == baseroom.LoungeNum {
-			// 进入大厅
-			loungeO := global.EntranceLounge[baseroom.LoungeNum]
-			room := &loungeO
-			enterState = room.Enter(&player)
-			HelperSetRoomPropertyEnterRoom(enterroommsg, room)
+	oldManilaRoom, oldLoungeRoom, oldRoomNum := global.FindUserInManila(username)
+	newRoomNum := enterroommsg.Req.RoomNum
 
-		} else if roomO, ok := global.ManilaLounge[roomNum]; ok {
-			// 进入其他房间
-			mPlayer := global.ToManilaPlayer(&player)
-			room := &roomO
-			enterState = room.Enter(mPlayer)
-			HelperSetRoomPropertyEnterRoom(enterroommsg, room)
+	exitState := msg.ErrCannotExitRoom
 
-		} else {
-			// 无此房间号，新建房间
-			room := global.NewManilaRoom(roomNum)
-			mPlayer := global.ToManilaPlayer(&player)
-			enterState = room.Enter(mPlayer)
-			HelperSetRoomPropertyEnterRoom(enterroommsg, room)
+	// 出原来的房间
+	if oldLoungeRoom != nil {
+		oldLoungeRoom.Exit(username)
+		exitState = msg.ErrNormal
+	} else if oldManilaRoom != nil {
+		exitState = oldManilaRoom.Exit(username)
+		if oldRoomNum == newRoomNum {
+			exitState = msg.ErrNormal
 		}
-		if enterState == baseroom.FailedEntering {
-			enterroommsg.Error = msg.ErrCannotEnterRoom
-			enterroommsg.Ans.RoomNum = 0
+	}
+
+	if exitState == msg.ErrNormal {
+
+		if player, exist := global.UserPlayerMap[username]; exist {
+			enterState := msg.ErrFailedEntering
+			newManila, newLounge := global.FindRoomByNum(newRoomNum)
+
+			if newLounge != nil {
+				// 进入大厅
+				enterState = newLounge.Enter(&player)
+				enterroommsg.Ans.GameNum = newLounge.GetGameNum()
+				enterroommsg.Ans.RoomNum = newRoomNum
+				enterroommsg.Error = enterState
+
+			} else if newManila != nil {
+				// 进入其他房间
+				mPlayer := global.ToManilaPlayer(&player)
+				enterState = newManila.Enter(mPlayer)
+				enterroommsg.Ans.GameNum = newManila.GetGameNum()
+				enterroommsg.Ans.RoomNum = newRoomNum
+				enterroommsg.Error = enterState
+			} else {
+				// 无此房间号，新建房间
+				room := global.NewManilaRoom(newRoomNum)
+				mPlayer := global.ToManilaPlayer(&player)
+				enterState = room.Enter(mPlayer)
+				enterroommsg.Ans.GameNum = room.GetGameNum()
+				enterroommsg.Ans.RoomNum = newRoomNum
+				enterroommsg.Error = enterState
+			}
+			if enterState == msg.ErrFailedEntering {
+				// 无法进入房间，返回原房间
+				enterroommsg.Ans.RoomNum = msg.LoungeNum
+			}
+		} else {
+			// 极小概率，玩家字典中没有此玩家
+			enterroommsg.Error = msg.ErrNoSuchPlayer
 		}
 	} else {
-		// 极小概率，玩家字典中没有此玩家
-		enterroommsg.Error = msg.ErrNoSuchPlayer
+		enterroommsg.Error = msg.ErrCannotExitRoom
 	}
+	if oldRoomNum != newRoomNum {
+		roomdetailmsg := new(pb3.RoomDetailMsg).New()
+		HelperSetRoomPropertyRoomDetail(roomdetailmsg, oldRoomNum)
+		RoomBroadcastMessage(messageType, roomdetailmsg, oldRoomNum)
+	}
+
+	roomdetailmsg2 := new(pb3.RoomDetailMsg).New()
+	HelperSetRoomPropertyRoomDetail(roomdetailmsg2, newRoomNum)
+	RoomBroadcastMessage(messageType, roomdetailmsg2, newRoomNum)
+	// RoomBroadcastMessage(messageType, enterroommsg, newRoomNum)
+
 	SendMessage(messageType, enterroommsg, connection)
-	// messageReturn, err := json.Marshal(enterroommsg)
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
-	// err = connection.WriteMessage(messageType, []byte(messageReturn))
-	// log.Printf("%-8s: %s %4s %s\n", "written", string(messageReturn), "to", connection.RemoteAddr())
-	// if err != nil {
-	// 	log.Print(err)
-	// 	return
-	// }
 
 }
 
-func HelperSetRoomPropertyEnterRoom(enterroommsg *pb3.EnterRoomMsg, room interface{}) {
+func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum int) {
 
-	switch room := room.(type) {
-	case *baseroom.Room:
-		enterroommsg.Ans.RoomNum = 0
-		enterroommsg.Ans.GameNum = room.GetGameNum()
-		enterroommsg.Ans.Started = room.GetStarted()
-		enterroommsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
-		enterroommsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
-		enterroommsg.Ans.PlayerName = room.GetPlayerName()
-	case *manila.ManilaRoom:
-		enterroommsg.Ans.RoomNum = room.GetRoomNum()
-		enterroommsg.Ans.GameNum = room.GetGameNum()
-		enterroommsg.Ans.Started = room.GetStarted()
-		enterroommsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
-		enterroommsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
-		enterroommsg.Ans.PlayerName = room.GetPlayerName()
-		enterroommsg.Ans.SilkDeck = room.GetSilkDeck()
-		enterroommsg.Ans.CoffeeDeck = room.GetCoffeeDeck()
-		enterroommsg.Ans.GinsengDeck = room.GetGinsengDeck()
-		enterroommsg.Ans.JadeDeck = room.GetJadeDeck()
-		enterroommsg.Ans.Round = room.GetRound()
+	manila, base := global.FindRoomByNum(roomNum)
+	if base != nil {
+		room := base
+		roomdetailmsg.Ans.RoomNum = 0
+		roomdetailmsg.Ans.GameNum = room.GetGameNum()
+		roomdetailmsg.Ans.Started = room.GetStarted()
+		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
+		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
+
+		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
+	} else if manila != nil {
+		room := manila
+		roomdetailmsg.Ans.RoomNum = room.GetRoomNum()
+		roomdetailmsg.Ans.GameNum = room.GetGameNum()
+		roomdetailmsg.Ans.Started = room.GetStarted()
+		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
+		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
+		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
+		roomdetailmsg.Ans.SilkDeck = room.GetSilkDeck()
+		roomdetailmsg.Ans.CoffeeDeck = room.GetCoffeeDeck()
+		roomdetailmsg.Ans.GinsengDeck = room.GetGinsengDeck()
+		roomdetailmsg.Ans.JadeDeck = room.GetJadeDeck()
+		roomdetailmsg.Ans.Round = room.GetRound()
+
 		for k, v := range room.GetMap() {
 			mapSpot := pb3.MappS{Name: k, Taken: v.GetTaken(),
 				Price: v.GetPrice(), Award: v.GetAward(), Onboard: v.GetOnboard()}
-			enterroommsg.Ans.Mapp = append(enterroommsg.Ans.Mapp, mapSpot)
+			roomdetailmsg.Ans.Mapp = append(roomdetailmsg.Ans.Mapp, mapSpot)
 		}
-		for n, p := range room.GetOtherProps() {
+		for n, p := range room.GetManilaPlayers() {
 			p.SetOnline(true)
-			pl := pb3.PlayersS{Name: n, Stock: p.GetStocks(), Money: p.GetMoney(), Online: p.GetOnline(), Seat: p.GetSeat()}
-			enterroommsg.Ans.Players = append(enterroommsg.Ans.Players, pl)
+			pl := pb3.PlayersS{Name: n, Stock: p.GetStockNum(),
+				Money: p.GetMoney(), Online: p.GetOnline(),
+				Seat: p.GetSeat(), Ready: p.GetReadyOrNot()}
+			roomdetailmsg.Ans.Players = append(roomdetailmsg.Ans.Players, pl)
 		}
+
 	}
+}
+
+func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	readymsg := new(pb3.ReadyMsg).New()
+	err := json.Unmarshal(message, &readymsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := readymsg.Req.Username
+	readied := readymsg.Req.Ready
+	manila, _, roomNum := global.FindUserInManila(username)
+	if manila != nil {
+		players := manila.GetManilaPlayers()
+		if p, ok := players[username]; ok {
+			p.SetReady(readied)
+		}
+		if manila.CanStartGame() == true {
+			manila.StartGame()
+		}
+
+		roomdetailmsg := new(pb3.RoomDetailMsg).New()
+		HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+		RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+	}
+
 }

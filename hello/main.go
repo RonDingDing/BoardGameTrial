@@ -1,8 +1,10 @@
 package main
 
-import "hello/global"
+import "fmt"
 
 func main() {
 
-	global.NewManilaRoom(2222)
+	a := make([]string, 0)
+	a = append(a, "sdf")
+	fmt.Println(a)
 }

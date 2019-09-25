@@ -1,6 +1,6 @@
 {
   "ver": "2.3.1",
-  "uuid": "caccb99a-f340-4c2d-b2b4-6778f929dede",
+  "uuid": "999c6176-c9b7-43f5-b2a2-be9d47a646f1",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
@@ -9,8 +9,8 @@
   "subMetas": {
     "SignupBackground": {
       "ver": "1.0.4",
-      "uuid": "462fa756-9847-4594-8301-fa271e7b1cb4",
-      "rawTextureUuid": "caccb99a-f340-4c2d-b2b4-6778f929dede",
+      "uuid": "038d5c81-b0d7-4e45-9419-935bb8966ea4",
+      "rawTextureUuid": "999c6176-c9b7-43f5-b2a2-be9d47a646f1",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,

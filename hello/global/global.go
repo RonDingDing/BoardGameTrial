@@ -4,34 +4,52 @@ import (
 	"fmt"
 	"hello/baseroom"
 	"hello/manila"
+	"hello/msg"
 )
 
-var ManilaLounge = map[int]manila.ManilaRoom{}
-var EntranceLounge = map[int]baseroom.Room{
-	baseroom.LoungeNum: *new(baseroom.Room).New(0, 0, -1, -1),
+var ManilaLounge = map[int]*manila.ManilaRoom{}
+var EntranceLounge = map[int]*baseroom.Room{
+	msg.LoungeNum: new(baseroom.Room).New(0, 0, -1, -1),
 }
 
-var UserTrace = map[string]int{}
 var UserPlayerMap = map[string]baseroom.Player{}
+var IpUserMap = map[string]string{}
 
-func FindUserInManila(name string) int {
+func FindUserInManila(name string) (*manila.ManilaRoom, *baseroom.Room, int) {
 	for roomNum, manilaRoomObj := range ManilaLounge {
 		roomObj := manilaRoomObj.GetRoom()
 		if _, exist := roomObj.GetPlayerNames()[name]; exist {
-			return roomNum
+			return manilaRoomObj, nil, roomNum
 		}
 	}
-	return 0
+	roomObj := EntranceLounge[msg.LoungeNum]
+	lounge := roomObj.GetRoom()
+	return nil, lounge, msg.LoungeNum
+}
+
+func FindRoomByNum(roomNum int) (*manila.ManilaRoom, *baseroom.Room) {
+	if roomNum == msg.LoungeNum {
+		roomObj := EntranceLounge[msg.LoungeNum]
+		lounge := roomObj.GetRoom()
+		return nil, lounge
+	} else {
+		for num, manilaRoomObj := range ManilaLounge {
+			if num == roomNum {
+				return manilaRoomObj, nil
+			}
+		}
+	}
+	return nil, nil
 }
 
 func NewManilaRoom(roomNum int) *manila.ManilaRoom {
-	room := *new(manila.ManilaRoom).New(roomNum)
+	room := new(manila.ManilaRoom).New(roomNum)
 	ManilaLounge[roomNum] = room
-	return &room
+	return room
 }
 
 func EntranceLoungeString() string {
-	str := fmt.Sprintf("{%d: ", baseroom.LoungeNum)
+	str := fmt.Sprintf("{%d: ", msg.LoungeNum)
 	for _, v := range EntranceLounge {
 		str += v.String()
 	}

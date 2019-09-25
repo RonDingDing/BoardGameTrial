@@ -9,7 +9,12 @@ import (
 type Player struct {
 	name       string
 	gold       int
+	ready      bool
+	seat       int
+	online     bool
 	connection *websocket.Conn
+
+	Ip string
 }
 
 func (self *Player) String() string {
@@ -25,6 +30,11 @@ func (self *Player) GetConnection() *websocket.Conn {
 	return self.connection
 }
 
+func (self *Player) SetConnection(connection *websocket.Conn) {
+	self.connection = connection
+	self.Ip = connection.RemoteAddr().String()
+}
+
 func (self *Player) GetGold() int {
 	return self.gold
 }
@@ -32,7 +42,11 @@ func (self *Player) GetGold() int {
 func (self *Player) New(name string, connection *websocket.Conn, gold int) *Player {
 	self.name = name
 	self.connection = connection
+	self.Ip = connection.RemoteAddr().String()
 	self.gold = gold
+	self.ready = false
+	self.seat = 0
+	self.online = false
 	return self
 }
 
@@ -43,4 +57,27 @@ func (self *Player) AddGold(gold int) {
 
 func (self *Player) ConnectionClose() {
 	self.connection.Close()
+}
+
+func (self *Player) GetOnline() bool {
+	return self.online
+}
+func (self *Player) SetOnline(online bool) {
+	self.online = online
+}
+
+func (self *Player) GetSeat() int {
+	return self.seat
+}
+
+func (self *Player) SetSeat(seat int) {
+	self.seat = seat
+}
+
+func (self *Player) GetReadyOrNot() bool {
+	return self.ready
+}
+
+func (self *Player) SetReady(readied bool) {
+	self.ready = readied
 }
