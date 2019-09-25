@@ -11,6 +11,7 @@ export const EnterRoomMsg = "003";
 export const ReadyMsg = "004";
 export const RoomDetailMsg = "005";
 export const GameStartMsg = "006";
+export const BidMsg = "007";
 
 export const NorAlreadyInRoom   = 1
 export const NorNewEntered      = 2
@@ -82,24 +83,24 @@ export var roomdetailmsg = {
     },
     "Ans":
     {
-        
-        "CoffeeDeck": 0,
         "GameNum": 0,
+        "CoffeeDeck": 0,
+        "SilkDeck": 0,
         "GinsengDeck": 0,
         "JadeDeck": 0,
         "Mapp": [
-            {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false}
+            // {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false}
         ],
-        "PlayerName": {},
+        "PlayerName": [],
         "PlayerNumForStart": 0,
         "PlayerNumMax": 0,
         "Players": [
-            {"Money": 0, "Name": "", "Online": true, "Stock": 0, "Seat": 0, "Ready": false}
+            // {"Money": 0, "Name": "", "Online": true, "Stock": 0, "Seat": 0, "Ready": false, "Canbid": true}
         ],
         "RoomNum": 0,
-        "Round": 0,
-        "SilkDeck": 0,
-        "Started": false
+        "Round": 0,    
+        "Started": false,
+        "HighestBidder": ""
     },
     "Error": 0
 }
@@ -147,6 +148,20 @@ export var gamestartmsg = {
     "Ans":
     {        
         "RoomNum": 0              
+    },
+    "Error": 0
+}
+
+export var bidmsg = {
+    "Code": BidMsg,
+    "Req":
+    {
+       "Username": 0, 
+       "Bid": 0,
+    },
+    "Ans":
+    {        
+        "Username": 0
     },
     "Error": 0
 }

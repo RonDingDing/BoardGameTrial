@@ -15,4 +15,5 @@ export namespace Global {
     export let allPlayerName = [];
     export let started = false;
     export let readied = false;
+    export let highestBidder = "";
 }

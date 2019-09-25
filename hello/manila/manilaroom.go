@@ -20,6 +20,15 @@ type ManilaRoom struct {
 	jadedeck      []ManilaStock
 	manilaplayers map[string]*ManilaPlayer
 	round         int
+	highestBidder string
+}
+
+func (self *ManilaRoom) GetHighestBidder() string {
+	return self.highestBidder
+}
+
+func (self *ManilaRoom) SetHighestBidder(bidder string) {
+	self.highestBidder = bidder
 }
 
 func (self *ManilaRoom) GetRound() int {
@@ -104,16 +113,23 @@ func (self *ManilaRoom) StartGame() bool {
 		}
 		self.ResetDecks()
 		self.ResetMap()
+		self.ResetCanBid()
 		self.Deal2()
 	}
 	return started
+}
+
+func (self *ManilaRoom) ResetCanBid() {
+	for _, v := range self.GetManilaPlayers() {
+		v.SetCanBid(true)
+	}
 }
 
 func (self *ManilaRoom) CanStartGame() bool {
 	started := self.room.GetStarted()
 	numForStart := self.room.GetPlayerNumForStart()
 	numMax := self.room.GetPlayerNumMax()
-	playerLen := len(self.GetManilaPlayers())
+	playerLen := len(self.manilaplayers)
 	if (playerLen >= numForStart) && (started == false) && (playerLen <= numMax) {
 		for _, v := range self.GetManilaPlayers() {
 			if v.GetReadyOrNot() == false {
@@ -263,6 +279,16 @@ func (self *ManilaRoom) Deal2() {
 			}
 		}
 	}
+}
+
+func (self *ManilaRoom) SelectRandomPlayer() string {
+	rand.NewSource(time.Now().UnixNano())
+	playerNames := make([]string, 0)
+	for k, _ := range self.manilaplayers {
+		playerNames = append(playerNames, k)
+	}
+	num := rand.Intn(100) % len(playerNames)
+	return playerNames[num]
 }
 
 func randStock() int {

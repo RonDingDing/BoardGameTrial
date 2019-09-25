@@ -235,6 +235,7 @@ func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum i
 		roomdetailmsg.Ans.GinsengDeck = room.GetOneDeck(manila.GinsengColor)
 		roomdetailmsg.Ans.JadeDeck = room.GetOneDeck(manila.JadeColor)
 		roomdetailmsg.Ans.Round = room.GetRound()
+		roomdetailmsg.Ans.HighestBidder = room.GetHighestBidder()
 
 		for k, v := range room.GetMap() {
 			mapSpot := pb3.MappS{Name: k, Taken: v.GetTaken(),
@@ -245,7 +246,7 @@ func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum i
 			p.SetOnline(true)
 			pl := pb3.PlayersS{Name: n, Stock: p.GetStockNum(),
 				Money: p.GetMoney(), Online: p.GetOnline(),
-				Seat: p.GetSeat(), Ready: p.GetReadyOrNot()}
+				Seat: p.GetSeat(), Ready: p.GetReadyOrNot(), Canbid: p.GetCanBid()}
 			roomdetailmsg.Ans.Players = append(roomdetailmsg.Ans.Players, pl)
 		}
 
@@ -272,6 +273,11 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 			startgamemsg := new(pb3.GameStartMsg).New()
 			startgamemsg.Ans.RoomNum = roomNum
 			RoomObjBroadcastMessage(messageType, startgamemsg, manilaRoom)
+
+			firstPlayer := manilaRoom.SelectRandomPlayer()
+			bidmsg := new(pb3.BidMsg).New()
+			bidmsg.Ans.Username = firstPlayer
+			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
 		}
 
 		roomdetailmsg := new(pb3.RoomDetailMsg).New()

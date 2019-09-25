@@ -149,22 +149,23 @@ def make_new(content):
 
 
 if __name__ == '__main__':
-    GameStartMsg = "006"
+    BidMsg= "007"
     false = False
     true = True
-    obj = readymsg = {
-        "Code": GameStartMsg,
+    obj = {
+        "Code": BidMsg,
         "Req":
         {
-'S':""
+            "Username": 0,
+            "Bid": 0,
         },
         "Ans":
         {
-            "RoomNum": 0
+            "Username": ""
         },
         "Error": 0
     }
-    content = to_go(obj, 'GameStartMsg')
+    content = to_go(obj, 'BidMsg')
 
     print(content)
     new_content = make_new(content)

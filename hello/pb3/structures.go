@@ -201,6 +201,7 @@ type PlayersS struct {
 	Stock  int
 	Seat   int
 	Ready  bool
+	Canbid bool
 }
 
 type RoomDetailMsgAns struct {
@@ -217,6 +218,7 @@ type RoomDetailMsgAns struct {
 	Round             int
 	SilkDeck          int
 	Started           bool
+	HighestBidder     string
 }
 
 type RoomDetailMsg struct {
@@ -246,6 +248,7 @@ func (self *PlayersS) New() *PlayersS {
 	self.Stock = 0
 	self.Seat = 0
 	self.Ready = false
+	self.Canbid = true
 	return self
 }
 
@@ -263,6 +266,7 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.Round = 0
 	self.SilkDeck = 0
 	self.Started = false
+	self.HighestBidder = ""
 	return self
 }
 
@@ -302,6 +306,43 @@ func (self *GameStartMsg) New() *GameStartMsg {
 	self.Code = msg.GameStartMsg
 	self.Req = new(GameStartMsgReq).New()
 	self.Ans = new(GameStartMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// BidMsg
+
+type BidMsgReq struct {
+	Username string
+	Bid      int
+}
+
+type BidMsgAns struct {
+	Username string
+}
+
+type BidMsg struct {
+	Code  string
+	Req   *BidMsgReq
+	Ans   *BidMsgAns
+	Error int
+}
+
+func (self *BidMsgReq) New() *BidMsgReq {
+	self.Username = ""
+	self.Bid = 0
+	return self
+}
+
+func (self *BidMsgAns) New() *BidMsgAns {
+	self.Username = ""
+	return self
+}
+
+func (self *BidMsg) New() *BidMsg {
+	self.Code = msg.BidMsg
+	self.Req = new(BidMsgReq).New()
+	self.Ans = new(BidMsgAns).New()
 	self.Error = 0
 	return self
 }

@@ -12,6 +12,7 @@ const (
 	ReadyMsg      = "004"
 	RoomDetailMsg = "005"
 	GameStartMsg  = "006"
+	BidMsg        = "007"
 
 	NorAlreadyInRoom   = 1
 	NorNewEntered      = 2

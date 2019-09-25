@@ -83,6 +83,7 @@ export default class BasicControl extends cc.Component {
             Global.roomNum = message.Ans.RoomNum;
             Global.allPlayerName = message.Ans.PlayerName;
             Global.started = message.Ans.Started;
+            Global.highestBidder = message.Ans.HighestBidder;
         }
     }
 

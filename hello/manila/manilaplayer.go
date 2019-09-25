@@ -7,13 +7,15 @@ import (
 )
 
 type OtherProps struct {
-	hand  []ManilaStock
-	money int
+	hand   []ManilaStock
+	money  int
+	canbid bool
 }
 
 func (self *OtherProps) New() *OtherProps {
 	self.hand = []ManilaStock{}
 	self.money = 0
+	self.canbid = true
 	return self
 }
 
@@ -47,6 +49,14 @@ func (self *OtherProps) GetStocks() []int {
 
 func (self *OtherProps) GetStockNum() int {
 	return len(self.GetHand())
+}
+
+func (self *OtherProps) GetCanBid() bool {
+	return self.canbid
+}
+
+func (self *OtherProps) SetCanBid(canbid bool) bool {
+	return self.canbid
 }
 
 type ManilaPlayer struct {
@@ -129,4 +139,12 @@ func (self *ManilaPlayer) GetConnection() *websocket.Conn {
 
 func (self *ManilaPlayer) SetConnection(conn *websocket.Conn) {
 	self.player.SetConnection(conn)
+}
+
+func (self *ManilaPlayer) GetCanBid() bool {
+	return self.otherProps.GetCanBid()
+}
+
+func (self *ManilaPlayer) SetCanBid(canbid bool) bool {
+	return self.otherProps.SetCanBid(canbid)
 }
