@@ -1,10 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
 
 func main() {
+	for j := 0; j <= 10; j++ {
+		fmt.Println(randStock())
+	}
+}
 
-	a := make([]string, 0)
-	a = append(a, "sdf")
-	fmt.Println(a)
+func randStock() int {
+	rand.NewSource(time.Now().UnixNano())
+	allStock := []int{1, 2, 3, 4}
+	num := rand.Intn(100) % len(allStock)
+	return allStock[num]
 }

@@ -21,6 +21,9 @@ func (self *OtherProps) GetMoney() int {
 	return self.money
 }
 
+func (self *OtherProps) SetMoney(money int) {
+	self.money = money
+}
 func (self *OtherProps) GetHand() []ManilaStock {
 	return self.hand
 }
@@ -71,6 +74,10 @@ func (self *ManilaPlayer) GetHand() []ManilaStock {
 
 func (self *ManilaPlayer) GetMoney() int {
 	return self.otherProps.GetMoney()
+}
+
+func (self *ManilaPlayer) SetMoney(money int) {
+	self.otherProps.SetMoney(money)
 }
 
 func (self *ManilaPlayer) AddHand(card ManilaStock) {

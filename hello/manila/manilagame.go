@@ -13,6 +13,9 @@ const (
 	JadeColor    = 2
 	CoffeeColor  = 3
 	GinsengColor = 4
+
+	OriginalMoney      = 30
+	OriginalDeckNumber = 5
 )
 
 var (

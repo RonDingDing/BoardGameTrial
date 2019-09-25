@@ -273,3 +273,35 @@ func (self *RoomDetailMsg) New() *RoomDetailMsg {
 	self.Error = 0
 	return self
 }
+
+// GameStartMsg
+type GameStartMsgReq struct {
+}
+
+type GameStartMsgAns struct {
+	RoomNum int
+}
+
+type GameStartMsg struct {
+	Code  string
+	Req   *GameStartMsgReq
+	Ans   *GameStartMsgAns
+	Error int
+}
+
+func (self *GameStartMsgReq) New() *GameStartMsgReq {
+	return self
+}
+
+func (self *GameStartMsgAns) New() *GameStartMsgAns {
+	self.RoomNum = 0
+	return self
+}
+
+func (self *GameStartMsg) New() *GameStartMsg {
+	self.Code = msg.GameStartMsg
+	self.Req = new(GameStartMsgReq).New()
+	self.Ans = new(GameStartMsgAns).New()
+	self.Error = 0
+	return self
+}

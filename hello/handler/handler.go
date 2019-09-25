@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"hello/baseroom"
 	"hello/global"
+	"hello/manila"
 	"hello/models"
 	"hello/msg"
 	"hello/pb3"
@@ -211,7 +212,7 @@ func HandleEnterRoomMsg(messageType int, message []byte, connection *websocket.C
 
 func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum int) {
 
-	manila, base := global.FindRoomByNum(roomNum)
+	manilaRoom, base := global.FindRoomByNum(roomNum)
 	if base != nil {
 		room := base
 		roomdetailmsg.Ans.RoomNum = 0
@@ -221,18 +222,18 @@ func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum i
 		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
 
 		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
-	} else if manila != nil {
-		room := manila
+	} else if manilaRoom != nil {
+		room := manilaRoom
 		roomdetailmsg.Ans.RoomNum = room.GetRoomNum()
 		roomdetailmsg.Ans.GameNum = room.GetGameNum()
 		roomdetailmsg.Ans.Started = room.GetStarted()
 		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
 		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
 		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
-		roomdetailmsg.Ans.SilkDeck = room.GetSilkDeck()
-		roomdetailmsg.Ans.CoffeeDeck = room.GetCoffeeDeck()
-		roomdetailmsg.Ans.GinsengDeck = room.GetGinsengDeck()
-		roomdetailmsg.Ans.JadeDeck = room.GetJadeDeck()
+		roomdetailmsg.Ans.SilkDeck = room.GetOneDeck(manila.SilkColor)
+		roomdetailmsg.Ans.CoffeeDeck = room.GetOneDeck(manila.CoffeeColor)
+		roomdetailmsg.Ans.GinsengDeck = room.GetOneDeck(manila.GinsengColor)
+		roomdetailmsg.Ans.JadeDeck = room.GetOneDeck(manila.JadeColor)
 		roomdetailmsg.Ans.Round = room.GetRound()
 
 		for k, v := range room.GetMap() {
@@ -260,19 +261,21 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 	}
 	username := readymsg.Req.Username
 	readied := readymsg.Req.Ready
-	manila, _, roomNum := global.FindUserInManila(username)
-	if manila != nil {
-		players := manila.GetManilaPlayers()
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
+	if manilaRoom != nil {
+		players := manilaRoom.GetManilaPlayers()
 		if p, ok := players[username]; ok {
 			p.SetReady(readied)
 		}
-		if manila.CanStartGame() == true {
-			manila.StartGame()
+		if manilaRoom.CanStartGame() == true {
+			manilaRoom.StartGame()
+			startgamemsg := new(pb3.GameStartMsg).New()
+			startgamemsg.Ans.RoomNum = roomNum
+			RoomObjBroadcastMessage(messageType, startgamemsg, manilaRoom)
 		}
 
 		roomdetailmsg := new(pb3.RoomDetailMsg).New()
 		HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
-		RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
 	}
-
 }

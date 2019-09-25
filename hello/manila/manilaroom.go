@@ -1,9 +1,12 @@
 package manila
 
 import (
+	"errors"
 	"fmt"
 	"hello/baseroom"
 	"hello/msg"
+	"math/rand"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -97,9 +100,11 @@ func (self *ManilaRoom) StartGame() bool {
 	if started {
 		for _, v := range self.GetManilaPlayers() {
 			v.SetReady(false)
+			v.SetMoney(OriginalMoney)
 		}
 		self.ResetDecks()
 		self.ResetMap()
+		self.Deal2()
 	}
 	return started
 }
@@ -139,7 +144,7 @@ func (self *ManilaRoom) ResetDecks() {
 	self.silkdeck = []ManilaStock{}
 	for _, color := range []int{JadeColor, SilkColor, CoffeeColor, GinsengColor} {
 		card := new(ManilaStock).New(color)
-		for j := 0; j < 5; j++ {
+		for j := 0; j < OriginalDeckNumber; j++ {
 			switch color {
 			case JadeColor:
 				self.jadedeck = append(self.jadedeck, *card)
@@ -158,24 +163,22 @@ func (self *ManilaRoom) GetPlayerName() []string {
 	return self.room.GetPlayerName()
 }
 
-func (self *ManilaRoom) GetSilkDeck() int {
-	return len(self.silkdeck)
-}
-
-func (self *ManilaRoom) GetCoffeeDeck() int {
-	return len(self.coffeedeck)
-}
-
-func (self *ManilaRoom) GetGinsengDeck() int {
-	return len(self.ginsengdeck)
-}
-
-func (self *ManilaRoom) GetJadeDeck() int {
-	return len(self.jadedeck)
+func (self *ManilaRoom) GetOneDeck(typing int) int {
+	switch typing {
+	case SilkColor:
+		return len(self.silkdeck)
+	case GinsengColor:
+		return len(self.ginsengdeck)
+	case CoffeeColor:
+		return len(self.coffeedeck)
+	case JadeColor:
+		return len(self.jadedeck)
+	}
+	return 0
 }
 
 func (self *ManilaRoom) GetDecks() []int {
-	return []int{self.GetSilkDeck(), self.GetCoffeeDeck(), self.GetGinsengDeck(), self.GetJadeDeck()}
+	return []int{self.GetOneDeck(SilkColor), self.GetOneDeck(CoffeeColor), self.GetOneDeck(GinsengColor), self.GetOneDeck(JadeColor)}
 }
 
 func (self *ManilaRoom) GetManilaPlayers() map[string]*ManilaPlayer {
@@ -184,4 +187,87 @@ func (self *ManilaRoom) GetManilaPlayers() map[string]*ManilaPlayer {
 
 func (self *ManilaRoom) GetAllConnections() []*websocket.Conn {
 	return self.room.GetAllConnections()
+}
+
+func (self *ManilaRoom) TakeOneStock(typing int) (ManilaStock, error) {
+	switch typing {
+	case SilkColor:
+		if self.GetOneDeck(SilkColor) > 0 {
+			silk := self.silkdeck[0]
+			self.silkdeck = self.silkdeck[:len(self.silkdeck)-1]
+			return silk, nil
+		}
+	case GinsengColor:
+		if self.GetOneDeck(GinsengColor) > 0 {
+			ginseng := self.ginsengdeck[0]
+			self.ginsengdeck = self.ginsengdeck[:len(self.ginsengdeck)-1]
+			return ginseng, nil
+		}
+	case CoffeeColor:
+		if self.GetOneDeck(CoffeeColor) > 0 {
+			coffee := self.coffeedeck[0]
+			self.coffeedeck = self.coffeedeck[:len(self.coffeedeck)-1]
+			return coffee, nil
+		}
+	case JadeColor:
+		if self.GetOneDeck(JadeColor) > 0 {
+			jade := self.jadedeck[0]
+			self.jadedeck = self.jadedeck[:len(self.jadedeck)-1]
+			return jade, nil
+		}
+	}
+	return ManilaStock{}, errors.New("Not enough")
+}
+
+func (self *ManilaRoom) Deal2() {
+	for _, v := range self.GetManilaPlayers() {
+		dealed := 0
+		for dealed < 2 {
+			stock := randStock()
+			switch stock {
+			case SilkColor:
+				if self.GetOneDeck(SilkColor) > 0 {
+					silk, err := self.TakeOneStock(SilkColor)
+					if err == nil {
+						v.AddHand(silk)
+						dealed += 1
+					}
+				}
+
+			case GinsengColor:
+				if self.GetOneDeck(GinsengColor) > 0 {
+					ginseng, err := self.TakeOneStock(GinsengColor)
+					if err == nil {
+						v.AddHand(ginseng)
+						dealed += 1
+					}
+				}
+
+			case CoffeeColor:
+				if self.GetOneDeck(CoffeeColor) > 0 {
+					coffee, err := self.TakeOneStock(CoffeeColor)
+					if err == nil {
+						v.AddHand(coffee)
+						dealed += 1
+					}
+				}
+
+			case JadeColor:
+				if self.GetOneDeck(JadeColor) > 0 {
+					jade, err := self.TakeOneStock(JadeColor)
+					if err == nil {
+						v.AddHand(jade)
+						dealed += 1
+					}
+				}
+			}
+		}
+	}
+}
+
+func randStock() int {
+	rand.NewSource(time.Now().UnixNano())
+	allStock := []int{1, 2, 3, 4}
+	num := rand.Intn(100) % len(allStock)
+	return allStock[num]
 }

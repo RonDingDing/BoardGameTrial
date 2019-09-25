@@ -10,6 +10,7 @@ export const SignUpMsg = "002";
 export const EnterRoomMsg = "003";
 export const ReadyMsg = "004";
 export const RoomDetailMsg = "005";
+export const GameStartMsg = "006";
 
 export const NorAlreadyInRoom   = 1
 export const NorNewEntered      = 2
@@ -133,6 +134,19 @@ export var enterroommsg = {
         "GameNum": 0,
         "RoomNum": 0,      
         
+    },
+    "Error": 0
+}
+
+export var gamestartmsg = {
+    "Code": GameStartMsg,
+    "Req":
+    {
+       
+    },
+    "Ans":
+    {        
+        "RoomNum": 0              
     },
     "Error": 0
 }

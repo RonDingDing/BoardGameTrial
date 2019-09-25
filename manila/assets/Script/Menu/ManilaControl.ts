@@ -1,4 +1,4 @@
-import { ManilaSocket, RoomDetailMsg, readymsg, ReadyMsg } from "../Fundamentals/Imports"
+import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, gamestartmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -25,13 +25,20 @@ export default class ManilaControl extends BasicControl {
     @property([cc.SpriteFrame])
     readyChoices: [cc.SpriteFrame] = [new cc.SpriteFrame()]
 
+    @property(cc.Sprite)
+    phaseCatcher: cc.Sprite = null
+
     onLoad() {
         super.onLoad();
         let self = this;
         // // self.j();
+        self.phaseCatcher.node.active = false
         self.renderGlobal();
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
+        EventMng.on(GameStartMsg, self.onGameStartMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
+
+
 
     }
 
@@ -177,8 +184,7 @@ export default class ManilaControl extends BasicControl {
         } else {
             self.messageToGlobal(message);
             self.renderGlobal();
-            console.log("ManilaControl:", message.Code, message);
-            console.log("ManilaControl: Global:", Global);
+            console.log("ManilaControl: ", message.Code, message);
         }
     }
 
@@ -189,5 +195,32 @@ export default class ManilaControl extends BasicControl {
         readymsgobj.Req.Username = Global.playerUser
         readymsgobj.Req.Ready = readied;
         ManilaSocket.send(readymsgobj);
+    }
+
+    onGameStartMsg(message) {
+        let self = this;
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else {
+            console.log("ManilaControl: ", message.Code, message);
+            self.phaseCatcher.node.active = true;
+            let phaseString = self.phaseCatcher.node.getChildByName(  "PhaseString").getComponent(cc.Label);
+            phaseString.string = "Bidding";
+
+            // 动画
+            let action = cc.sequence(
+                cc.callFunc(function () {
+                    self.phaseCatcher.node.active = true;
+                }),
+                cc.fadeTo(0, 0),
+                cc.fadeTo(2.0, 255),
+                cc.fadeTo(2.0, 0),
+                cc.callFunc(function () {
+                    self.phaseCatcher.node.active = false;
+                })
+            );
+            self.phaseCatcher.node.runAction(action);
+
+        }
     }
 }

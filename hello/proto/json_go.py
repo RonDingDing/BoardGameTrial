@@ -149,44 +149,22 @@ def make_new(content):
 
 
 if __name__ == '__main__':
-    RoomDetailMsg = "005"
+    GameStartMsg = "006"
     false = False
     true = True
     obj = readymsg = {
-        "Code": RoomDetailMsg,
+        "Code": GameStartMsg,
         "Req":
         {
-            "Username": "",
-            "RoomNum": 0
+'S':""
         },
         "Ans":
         {
-
-            "CoffeeDeck": 0,
-            "GameNum": 0,
-            "GinsengDeck": 0,
-            "JadeDeck": 0,
-            "Mapp": [
-                {"Name": "", "Taken": "", "Price": 0,
-                 "Award": 0, "Onboard": false}
-            ],
-            "PlayerName": [
-                ""
-            ],
-            "PlayerNumForStart": 0,
-            "PlayerNumMax": 0,
-            "Players": [
-                {"Money": 0, "Name": "", "Online": true,
-                 "Stock": 0, "Seat": 0, "Ready": false}
-            ],
-            "RoomNum": 0,
-            "Round": 0,
-            "SilkDeck": 0,
-            "Started": false
+            "RoomNum": 0
         },
         "Error": 0
     }
-    content = to_go(obj, 'RoomDetailMsg')
+    content = to_go(obj, 'GameStartMsg')
 
     print(content)
     new_content = make_new(content)

@@ -11,6 +11,7 @@ const (
 	EnterRoomMsg  = "003"
 	ReadyMsg      = "004"
 	RoomDetailMsg = "005"
+	GameStartMsg  = "006"
 
 	NorAlreadyInRoom   = 1
 	NorNewEntered      = 2
