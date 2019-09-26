@@ -16,4 +16,7 @@ export namespace Global {
     export let started = false;
     export let readied = false;
     export let highestBidder = "";
+    export let highestBidPrice = 0;
+    export let currentPlayer = "";
+    export let phase = "";
 }

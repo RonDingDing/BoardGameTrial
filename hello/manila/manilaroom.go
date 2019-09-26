@@ -12,15 +12,69 @@ import (
 )
 
 type ManilaRoom struct {
-	room          *baseroom.Room
-	mapp          map[string]ManilaSpot
-	silkdeck      []ManilaStock
-	coffeedeck    []ManilaStock
-	ginsengdeck   []ManilaStock
-	jadedeck      []ManilaStock
-	manilaplayers map[string]*ManilaPlayer
-	round         int
-	highestBidder string
+	room            *baseroom.Room
+	mapp            map[string]ManilaSpot
+	silkdeck        []ManilaStock
+	coffeedeck      []ManilaStock
+	ginsengdeck     []ManilaStock
+	jadedeck        []ManilaStock
+	manilaplayers   map[string]*ManilaPlayer
+	round           int
+	highestBidder   string
+	highestBidPrice int
+	currentPlayer   string
+	phase           string
+}
+
+func (self *ManilaRoom) NextBidder(username string) string {
+	names := append(self.GetPlayerName(), self.GetPlayerName()...)
+	for i := 0; i < len(names); i++ {
+		if names[i] == username {
+			for m := i + 1; m < len(names); m++ {
+				checkName := names[m]
+				if username != checkName && self.GetManilaPlayers()[checkName].GetCanBid() == true {
+					return checkName
+				}
+			}
+			break
+		}
+	}
+	return ""
+}
+
+func (self *ManilaRoom) GetHighestBidPrice() int {
+	return self.highestBidPrice
+}
+
+func (self *ManilaRoom) SetHighestBidPrice(price int) {
+	self.highestBidPrice = price
+}
+
+func (self *ManilaRoom) GetPhase() string {
+	return self.phase
+}
+
+func (self *ManilaRoom) SetPhase(phase string) {
+	self.phase = phase
+}
+
+func (self *ManilaRoom) ResetOther() {
+	self.round = 0
+	self.highestBidder = ""
+	self.highestBidPrice = 0
+	self.currentPlayer = ""
+	self.ResetDecks()
+	self.ResetMap()
+	self.ResetCanBid()
+	self.RidNullPlayerName()
+}
+
+func (self *ManilaRoom) GetCurrentPlayer() string {
+	return self.currentPlayer
+}
+
+func (self *ManilaRoom) SetCurrentPlayer(currentPlayer string) {
+	self.currentPlayer = currentPlayer
 }
 
 func (self *ManilaRoom) GetHighestBidder() string {
@@ -33,6 +87,9 @@ func (self *ManilaRoom) SetHighestBidder(bidder string) {
 
 func (self *ManilaRoom) GetRound() int {
 	return self.round
+}
+func (self *ManilaRoom) SetRound(round int) {
+	self.round = round
 }
 
 func (self *ManilaRoom) GetRoomNum() int {
@@ -104,19 +161,33 @@ func (self *ManilaRoom) Exit(name string) int {
 	return exited
 }
 
+func (self *ManilaRoom) ResetGame() {
+	for _, v := range self.GetManilaPlayers() {
+		v.SetReady(false)
+		v.SetMoney(OriginalMoney)
+	}
+	self.ResetOther()
+}
+
 func (self *ManilaRoom) StartGame() bool {
 	started := self.room.StartGame()
 	if started {
-		for _, v := range self.GetManilaPlayers() {
-			v.SetReady(false)
-			v.SetMoney(OriginalMoney)
-		}
-		self.ResetDecks()
-		self.ResetMap()
-		self.ResetCanBid()
+		self.ResetGame()
 		self.Deal2()
+		self.SetRound(1)
+		self.SetPhase("Bidding")
 	}
 	return started
+}
+
+func (self *ManilaRoom) RidNullPlayerName() {
+	names := make([]string, 0)
+	for _, n := range self.GetPlayerName() {
+		if n != "" {
+			names = append(names)
+		}
+	}
+	self.SetPlayerName(names)
 }
 
 func (self *ManilaRoom) ResetCanBid() {
@@ -177,6 +248,10 @@ func (self *ManilaRoom) ResetDecks() {
 
 func (self *ManilaRoom) GetPlayerName() []string {
 	return self.room.GetPlayerName()
+}
+
+func (self *ManilaRoom) SetPlayerName(names []string) {
+	self.room.SetPlayerName(names)
 }
 
 func (self *ManilaRoom) GetOneDeck(typing int) int {

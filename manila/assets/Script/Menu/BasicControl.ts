@@ -84,6 +84,9 @@ export default class BasicControl extends cc.Component {
             Global.allPlayerName = message.Ans.PlayerName;
             Global.started = message.Ans.Started;
             Global.highestBidder = message.Ans.HighestBidder;
+            Global.highestBidPrice = message.Ans.HighestBidPrice;
+            Global.currentPlayer = message.Ans.CurrentPlayer;
+            Global.phase = message.Ans.Phase;
         }
     }
 

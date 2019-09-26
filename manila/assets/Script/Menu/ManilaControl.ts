@@ -1,4 +1,4 @@
-import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, gamestartmsg } from "../Fundamentals/Imports"
+import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -28,76 +28,25 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Sprite)
     phaseCatcher: cc.Sprite = null
 
+    @property(cc.Node)
+    bidNode: cc.Node = null
+
     onLoad() {
         super.onLoad();
         let self = this;
         // // self.j();
-        self.phaseCatcher.node.active = false
         self.renderGlobal();
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
         EventMng.on(GameStartMsg, self.onGameStartMsg, self);
+        EventMng.on(BidMsg, self.onBidMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
-
-
-
+        EventMng.on("Bid", self.sendBid, self);
     }
 
-    j() {
-        Global.started = false;
-        Global.playerUser = "apple";
-        Global.allPlayerName = ["apple", "boy", "cat", "dog",];
-        Global.allPlayers = {
-            "apple": { "Name": "apple", "Money": 0, "Stock": 0, "Online": true, "Seat": 1 },
-            "boy": { "Name": "boy", "Money": 0, "Stock": 1, "Online": true, "Seat": 2 },
-            "cat": { "Name": "cat", "Money": 100, "Stock": 2, "Online": true, "Seat": 3 },
-            "dog": { "Name": "dog", "Money": 200, "Stock": 3, "Online": true, "Seat": 4 },
-            // "eat": { "Name": "eat", "Money": 3, "Stock": 4, "Online": true, "Seat": 5 },
-        }
-        Global.jadedeck = Global.ginsengdeck = Global.coffeedeck = Global.silkdeck = 5;
-        Global.mapp = {
-            "1tick": { "Name": "1tick", "Taken": "", "Price": 4, "Award": 6, "Onboard": true },
-            "2tick": { "Name": "2tick", "Taken": "", "Price": 3, "Award": 8, "Onboard": true },
-            "3tick": { "Name": "3tick", "Taken": "", "Price": 2, "Award": 15, "Onboard": true },
-
-            "1fail": { "Name": "1fail", "Taken": "", "Price": 4, "Award": 6, "Onboard": true },
-            "2fail": { "Name": "2fail", "Taken": "", "Price": 3, "Award": 8, "Onboard": true },
-            "3fail": { "Name": "3fail", "Taken": "", "Price": 2, "Award": 15, "Onboard": true },
-
-
-            "1drag": { "Name": "1drag", "Taken": "", "Price": 2, "Award": 0, "Onboard": true },
-            "2drag": { "Name": "2drag", "Taken": "", "Price": 5, "Award": 0, "Onboard": true },
-
-            "1jade": { "Name": "1jade", "Taken": "", "Price": 3, "Award": 0, "Onboard": false },
-            "2jade": { "Name": "2jade", "Taken": "", "Price": 4, "Award": 0, "Onboard": false },
-            "3jade": { "Name": "3jade", "Taken": "", "Price": 5, "Award": 0, "Onboard": false },
-            "4jade": { "Name": "4jade", "Taken": "", "Price": 5, "Award": 0, "Onboard": false },
-
-            "1ginseng": { "Name": "1ginseng", "Taken": "", "Price": 1, "Award": 0, "Onboard": false },
-            "2ginseng": { "Name": "2ginseng", "Taken": "", "Price": 2, "Award": 0, "Onboard": false },
-            "3ginseng": { "Name": "3ginseng", "Taken": "", "Price": 3, "Award": 0, "Onboard": false },
-
-            "1coffee": { "Name": "1coffee", "Taken": "", "Price": 2, "Award": 0, "Onboard": false },
-            "2coffee": { "Name": "2coffee", "Taken": "", "Price": 3, "Award": 0, "Onboard": false },
-            "3coffee": { "Name": "3coffee", "Taken": "", "Price": 4, "Award": 0, "Onboard": false },
-
-
-            "1silk": { "Name": "1silk", "Taken": "", "Price": 3, "Award": 0, "Onboard": false },
-            "2silk": { "Name": "2silk", "Taken": "", "Price": 4, "Award": 0, "Onboard": false },
-            "3silk": { "Name": "3silk", "Taken": "", "Price": 5, "Award": 0, "Onboard": false },
-
-            "1pirate": { "Name": "1pirate", "Taken": "", "Price": 5, "Award": 0, "Onboard": true },
-            "2pirate": { "Name": "2pirate", "Taken": "", "Price": 5, "Award": 0, "Onboard": true },
-
-
-            "repair": { "Name": "repair", "Taken": "", "Price": 0, "Award": 10, "Onboard": true },
-
-        }
-
-
-    }
 
     renderGlobal() {
         let self = this;
+
         if (Global.started === false) {
             self.mapSprite.node.active = false;
             self.readySprite.node.active = true;
@@ -129,7 +78,6 @@ export default class ManilaControl extends BasicControl {
             let ordered = orderedO.splice(myIndex, len).concat(orderedO.splice(0, len));
 
             // 设定准备按钮状态
-            let myPlayer = ordered[myIndex];
             self.readySprite.getComponent(cc.Sprite).spriteFrame = Global.readied ? self.readyChoices[1] : self.readyChoices[0];
 
             let ystart = 500;
@@ -153,8 +101,16 @@ export default class ManilaControl extends BasicControl {
                 money.string = player.Money;
                 let stock = scriptPlayer.getChildByName("Stock").getComponent(cc.Label);
                 stock.string = player.Stock;
-                let readySpriteNode = scriptPlayer.getChildByName("Ready");
-                readySpriteNode.active = player.Ready ? true : false;
+                let stateSpriteNode = scriptPlayer.getChildByName("State");
+                if (Global.started == false) {
+                    stateSpriteNode.active = player.Ready ? true : false;
+                    stateSpriteNode.getComponent(cc.Sprite).spriteFrame = self.readyChoices[0];
+                } else {
+                    stateSpriteNode.active = player.Name === Global.currentPlayer ? true : false;
+                    stateSpriteNode.getComponent(cc.Sprite).spriteFrame = self.readyChoices[2];
+                }
+                let offlineNode = scriptPlayer.getChildByName("Offline");
+                offlineNode.active = player.Online ? false : true;
 
                 // 设定位置
                 scriptPlayer.y = ystart;
@@ -188,8 +144,6 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-
-
     sendReadyOrNot(readied: boolean) {
         let readymsgobj = JSON.parse(JSON.stringify(readymsg));
         readymsgobj.Req.Username = Global.playerUser
@@ -204,7 +158,7 @@ export default class ManilaControl extends BasicControl {
         } else {
             console.log("ManilaControl: ", message.Code, message);
             self.phaseCatcher.node.active = true;
-            let phaseString = self.phaseCatcher.node.getChildByName(  "PhaseString").getComponent(cc.Label);
+            let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
             phaseString.string = "Bidding";
 
             // 动画
@@ -220,7 +174,34 @@ export default class ManilaControl extends BasicControl {
                 })
             );
             self.phaseCatcher.node.runAction(action);
-
         }
     }
+
+    onBidMsg(message) {
+        let self = this;
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else {
+            console.log(message);
+            if (Global.playerUser === message.Ans.Username) {
+                self.bidNode.active = true
+                let bidString = self.bidNode.getChildByName("CurrentBidPrice").getComponent(cc.Label);
+                bidString.string = message.Ans.CurrentBidPrice
+            }
+        }
+    }
+
+    sendBid(data) {
+        console.log(data);
+        let self = this;
+        let dp = parseInt(data);
+        let price = Global.highestBidPrice;
+        let bidPrice = dp === 0 ? dp : (price + dp);
+        let bidmsgobj = JSON.parse(JSON.stringify(bidmsg));
+        bidmsgobj.Req.Username = Global.playerUser;
+        bidmsgobj.Req.Bid = bidPrice;
+        ManilaSocket.send(bidmsgobj);
+        self.bidNode.active = false;
+    }
+
 }

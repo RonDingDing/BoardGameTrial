@@ -35,6 +35,8 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 		go handler.HandleEnterRoomMsg(messageType, message, connection, code.Code, ormManager)
 	case msg.ReadyMsg:
 		go handler.HandleReadyMsg(messageType, message, connection, code.Code, ormManager)
+	case msg.BidMsg:
+		go handler.HandleBidMsg(messageType, message, connection, code.Code, ormManager)
 	default:
 		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
 	}

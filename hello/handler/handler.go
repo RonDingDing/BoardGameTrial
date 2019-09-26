@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"hello/baseroom"
 	"hello/global"
-	"hello/manila"
 	"hello/models"
 	"hello/msg"
 	"hello/pb3"
@@ -27,13 +26,21 @@ func ClearState(ip string, connection *websocket.Conn, ormManager orm.Ormer) {
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
 			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
 			RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
-		} else if manilaroom != nil && manilaroom.GetStarted() == false {
-			// delete(global.UserPlayerMap, username)
-			delete(global.IpUserMap, ip)
-			manilaroom.Exit(username)
+		} else if manilaroom != nil {
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
-			RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+			if manilaroom.GetStarted() == false {
+				// delete(global.UserPlayerMap, username)
+				delete(global.IpUserMap, ip)
+				manilaroom.Exit(username)
+
+				HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+				RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+			} else {
+				manilaroom.GetManilaPlayers()[username].SetOnline(false)
+				HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+				RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+			}
+
 		}
 	}
 }
@@ -210,49 +217,6 @@ func HandleEnterRoomMsg(messageType int, message []byte, connection *websocket.C
 
 }
 
-func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum int) {
-
-	manilaRoom, base := global.FindRoomByNum(roomNum)
-	if base != nil {
-		room := base
-		roomdetailmsg.Ans.RoomNum = 0
-		roomdetailmsg.Ans.GameNum = room.GetGameNum()
-		roomdetailmsg.Ans.Started = room.GetStarted()
-		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
-		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
-
-		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
-	} else if manilaRoom != nil {
-		room := manilaRoom
-		roomdetailmsg.Ans.RoomNum = room.GetRoomNum()
-		roomdetailmsg.Ans.GameNum = room.GetGameNum()
-		roomdetailmsg.Ans.Started = room.GetStarted()
-		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
-		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
-		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
-		roomdetailmsg.Ans.SilkDeck = room.GetOneDeck(manila.SilkColor)
-		roomdetailmsg.Ans.CoffeeDeck = room.GetOneDeck(manila.CoffeeColor)
-		roomdetailmsg.Ans.GinsengDeck = room.GetOneDeck(manila.GinsengColor)
-		roomdetailmsg.Ans.JadeDeck = room.GetOneDeck(manila.JadeColor)
-		roomdetailmsg.Ans.Round = room.GetRound()
-		roomdetailmsg.Ans.HighestBidder = room.GetHighestBidder()
-
-		for k, v := range room.GetMap() {
-			mapSpot := pb3.MappS{Name: k, Taken: v.GetTaken(),
-				Price: v.GetPrice(), Award: v.GetAward(), Onboard: v.GetOnboard()}
-			roomdetailmsg.Ans.Mapp = append(roomdetailmsg.Ans.Mapp, mapSpot)
-		}
-		for n, p := range room.GetManilaPlayers() {
-			p.SetOnline(true)
-			pl := pb3.PlayersS{Name: n, Stock: p.GetStockNum(),
-				Money: p.GetMoney(), Online: p.GetOnline(),
-				Seat: p.GetSeat(), Ready: p.GetReadyOrNot(), Canbid: p.GetCanBid()}
-			roomdetailmsg.Ans.Players = append(roomdetailmsg.Ans.Players, pl)
-		}
-
-	}
-}
-
 func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
 	readymsg := new(pb3.ReadyMsg).New()
 	err := json.Unmarshal(message, &readymsg)
@@ -276,12 +240,58 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 
 			firstPlayer := manilaRoom.SelectRandomPlayer()
 			bidmsg := new(pb3.BidMsg).New()
+			manilaRoom.SetCurrentPlayer(firstPlayer)
 			bidmsg.Ans.Username = firstPlayer
+			bidmsg.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
 			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
 		}
 
 		roomdetailmsg := new(pb3.RoomDetailMsg).New()
 		HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
 		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+	} else {
+		readymsg.Error = msg.ErrUserNotInRoom
+		SendMessage(messageType, readymsg, connection)
 	}
+}
+
+func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	bidmsg := new(pb3.BidMsg).New()
+	err := json.Unmarshal(message, &bidmsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := bidmsg.Req.Username
+	bid := bidmsg.Req.Bid
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
+	if manilaRoom != nil {
+		if bid != 0 {
+			manilaRoom.SetHighestBidPrice(bid)
+			manilaRoom.SetHighestBidder(username)
+		} else {
+			manilaRoom.GetManilaPlayers()[username].SetCanBid(false)
+		}
+		nextBidder := manilaRoom.NextBidder(username)
+		if nextBidder == "" {
+			manilaRoom.SetPhase("PlaceBoat")
+			manilaRoom.SetCurrentPlayer(username)
+			// TODO
+		} else {
+			bidmsg2 := new(pb3.BidMsg).New()
+			manilaRoom.SetCurrentPlayer(nextBidder)
+			bidmsg2.Ans.Username = nextBidder
+			bidmsg2.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
+			RoomObjBroadcastMessage(messageType, bidmsg2, manilaRoom)
+
+			roomdetailmsg := new(pb3.RoomDetailMsg).New()
+			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+		}
+
+	} else {
+		bidmsg.Error = msg.ErrUserNotInRoom
+		SendMessage(messageType, bidmsg, connection)
+	}
+
 }

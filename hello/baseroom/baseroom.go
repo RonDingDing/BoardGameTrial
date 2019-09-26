@@ -70,10 +70,14 @@ func (self *Room) New(roomNum int, gameNum int, playerNumForStart int, playerNum
 	return self
 }
 
+func (self *Room) SetPlayerName(names []string) {
+	self.seats = names
+}
+
 func (self *Room) GetPlayerNames() map[string]int {
 	dic := make(map[string]int)
-	for name := range self.players {
-		dic[name] = 1
+	for k := range self.players {
+		dic[k] = 1
 	}
 	return dic
 }
@@ -90,6 +94,7 @@ func (self *Room) Enter(player *Player) int {
 	name := player.GetName()
 	if playerInRoom, exist := self.players[name]; exist {
 		playerInRoom.SetConnection(player.GetConnection())
+		playerInRoom.SetOnline(true)
 		return msg.NorAlreadyInRoom
 	} else if self.playerNumMax > 0 {
 		if len(self.players) < self.playerNumMax && (!self.started) {

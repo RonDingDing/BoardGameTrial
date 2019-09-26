@@ -219,6 +219,9 @@ type RoomDetailMsgAns struct {
 	SilkDeck          int
 	Started           bool
 	HighestBidder     string
+	HighestPrice      int
+	CurrentPlayer     string
+	Phase             string
 }
 
 type RoomDetailMsg struct {
@@ -267,6 +270,9 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.SilkDeck = 0
 	self.Started = false
 	self.HighestBidder = ""
+	self.HighestPrice = 0
+	self.CurrentPlayer = ""
+	self.Phase = ""
 	return self
 }
 
@@ -318,7 +324,8 @@ type BidMsgReq struct {
 }
 
 type BidMsgAns struct {
-	Username string
+	Username        string
+	HighestBidPrice int
 }
 
 type BidMsg struct {
@@ -336,6 +343,7 @@ func (self *BidMsgReq) New() *BidMsgReq {
 
 func (self *BidMsgAns) New() *BidMsgAns {
 	self.Username = ""
+	self.HighestBidPrice = 0
 	return self
 }
 

@@ -46,7 +46,7 @@ func (self *Player) New(name string, connection *websocket.Conn, gold int) *Play
 	self.gold = gold
 	self.ready = false
 	self.seat = 0
-	self.online = false
+	self.online = true
 	return self
 }
 

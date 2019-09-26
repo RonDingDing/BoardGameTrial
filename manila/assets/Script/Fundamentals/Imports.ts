@@ -100,7 +100,9 @@ export var roomdetailmsg = {
         "RoomNum": 0,
         "Round": 0,    
         "Started": false,
-        "HighestBidder": ""
+        "HighestBidder": "",
+        "CurrentPlayer": "",
+        "Phase": ""
     },
     "Error": 0
 }
@@ -156,12 +158,13 @@ export var bidmsg = {
     "Code": BidMsg,
     "Req":
     {
-       "Username": 0, 
+       "Username": "", 
        "Bid": 0,
     },
     "Ans":
     {        
-        "Username": 0
+        "Username": "",
+        "HighestBidPrice": 0
     },
     "Error": 0
 }
