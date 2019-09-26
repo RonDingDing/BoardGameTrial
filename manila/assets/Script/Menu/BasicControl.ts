@@ -73,6 +73,7 @@ export default class BasicControl extends cc.Component {
                 if (playerList[j].Name === Global.playerUser) {
                     Global.readied = playerList[j].Ready;
                     Global.seat = playerList[j].Seat;
+                    Global.money = playerList[j].Money;
                 }
             }
             Global.silkdeck = message.Ans.SilkDeck;
@@ -98,6 +99,9 @@ export default class BasicControl extends cc.Component {
         cc.director.loadScene("StartMenu");
         Global.playerUser = ""
         Global.online = false;
+    }
 
+    playNotEnoughMoney(){
+        console.log("不够钱！是否抵押股票？");
     }
 }

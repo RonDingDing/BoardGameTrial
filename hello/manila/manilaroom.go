@@ -26,17 +26,28 @@ type ManilaRoom struct {
 	phase           string
 }
 
-func (self *ManilaRoom) NextBidder(username string) string {
-	names := append(self.GetPlayerName(), self.GetPlayerName()...)
-	for i := 0; i < len(names); i++ {
-		if names[i] == username {
-			for m := i + 1; m < len(names); m++ {
-				checkName := names[m]
-				if username != checkName && self.GetManilaPlayers()[checkName].GetCanBid() == true {
-					return checkName
+func (self *ManilaRoom) HasOtherBidder(username string) (bool, map[string]bool) {
+	bidder := make(map[string]bool)
+	for k, v := range self.GetManilaPlayers() {
+		if k != username {
+			if v.GetCanBid() {
+				bidder[k] = true
+			}
+		}
+	}
+	return len(bidder) > 0, bidder
+}
+
+func (self *ManilaRoom) NextBidder(username string, mapp map[string]bool) string {
+	names := self.GetPlayerName()
+	round := append(names, names...)
+	for i, n := range round {
+		if n == username {
+			for m := i + 1; m < len(round); m++ {
+				if _, ok := mapp[round[m]]; ok {
+					return round[m]
 				}
 			}
-			break
 		}
 	}
 	return ""
@@ -184,7 +195,7 @@ func (self *ManilaRoom) RidNullPlayerName() {
 	names := make([]string, 0)
 	for _, n := range self.GetPlayerName() {
 		if n != "" {
-			names = append(names)
+			names = append(names, n)
 		}
 	}
 	self.SetPlayerName(names)

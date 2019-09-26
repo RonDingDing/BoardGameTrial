@@ -219,7 +219,7 @@ type RoomDetailMsgAns struct {
 	SilkDeck          int
 	Started           bool
 	HighestBidder     string
-	HighestPrice      int
+	HighestBidPrice   int
 	CurrentPlayer     string
 	Phase             string
 }
@@ -270,7 +270,7 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.SilkDeck = 0
 	self.Started = false
 	self.HighestBidder = ""
-	self.HighestPrice = 0
+	self.HighestBidPrice = 0
 	self.CurrentPlayer = ""
 	self.Phase = ""
 	return self
@@ -326,6 +326,7 @@ type BidMsgReq struct {
 type BidMsgAns struct {
 	Username        string
 	HighestBidPrice int
+	HighestBidder   string
 }
 
 type BidMsg struct {
@@ -344,6 +345,7 @@ func (self *BidMsgReq) New() *BidMsgReq {
 func (self *BidMsgAns) New() *BidMsgAns {
 	self.Username = ""
 	self.HighestBidPrice = 0
+	self.HighestBidder = ""
 	return self
 }
 
@@ -351,6 +353,43 @@ func (self *BidMsg) New() *BidMsg {
 	self.Code = msg.BidMsg
 	self.Req = new(BidMsgReq).New()
 	self.Ans = new(BidMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// HandMsg
+
+type HandMsgReq struct {
+	Username string
+}
+
+type HandMsgAns struct {
+	Username string
+	Hand     []int
+}
+
+type HandMsg struct {
+	Code  string
+	Req   *HandMsgReq
+	Ans   *HandMsgAns
+	Error int
+}
+
+func (self *HandMsgReq) New() *HandMsgReq {
+	self.Username = ""
+	return self
+}
+
+func (self *HandMsgAns) New() *HandMsgAns {
+	self.Username = ""
+	self.Hand = make([]int, 0)
+	return self
+}
+
+func (self *HandMsg) New() *HandMsg {
+	self.Code = msg.HandMsg
+	self.Req = new(HandMsgReq).New()
+	self.Ans = new(HandMsgAns).New()
 	self.Error = 0
 	return self
 }

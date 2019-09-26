@@ -1592,7 +1592,7 @@
         "__id__": 43
       }
     ],
-    "_N$interactable": false,
+    "_N$interactable": true,
     "_N$enableAutoGrayEffect": false,
     "_N$transition": 3,
     "transition": 3,
@@ -3147,7 +3147,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "CurrentBidPrice",
+    "_name": "HighestBid",
     "_objFlags": 0,
     "_parent": {
       "__id__": 1

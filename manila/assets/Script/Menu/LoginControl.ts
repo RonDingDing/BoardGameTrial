@@ -94,31 +94,5 @@ export default class LoginControl extends BasicControl {
             console.log("LoginControl: ", message.Code, message);
             self.messageToGlobal(message);
         }
-    }
-
-    messageToGlobal(message) {
-        if (message.Error >= 0 && message.Ans.RoomNum !== 0) {
-            console.log("LoginControl: ", message.Code, message);
-            let mapList = message.Ans.Mapp || [];
-            let playerList = message.Ans.Players || [];
-            for (let i = 0; i < mapList.length; i++) {
-                Global.mapp[mapList[i].Name] = mapList[i];
-            }
-            for (let j = 0; j < playerList.length; j++) {
-                Global.allPlayers[playerList[j].Name] = playerList[j];
-                if (playerList[j].Name === Global.playerUser) {
-                    Global.readied = playerList[j].Ready;
-                    Global.seat = playerList[j].Seat;
-                }
-            }
-            Global.silkdeck = message.Ans.SilkDeck;
-            Global.jadedeck = message.Ans.JadeDeck;
-            Global.ginsengdeck = message.Ans.GinsengDeck;
-            Global.coffeedeck = message.Ans.CoffeeDeck;
-            Global.round = message.Ans.Round;
-            Global.roomNum = message.Ans.RoomNum;
-            Global.allPlayerName = message.Ans.PlayerName;
-            Global.started = message.Ans.Started;
-        }
-    }
+    }   
 }

@@ -12,6 +12,7 @@ export const ReadyMsg = "004";
 export const RoomDetailMsg = "005";
 export const GameStartMsg = "006";
 export const BidMsg = "007";
+export const HandMsg = "008";
 
 export const NorAlreadyInRoom   = 1
 export const NorNewEntered      = 2
@@ -164,7 +165,25 @@ export var bidmsg = {
     "Ans":
     {        
         "Username": "",
-        "HighestBidPrice": 0
+        "HighestBidPrice": 0,
+        "HighestBidder": ""
+    },
+    "Error": 0
+}
+
+
+export var handmsg = {
+    "Code": HandMsg,
+    "Req":
+    {
+       "Username": "",         
+    },
+    "Ans":
+    {        
+        "Username": "",
+        "Hand": [
+            // 0, 0, 0, 0
+        ]
     },
     "Error": 0
 }

@@ -17,15 +17,15 @@ import (
 
 func ClearState(ip string, connection *websocket.Conn, ormManager orm.Ormer) {
 	if username, ok := global.IpUserMap[ip]; ok {
-		manilaroom, loungeroom, roomNum := global.FindUserInManila(username)
+		manilaroom, loungeroom, _ := global.FindUserInManila(username)
 		messageType := 1
 		if loungeroom != nil {
 			// delete(global.UserPlayerMap, username)
 			delete(global.IpUserMap, ip)
 			loungeroom.Exit(username)
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
-			RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, loungeroom)
+			RoomObjBroadcastMessage(messageType, roomdetailmsg, loungeroom)
 		} else if manilaroom != nil {
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
 			if manilaroom.GetStarted() == false {
@@ -33,12 +33,12 @@ func ClearState(ip string, connection *websocket.Conn, ormManager orm.Ormer) {
 				delete(global.IpUserMap, ip)
 				manilaroom.Exit(username)
 
-				HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
-				RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+				HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaroom)
+				RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaroom)
 			} else {
 				manilaroom.GetManilaPlayers()[username].SetOnline(false)
-				HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
-				RoomBroadcastMessage(messageType, roomdetailmsg, roomNum)
+				HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaroom)
+				RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaroom)
 			}
 
 		}
@@ -234,20 +234,29 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 		}
 		if manilaRoom.CanStartGame() == true {
 			manilaRoom.StartGame()
+
+			// 广播开始信息
 			startgamemsg := new(pb3.GameStartMsg).New()
 			startgamemsg.Ans.RoomNum = roomNum
 			RoomObjBroadcastMessage(messageType, startgamemsg, manilaRoom)
 
+			// 设定起始玩家
 			firstPlayer := manilaRoom.SelectRandomPlayer()
 			bidmsg := new(pb3.BidMsg).New()
 			manilaRoom.SetCurrentPlayer(firstPlayer)
+			manilaRoom.SetHighestBidder(firstPlayer)
 			bidmsg.Ans.Username = firstPlayer
 			bidmsg.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
+			bidmsg.Ans.HighestBidder = manilaRoom.GetHighestBidder()
 			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
+
+			// 为每位玩家发送其手牌具体信息
+			RoomObjTellDeck(manilaRoom)
 		}
 
+		// 广播房间目前信息
 		roomdetailmsg := new(pb3.RoomDetailMsg).New()
-		HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
 		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
 	} else {
 		readymsg.Error = msg.ErrUserNotInRoom
@@ -264,7 +273,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 	}
 	username := bidmsg.Req.Username
 	bid := bidmsg.Req.Bid
-	manilaRoom, _, roomNum := global.FindUserInManila(username)
+	manilaRoom, _, _ := global.FindUserInManila(username)
 	if manilaRoom != nil {
 		if bid != 0 {
 			manilaRoom.SetHighestBidPrice(bid)
@@ -272,21 +281,36 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 		} else {
 			manilaRoom.GetManilaPlayers()[username].SetCanBid(false)
 		}
-		nextBidder := manilaRoom.NextBidder(username)
-		if nextBidder == "" {
-			manilaRoom.SetPhase("PlaceBoat")
-			manilaRoom.SetCurrentPlayer(username)
-			// TODO
-		} else {
+		hasBidder, bidderMap := manilaRoom.HasOtherBidder(manilaRoom.GetHighestBidder())
+		if hasBidder {
+			nextBidder := manilaRoom.NextBidder(username, bidderMap)
+			// 广播投标信息
 			bidmsg2 := new(pb3.BidMsg).New()
 			manilaRoom.SetCurrentPlayer(nextBidder)
 			bidmsg2.Ans.Username = nextBidder
 			bidmsg2.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
+			bidmsg2.Ans.HighestBidder = manilaRoom.GetHighestBidder()
 			RoomObjBroadcastMessage(messageType, bidmsg2, manilaRoom)
 
+			// 广播房间目前信息
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomPropertyRoomDetail(roomdetailmsg, roomNum)
+			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
 			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
+			// 为每位玩家发送其手牌具体信息
+			RoomObjTellDeck(manilaRoom)
+
+		} else {
+			manilaRoom.SetPhase("PlaceBoat")
+			manilaRoom.SetCurrentPlayer(manilaRoom.GetHighestBidder())
+
+			// TODO
+
+			// 广播房间目前信息
+			roomdetailmsg := new(pb3.RoomDetailMsg).New()
+			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
+			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
 		}
 
 	} else {

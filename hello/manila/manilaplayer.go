@@ -55,8 +55,8 @@ func (self *OtherProps) GetCanBid() bool {
 	return self.canbid
 }
 
-func (self *OtherProps) SetCanBid(canbid bool) bool {
-	return self.canbid
+func (self *OtherProps) SetCanBid(canbid bool) {
+	self.canbid = canbid
 }
 
 type ManilaPlayer struct {
@@ -145,6 +145,10 @@ func (self *ManilaPlayer) GetCanBid() bool {
 	return self.otherProps.GetCanBid()
 }
 
-func (self *ManilaPlayer) SetCanBid(canbid bool) bool {
-	return self.otherProps.SetCanBid(canbid)
+func (self *ManilaPlayer) SetCanBid(canbid bool) {
+	self.otherProps.SetCanBid(canbid)
+}
+
+func (self *ManilaPlayer) GetStocks() []int {
+	return self.otherProps.GetStocks()
 }

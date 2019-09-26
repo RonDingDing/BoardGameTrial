@@ -32,12 +32,8 @@ func FindRoomByNum(roomNum int) (*manila.ManilaRoom, *baseroom.Room) {
 		roomObj := EntranceLounge[msg.LoungeNum]
 		lounge := roomObj.GetRoom()
 		return nil, lounge
-	} else {
-		for num, manilaRoomObj := range ManilaLounge {
-			if num == roomNum {
-				return manilaRoomObj, nil
-			}
-		}
+	} else if room, ok := ManilaLounge[roomNum]; ok {
+		return room, nil
 	}
 	return nil, nil
 }

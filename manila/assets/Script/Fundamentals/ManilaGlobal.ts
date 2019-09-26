@@ -19,4 +19,6 @@ export namespace Global {
     export let highestBidPrice = 0;
     export let currentPlayer = "";
     export let phase = "";
+    export let money = 0;
+    export let hand = [];
 }
