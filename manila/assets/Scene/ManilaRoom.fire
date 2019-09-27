@@ -87,13 +87,16 @@
       },
       {
         "__id__": 25
+      },
+      {
+        "__id__": 26
       }
     ],
     "_active": true,
     "_level": 1,
     "_components": [
       {
-        "__id__": 27
+        "__id__": 28
       }
     ],
     "_prefab": null,
@@ -1007,6 +1010,60 @@
   },
   {
     "__type__": "cc.Node",
+    "_name": "BuyStockNode",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 2
+    },
+    "_children": [],
+    "_active": true,
+    "_level": 2,
+    "_components": [],
+    "_prefab": null,
+    "_opacity": 255,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 0,
+      "height": 0
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_position": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_scale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_eulerAngles": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_skewX": 0,
+    "_skewY": 0,
+    "_is3DNode": false,
+    "groupIndex": 0,
+    "_id": "bb4Z46k3tDE4Gpo3hi1ZlJ"
+  },
+  {
+    "__type__": "cc.Node",
     "_name": "ManilaControl",
     "_objFlags": 0,
     "_parent": {
@@ -1017,7 +1074,7 @@
     "_level": 2,
     "_components": [
       {
-        "__id__": 26
+        "__id__": 27
       }
     ],
     "_prefab": null,
@@ -1068,14 +1125,14 @@
     "_name": "",
     "_objFlags": 0,
     "node": {
-      "__id__": 25
+      "__id__": 26
     },
     "_enabled": true,
     "popUp": {
       "__uuid__": "7362cf40-3ccd-47d7-8a49-a52e16c8717e"
     },
     "canvas": {
-      "__id__": 27
+      "__id__": 28
     },
     "pawnChoice": [
       {
@@ -1125,6 +1182,12 @@
     },
     "bidPrefab": {
       "__uuid__": "864e0b60-58e9-452f-b2d1-fd90bcc35484"
+    },
+    "buyStockNode": {
+      "__id__": 25
+    },
+    "buyStockPrefab": {
+      "__uuid__": "9709fc8b-ad14-4c08-ac13-3d882d04113a"
     },
     "_id": "26tRbzzDhFo5iwLaPbsEnG"
   },

@@ -1,4 +1,4 @@
-import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg } from "../Fundamentals/Imports"
+import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -52,6 +52,7 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(BuyStockMsg, self.onBuyStockMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
+        EventMng.on("BuyStock", self.sendBuyStock, self);
 
     }
 
@@ -236,7 +237,44 @@ export default class ManilaControl extends BasicControl {
     onBuyStockMsg(message){
         let self = this;
         self.bidNode.active = false;
-        self.buyStockNode.active = true;
-    }
+       
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username){
+            console.log(message.Code, message);
+            self.bidNode.active = true;
+            let buyStockUnderNode = cc.instantiate(self.buyStockPrefab);
+            let silkNode = buyStockUnderNode.getChildByName("SilkDeck");   
+            let jadeNode = buyStockUnderNode.getChildByName("JadeDeck");   
+            let coffeeNode = buyStockUnderNode.getChildByName("CoffeeDeck");  
+            let ginsengNode = buyStockUnderNode.getChildByName("GinsengDeck");
 
+            let silkString = silkNode.getComponent(cc.Label);
+            silkString.string = message.Ans.SilkDeck;
+
+            let jadeString = jadeNode.getComponent(cc.Label);
+            jadeString.string = message.Ans.JadeDeck;
+
+            let coffeeString = coffeeNode.getComponent(cc.Label);
+            coffeeString.string = message.Ans.CoffeeDeck;
+
+            let ginsengString = ginsengNode.getComponent(cc.Label);
+            ginsengString.string = message.Ans.GinsengDeck;
+
+            self.buyStockNode.addChild(buyStockUnderNode);
+        }
+
+    }
+    sendBuyStock(data){
+        let self = this;
+        if (Global.currentPlayer === Global.playerUser) {            
+            let stock = parseInt(data);
+            let buystockmsgobj = JSON.parse(JSON.stringify(buystockmsg));
+            buystockmsgobj.Req.Username = Global.playerUser;
+            buystockmsgobj.Req.Stock = stock;
+            ManilaSocket.send(buystockmsgobj);
+            self.buyStockNode.active = false;
+        }
+
+    }
 }
