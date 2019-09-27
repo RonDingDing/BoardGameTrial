@@ -28,7 +28,6 @@ export default class SignupControl extends BasicControl {
 
 
     onSignUpMsg(message) {
-        console.log("SignupControl: ", message.Code, message);
         let self = this;
         if (message.Error == ErrUserExit) {
             self.playPopup("用户名已存在！");

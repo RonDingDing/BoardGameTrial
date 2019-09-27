@@ -48,7 +48,6 @@ export default class EnterRoomControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else {
-            console.log("EnterRoomControl: ", message.Code, message);
             if (message.Ans.RoomNum !== 0) {
                 // self.scheduleOnce(() => {
                 cc.director.loadScene("ManilaRoom");
@@ -68,9 +67,7 @@ export default class EnterRoomControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else {
-            console.log("EnterRoomControl: ", message.Code, message);          
             self.messageToGlobal(message);
-            console.log("EnterRoomControl: Global:", Global);
         }
     }
 

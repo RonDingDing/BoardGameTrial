@@ -16,6 +16,14 @@ const (
 
 	OriginalMoney      = 30
 	OriginalDeckNumber = 5
+
+	PhaseBidding      = "Bidding"
+	PhaseBuyStock     = "BuyStock"
+	PhasePutBoat      = "PutBoat"
+	PhaseDragBoat     = "DragBoat"
+	PhaseInvest       = "Invest"
+	PhasePostDragBoat = "PostDragBoat"
+	PhaseSettle       = "Settle"
 )
 
 var (

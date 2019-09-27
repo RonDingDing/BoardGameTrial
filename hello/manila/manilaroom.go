@@ -186,7 +186,7 @@ func (self *ManilaRoom) StartGame() bool {
 		self.ResetGame()
 		self.Deal2()
 		self.SetRound(1)
-		self.SetPhase("Bidding")
+		self.SetPhase(PhaseBidding)
 	}
 	return started
 }

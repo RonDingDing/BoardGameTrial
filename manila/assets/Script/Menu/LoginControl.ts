@@ -30,7 +30,6 @@ export default class LoginControl extends BasicControl {
             self.usernameEditBox.string = "";
             self.passwordEditBox.string = "";
         } else {
-            console.log("LoginControl: ", message.Code, message);
             let username = message.Ans.Username;
             let gold = message.Ans.Gold;
             let roomnum = message.Ans.RoomNum;
@@ -91,7 +90,6 @@ export default class LoginControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else {
-            console.log("LoginControl: ", message.Code, message);
             self.messageToGlobal(message);
         }
     }   

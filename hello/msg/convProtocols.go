@@ -14,6 +14,7 @@ const (
 	GameStartMsg  = "006"
 	BidMsg        = "007"
 	HandMsg       = "008"
+	BuyStockMsg   = "009"
 
 	NorAlreadyInRoom   = 1
 	NorNewEntered      = 2

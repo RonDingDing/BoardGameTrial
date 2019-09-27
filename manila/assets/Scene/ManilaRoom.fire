@@ -282,7 +282,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": 89.99999999999999
+      "z": 90
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -1124,7 +1124,7 @@
       "__id__": 24
     },
     "bidPrefab": {
-      "__uuid__": "ec029fa6-ff9b-4239-a538-b8cccda96d85"
+      "__uuid__": "864e0b60-58e9-452f-b2d1-fd90bcc35484"
     },
     "_id": "26tRbzzDhFo5iwLaPbsEnG"
   },

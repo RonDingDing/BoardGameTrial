@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"hello/baseroom"
 	"hello/global"
+	"hello/manila"
 	"hello/models"
 	"hello/msg"
 	"hello/pb3"
@@ -301,10 +302,18 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			RoomObjTellDeck(manilaRoom)
 
 		} else {
-			manilaRoom.SetPhase("PlaceBoat")
-			manilaRoom.SetCurrentPlayer(manilaRoom.GetHighestBidder())
-
-			// TODO
+			manilaRoom.SetPhase(manila.PhaseBuyStock)
+			captain := manilaRoom.GetHighestBidder()
+			manilaRoom.SetCurrentPlayer(captain)
+			buystockmsg := new(pb3.BuyStockMsg).New()
+			buystockmsg.Ans.Username = captain
+			buystockmsg.Ans.Bought = false
+			buystockmsg.Ans.RemindOrOperated = true
+			buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
+			buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
+			buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
+			buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
+			RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
 
 			// 广播房间目前信息
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()

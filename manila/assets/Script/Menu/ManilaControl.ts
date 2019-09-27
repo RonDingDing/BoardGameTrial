@@ -1,4 +1,4 @@
-import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg } from "../Fundamentals/Imports"
+import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -34,6 +34,12 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Prefab)
     bidPrefab: cc.Prefab = null
 
+    @property(cc.Node)
+    buyStockNode: cc.Node = null
+
+    @property(cc.Prefab)
+    buyStockPrefab: cc.Prefab = null
+
     onLoad() {
         super.onLoad();
         let self = this;
@@ -43,6 +49,7 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(GameStartMsg, self.onGameStartMsg, self);
         EventMng.on(BidMsg, self.onBidMsg, self);
         EventMng.on(HandMsg, self.onHandMsg, self);
+        EventMng.on(BuyStockMsg, self.onBuyStockMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
 
@@ -57,7 +64,7 @@ export default class ManilaControl extends BasicControl {
 
         } else {
             self.mapSprite.node.active = true;
-            self.readySprite.node.active = false;           
+            self.readySprite.node.active = false;
         }
 
         let allPlayers = Global.allPlayerName;
@@ -138,7 +145,6 @@ export default class ManilaControl extends BasicControl {
         } else {
             self.messageToGlobal(message);
             self.renderGlobal();
-            console.log("ManilaControl: ", message.Code, message);
         }
     }
 
@@ -154,7 +160,6 @@ export default class ManilaControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else {
-            console.log("ManilaControl: ", message.Code, message);
             self.phaseCatcher.node.active = true;
             let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
             phaseString.string = "Bidding";
@@ -187,41 +192,51 @@ export default class ManilaControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else {
-           
+            self.bidNode.active = true;
+            let bidUnderNode = cc.instantiate(self.bidPrefab);
+            let bidBackground = bidUnderNode.getChildByName("BidBackground");         
+
+            let bidButtons = bidUnderNode.getChildByName("BidButtons");
+            let bidString = bidBackground.getChildByName("HighestBid").getComponent(cc.Label);
+            bidString.string = "Bid " + message.Ans.HighestBidPrice + " from " + message.Ans.HighestBidder;
             if (Global.playerUser === message.Ans.Username) {
-                console.log(message);
-                self.bidNode.active = true
-                let bidUnderNode = cc.instantiate(self.bidPrefab);
-                let bidString = bidUnderNode.getChildByName("HighestBid").getComponent(cc.Label);               
-                bidString.string = "Bid "+ message.Ans.HighestBidPrice + " from " +    message.Ans.HighestBidder;
-                self.bidNode.addChild(bidUnderNode);
-               ;
+                bidButtons.active = true;
+            } else {
+                bidButtons.active = false;
+                self.scheduleOnce(function () {
+                    bidBackground.active = false;
+                }, 5);
             }
+            self.bidNode.addChild(bidUnderNode);
         }
     }
 
     sendBid(data) {
         let self = this;
-        let dp = parseInt(data);
-        let price = Global.highestBidPrice;       
-        let bidPrice = dp === 0 ? (dp) : (price + dp);    
-        if (bidPrice > Global.money){
-            self.playNotEnoughMoney();
-            return
+        if (Global.currentPlayer === Global.playerUser) {
+            let dp = parseInt(data);
+            let price = Global.highestBidPrice;
+            let bidPrice = dp === 0 ? (dp) : (price + dp);
+            if (bidPrice > Global.money) {
+                self.playNotEnoughMoney();
+                return
+            }
+            let bidmsgobj = JSON.parse(JSON.stringify(bidmsg));
+            bidmsgobj.Req.Username = Global.playerUser;
+            bidmsgobj.Req.Bid = bidPrice;
+            ManilaSocket.send(bidmsgobj);
         }
-
-     
-        let bidmsgobj = JSON.parse(JSON.stringify(bidmsg)); 
-        bidmsgobj.Req.Username = Global.playerUser;
-        bidmsgobj.Req.Bid = bidPrice;
-        
-   
-        ManilaSocket.send(bidmsgobj);
         self.bidNode.active = false;
     }
 
-    onHandMsg(message){
-        console.log(message);
+    onHandMsg(message) {
+        Global.hand = message.Ans.Hand;
+    }
+
+    onBuyStockMsg(message){
+        let self = this;
+        self.bidNode.active = false;
+        self.buyStockNode.active = true;
     }
 
 }

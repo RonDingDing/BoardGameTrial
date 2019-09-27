@@ -393,3 +393,52 @@ func (self *HandMsg) New() *HandMsg {
 	self.Error = 0
 	return self
 }
+
+// BuyStockMsg
+
+type BuyStockMsgReq struct {
+	Username string
+	Stock    int
+}
+
+type BuyStockMsgAns struct {
+	Username         string
+	RemindOrOperated bool
+	Bought           bool
+	SilkDeck         int
+	JadeDeck         int
+	CoffeeDeck       int
+	GinsengDeck      int
+}
+
+type BuyStockMsg struct {
+	Code  string
+	Req   *BuyStockMsgReq
+	Ans   *BuyStockMsgAns
+	Error int
+}
+
+func (self *BuyStockMsgReq) New() *BuyStockMsgReq {
+	self.Username = ""
+	self.Stock = 0
+	return self
+}
+
+func (self *BuyStockMsgAns) New() *BuyStockMsgAns {
+	self.Username = ""
+	self.RemindOrOperated = false
+	self.Bought = false
+	self.SilkDeck = 0
+	self.JadeDeck = 0
+	self.CoffeeDeck = 0
+	self.GinsengDeck = 0
+	return self
+}
+
+func (self *BuyStockMsg) New() *BuyStockMsg {
+	self.Code = msg.BuyStockMsg
+	self.Req = new(BuyStockMsgReq).New()
+	self.Ans = new(BuyStockMsgAns).New()
+	self.Error = 0
+	return self
+}
