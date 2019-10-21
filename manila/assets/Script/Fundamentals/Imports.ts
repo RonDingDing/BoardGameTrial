@@ -3,10 +3,10 @@ import { SocketDelegate, SocketEvent } from "./Network/SocketDelegate"
 export const address = "ws://localhost:8080/";
 export var SocketEvents = SocketEvent;
 export var ManilaSocket = new SocketDelegate(address);
- 
-export const SilkColor    = 1;
-export const JadeColor    = 2;
-export const CoffeeColor  = 3;
+
+export const SilkColor = 1;
+export const JadeColor = 2;
+export const CoffeeColor = 3;
 export const GinsengColor = 4;
 
 export const Errors = "000";
@@ -19,22 +19,24 @@ export const GameStartMsg = "006";
 export const BidMsg = "007";
 export const HandMsg = "008";
 export const BuyStockMsg = "009";
+export const ChangePhaseMsg = "010";
+export const PutBoatMsg = "011";
 
-export const NorAlreadyInRoom   = 1
-export const NorNewEntered      = 2
-export const ErrNormal          = 0
+export const NorAlreadyInRoom = 1
+export const NorNewEntered = 2
+export const ErrNormal = 0
 
 export const ErrNoHandler = -1
 export const ErrUserExit = -2
 export const ErrUserNotExit = -3
 export const ErrCannotEnterRoom = -4
 export const ErrNoSuchPlayer = -5
-export const ErrCannotExitRoom = -6 
-export const ErrGameStarted     = -7
-export const ErrUserNotInRoom   = -8
-export const ErrFailedEntering  = -9
-
-
+export const ErrCannotExitRoom = -6
+export const ErrGameStarted = -7
+export const ErrUserNotInRoom = -8
+export const ErrFailedEntering = -9
+export const ErrNotEnoughGameMoney = -10
+export const ErrUserNotCaptain = -11
 
 
 export var errors = {
@@ -109,7 +111,7 @@ export var roomdetailmsg = {
             // {"Money": 0, "Name": "", "Online": true, "Stock": 0, "Seat": 0, "Ready": false, "Canbid": true}
         ],
         "RoomNum": 0,
-        "Round": 0,    
+        "Round": 0,
         "Started": false,
         "HighestBidder": "",
         "CurrentPlayer": "",
@@ -146,8 +148,8 @@ export var enterroommsg = {
     "Ans":
     {
         "GameNum": 0,
-        "RoomNum": 0,      
-        
+        "RoomNum": 0,
+
     },
     "Error": 0
 }
@@ -156,11 +158,11 @@ export var gamestartmsg = {
     "Code": GameStartMsg,
     "Req":
     {
-       
+
     },
     "Ans":
-    {        
-        "RoomNum": 0              
+    {
+        "RoomNum": 0
     },
     "Error": 0
 }
@@ -169,11 +171,11 @@ export var bidmsg = {
     "Code": BidMsg,
     "Req":
     {
-       "Username": "", 
-       "Bid": 0,
+        "Username": "",
+        "Bid": 0,
     },
     "Ans":
-    {        
+    {
         "Username": "",
         "HighestBidPrice": 0,
         "HighestBidder": ""
@@ -186,10 +188,10 @@ export var handmsg = {
     "Code": HandMsg,
     "Req":
     {
-       "Username": "",         
+        "Username": "",
     },
     "Ans":
-    {        
+    {
         "Username": "",
         "Hand": [
             // 0, 0, 0, 0
@@ -202,18 +204,48 @@ export var buystockmsg = {
     "Code": BuyStockMsg,
     "Req":
     {
-       "Username": "",  
-       "Stock" : 0      
+        "Username": "",
+        "Stock": 0
     },
     "Ans":
-    {        
+    {
         "Username": "",
-        "RemindOrOperated": false, 
+        "RemindOrOperated": false,
         "Bought": 0,
         "SilkDeck": 0,
         "JadeDeck": 0,
         "CoffeeDeck": 0,
         "GinsengDeck": 0
+    },
+    "Error": 0
+}
+
+export var changephasemsg = {
+    "Code": ChangePhaseMsg,
+    "Req":
+    {
+
+    },
+    "Ans":
+    {
+        "RoomNum": 0,
+        "Phase": ""
+    },
+    "Error": 0
+}
+
+export var putboatmsg = {
+    "Code": PutBoatMsg,
+    "Req":
+    {
+        "Username": "",
+        "RoomNum": 0,
+        "Except": 0
+    },
+    "Ans":
+    {
+        "RoomNum": 0,
+        "Except": 0
     },
     "Error": 0
 }

@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -50,9 +50,11 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(BidMsg, self.onBidMsg, self);
         EventMng.on(HandMsg, self.onHandMsg, self);
         EventMng.on(BuyStockMsg, self.onBuyStockMsg, self);
+        EventMng.on(ChangePhaseMsg, self.onChangePhaseMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
+        
 
     }
 
@@ -158,9 +160,7 @@ export default class ManilaControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else {
-            self.phaseCatcher.node.active = true;
-            let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
-            phaseString.string = "Bidding";
+
 
             let act = cc.repeat(
                 cc.sequence(
@@ -168,20 +168,6 @@ export default class ManilaControl extends BasicControl {
                     cc.scaleTo(0.2, 1, 1),
                 ), 1);
             self.mapSprite.node.runAction(act);
-
-            // 动画
-            let action = cc.sequence(
-                cc.callFunc(function () {
-                    self.phaseCatcher.node.active = true;
-                }),
-                cc.fadeTo(0, 0),
-                cc.fadeTo(2.0, 255),
-                cc.fadeTo(2.0, 0),
-                cc.callFunc(function () {
-                    self.phaseCatcher.node.active = false;
-                })
-            );
-            self.phaseCatcher.node.runAction(action);
         }
     }
 
@@ -236,7 +222,6 @@ export default class ManilaControl extends BasicControl {
     onBuyStockMsg(message) {
         let self = this;
         self.bidNode.active = false;
-        console.log(message.Code, message);
         if (message.Error < 0) {
             self.popUpError(message);
         } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
@@ -295,5 +280,29 @@ export default class ManilaControl extends BasicControl {
             ManilaSocket.send(buystockmsgobj);
             self.buyStockNode.active = false;
         }
+    }
+
+    playCatcher(string){
+        let self = this;
+        self.phaseCatcher.node.active = true;
+        let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
+        phaseString.string = string;
+
+        let action = cc.sequence(
+            cc.callFunc(function () {
+                self.phaseCatcher.node.active = true;
+            }),
+            cc.fadeTo(1.0, 255),
+            cc.fadeTo(2.0, 0),
+            cc.callFunc(function () {
+                self.phaseCatcher.node.active = false;
+            })
+        );
+        self.phaseCatcher.node.runAction(action);
+    }
+   
+    onChangePhaseMsg(message) {
+        let self = this;
+        self.playCatcher(message.Ans.Phase);
     }
 }

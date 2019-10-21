@@ -1,7 +1,7 @@
 const { ccclass, property } = cc._decorator;
 import EventMng from "../Fundamentals/Manager/EventMng";
-import { 
-    SocketEvents, ErrNoHandler, ErrUserExit, ErrUserNotExit, ErrCannotEnterRoom, ErrNoSuchPlayer, ErrCannotExitRoom, ErrGameStarted, ErrUserNotInRoom, ErrFailedEntering 
+import {
+    SocketEvents, ErrNoHandler, ErrUserExit, ErrUserNotExit, ErrCannotEnterRoom, ErrNoSuchPlayer, ErrCannotExitRoom, ErrGameStarted, ErrUserNotInRoom, ErrFailedEntering, ErrUserNotCaptain
 } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 
@@ -58,11 +58,13 @@ export default class BasicControl extends cc.Component {
                 self.playPopup("游戏已经开始"); break
             case ErrUserNotInRoom:
                 self.playPopup("用户不在房间"); break
+            case ErrUserNotCaptain:
+                self.playPopup("用户不是船长"); break
         }
     }
 
     messageToGlobal(message) {
-        if (message.Error >= 0 && message.Ans.RoomNum !== 0) {          
+        if (message.Error >= 0 && message.Ans.RoomNum !== 0) {
             let mapList = message.Ans.Mapp || [];
             let playerList = message.Ans.Players || [];
             for (let i = 0; i < mapList.length; i++) {
@@ -106,7 +108,7 @@ export default class BasicControl extends cc.Component {
         Global.online = false;
     }
 
-    playNotEnoughMoney(){
+    playNotEnoughMoney() {
         console.log("不够钱！是否抵押股票？");
     }
 }
