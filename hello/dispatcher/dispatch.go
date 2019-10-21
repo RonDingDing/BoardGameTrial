@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/astaxie/beego/orm"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -37,6 +36,8 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 		go handler.HandleReadyMsg(messageType, message, connection, code.Code, ormManager)
 	case msg.BidMsg:
 		go handler.HandleBidMsg(messageType, message, connection, code.Code, ormManager)
+	case msg.BuyStockMsg:
+		go handler.HandleBuyStockMsg(messageType, message, connection, code.Code, ormManager)
 	default:
 		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
 	}

@@ -205,10 +205,7 @@ type PlayersS struct {
 }
 
 type RoomDetailMsgAns struct {
-	CoffeeDeck        int
 	GameNum           int
-	GinsengDeck       int
-	JadeDeck          int
 	Mapp              []MappS
 	PlayerName        []string
 	PlayerNumForStart int
@@ -216,7 +213,14 @@ type RoomDetailMsgAns struct {
 	Players           []PlayersS
 	RoomNum           int
 	Round             int
+	CoffeeDeck        int
+	GinsengDeck       int
+	JadeDeck          int
 	SilkDeck          int
+	CoffeeStockPrice  int
+	GinsengStockPrice int
+	JadeStockPrice    int
+	SilkStockPrice    int
 	Started           bool
 	HighestBidder     string
 	HighestBidPrice   int
@@ -256,10 +260,7 @@ func (self *PlayersS) New() *PlayersS {
 }
 
 func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
-	self.CoffeeDeck = 0
 	self.GameNum = 0
-	self.GinsengDeck = 0
-	self.JadeDeck = 0
 	self.Mapp = make([]MappS, 0)
 	self.PlayerName = make([]string, 0)
 	self.PlayerNumForStart = 0
@@ -268,6 +269,13 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.RoomNum = 0
 	self.Round = 0
 	self.SilkDeck = 0
+	self.GinsengDeck = 0
+	self.JadeDeck = 0
+	self.CoffeeDeck = 0
+	self.SilkStockPrice = 0
+	self.GinsengStockPrice = 0
+	self.JadeStockPrice = 0
+	self.CoffeeStockPrice = 0
 	self.Started = false
 	self.HighestBidder = ""
 	self.HighestBidPrice = 0
@@ -404,7 +412,7 @@ type BuyStockMsgReq struct {
 type BuyStockMsgAns struct {
 	Username         string
 	RemindOrOperated bool
-	Bought           bool
+	Bought           int
 	SilkDeck         int
 	JadeDeck         int
 	CoffeeDeck       int
@@ -427,7 +435,7 @@ func (self *BuyStockMsgReq) New() *BuyStockMsgReq {
 func (self *BuyStockMsgAns) New() *BuyStockMsgAns {
 	self.Username = ""
 	self.RemindOrOperated = false
-	self.Bought = false
+	self.Bought = 0
 	self.SilkDeck = 0
 	self.JadeDeck = 0
 	self.CoffeeDeck = 0

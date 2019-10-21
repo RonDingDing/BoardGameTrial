@@ -80,6 +80,11 @@ export default class BasicControl extends cc.Component {
             Global.jadedeck = message.Ans.JadeDeck;
             Global.ginsengdeck = message.Ans.GinsengDeck;
             Global.coffeedeck = message.Ans.CoffeeDeck;
+            Global.silkstockprice = message.Ans.SilkStockPrice;
+            Global.jadestockprice = message.Ans.JadeStockPrice;
+            Global.ginsengstockprice = message.Ans.GinsengStockPrice;
+            Global.coffeestockprice = message.Ans.CoffeeStockPrice;
+
             Global.round = message.Ans.Round;
             Global.roomNum = message.Ans.RoomNum;
             Global.allPlayerName = message.Ans.PlayerName;

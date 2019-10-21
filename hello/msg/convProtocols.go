@@ -16,18 +16,19 @@ const (
 	HandMsg       = "008"
 	BuyStockMsg   = "009"
 
-	NorAlreadyInRoom   = 1
-	NorNewEntered      = 2
-	ErrNormal          = 0
-	ErrNoHandler       = -1
-	ErrUserExit        = -2
-	ErrUserNotExit     = -3
-	ErrCannotEnterRoom = -4
-	ErrNoSuchPlayer    = -5
-	ErrCannotExitRoom  = -6
-	ErrGameStarted     = -7
-	ErrUserNotInRoom   = -8
-	ErrFailedEntering  = -9
+	NorAlreadyInRoom      = 1
+	NorNewEntered         = 2
+	ErrNormal             = 0
+	ErrNoHandler          = -1
+	ErrUserExit           = -2
+	ErrUserNotExit        = -3
+	ErrCannotEnterRoom    = -4
+	ErrNoSuchPlayer       = -5
+	ErrCannotExitRoom     = -6
+	ErrGameStarted        = -7
+	ErrUserNotInRoom      = -8
+	ErrFailedEntering     = -9
+	ErrNotEnoughGameMoney = -10
 
 	LoungeNum = 0
 )

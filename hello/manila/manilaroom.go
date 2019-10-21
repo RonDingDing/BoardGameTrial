@@ -24,6 +24,23 @@ type ManilaRoom struct {
 	highestBidPrice int
 	currentPlayer   string
 	phase           string
+	stockPrice      []int
+}
+
+func (self *ManilaRoom) GetStockPrice(typing int) int {
+	return self.stockPrice[typing]
+}
+
+func (self *ManilaRoom) GetBuyStockPrice(typing int) int {
+	price := self.stockPrice[typing]
+	if price == 0 {
+		return 5
+	}
+	return price
+}
+
+func (self *ManilaRoom) SetStockPrice(typing int, price int) {
+	self.stockPrice[typing] = price
 }
 
 func (self *ManilaRoom) HasOtherBidder(username string) (bool, map[string]bool) {
@@ -240,6 +257,7 @@ func (self *ManilaRoom) ResetDecks() {
 	self.coffeedeck = []ManilaStock{}
 	self.ginsengdeck = []ManilaStock{}
 	self.silkdeck = []ManilaStock{}
+	self.stockPrice = []int{0, 0, 0, 0, 0}
 	for _, color := range []int{JadeColor, SilkColor, CoffeeColor, GinsengColor} {
 		card := new(ManilaStock).New(color)
 		for j := 0; j < OriginalDeckNumber; j++ {
@@ -322,53 +340,20 @@ func (self *ManilaRoom) TakeOneStock(typing int) (ManilaStock, error) {
 }
 
 func (self *ManilaRoom) Deal2() {
-	for _, v := range self.GetManilaPlayers() {
-		dealed := 0
-		for dealed < 2 {
-			stock := randStock()
-			switch stock {
-			case SilkColor:
-				if self.GetOneDeck(SilkColor) > 0 {
-					silk, err := self.TakeOneStock(SilkColor)
-					if err == nil {
-						v.AddHand(silk)
-						dealed += 1
-					}
-				}
-
-			case GinsengColor:
-				if self.GetOneDeck(GinsengColor) > 0 {
-					ginseng, err := self.TakeOneStock(GinsengColor)
-					if err == nil {
-						v.AddHand(ginseng)
-						dealed += 1
-					}
-				}
-
-			case CoffeeColor:
-				if self.GetOneDeck(CoffeeColor) > 0 {
-					coffee, err := self.TakeOneStock(CoffeeColor)
-					if err == nil {
-						v.AddHand(coffee)
-						dealed += 1
-					}
-				}
-
-			case JadeColor:
-				if self.GetOneDeck(JadeColor) > 0 {
-					jade, err := self.TakeOneStock(JadeColor)
-					if err == nil {
-						v.AddHand(jade)
-						dealed += 1
-					}
-				}
-			}
+	deck := self.shuffleDeck()
+	i := 0
+	for _, p := range self.manilaplayers {
+		for dealed := 0; dealed < 2; dealed++ {
+			color := deck[i].GetColor()
+			card, _ := self.TakeOneStock(color)
+			p.AddHand(card)
+			i++
 		}
 	}
 }
 
 func (self *ManilaRoom) SelectRandomPlayer() string {
-	rand.NewSource(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 	playerNames := make([]string, 0)
 	for k, _ := range self.manilaplayers {
 		playerNames = append(playerNames, k)
@@ -377,9 +362,12 @@ func (self *ManilaRoom) SelectRandomPlayer() string {
 	return playerNames[num]
 }
 
-func randStock() int {
-	rand.NewSource(time.Now().UnixNano())
-	allStock := []int{1, 2, 3, 4}
-	num := rand.Intn(100) % len(allStock)
-	return allStock[num]
+func (self *ManilaRoom) shuffleDeck() []ManilaStock {
+	deck := append(append(append(self.jadedeck, self.silkdeck...), self.ginsengdeck...), self.coffeedeck...)
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < len(deck); i++ {
+		swap := rand.Intn(100) % len(deck)
+		deck[i], deck[swap] = deck[swap], deck[i]
+	}
+	return deck
 }

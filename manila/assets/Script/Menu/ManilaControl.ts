@@ -1,4 +1,4 @@
-import { ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -125,18 +125,15 @@ export default class ManilaControl extends BasicControl {
                 self.putNode.addChild(scriptPlayer);
 
                 // 动画
-                let action = cc.repeat(
-                    cc.sequence(
-                        cc.scaleTo(0.2, 1.5, 1.5),
-                        cc.scaleTo(0.2, 1, 1),
-                    ), len);
+                let action = cc.sequence(
+                    cc.scaleTo(0.2, 1.5, 1.5),
+                    cc.scaleTo(0.2, 1, 1),
+                );
                 tokenSpriteNode.runAction(action);
 
             }
         }
     }
-
-
 
 
     onRoomDetailMsg(message) {
@@ -195,7 +192,7 @@ export default class ManilaControl extends BasicControl {
         } else {
             self.bidNode.active = true;
             let bidUnderNode = cc.instantiate(self.bidPrefab);
-            let bidBackground = bidUnderNode.getChildByName("BidBackground");         
+            let bidBackground = bidUnderNode.getChildByName("BidBackground");
 
             let bidButtons = bidUnderNode.getChildByName("BidButtons");
             let bidString = bidBackground.getChildByName("HighestBid").getComponent(cc.Label);
@@ -231,22 +228,24 @@ export default class ManilaControl extends BasicControl {
     }
 
     onHandMsg(message) {
-        Global.hand = message.Ans.Hand;
+        if (Global.playerUser === message.Ans.Username) {
+            Global.hand = message.Ans.Hand;
+        }
     }
 
-    onBuyStockMsg(message){
+    onBuyStockMsg(message) {
         let self = this;
         self.bidNode.active = false;
-       
+        console.log(message.Code, message);
         if (message.Error < 0) {
             self.popUpError(message);
-        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username){
-            console.log(message.Code, message);
-            self.bidNode.active = true;
+        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
+
+            self.buyStockNode.active = true;
             let buyStockUnderNode = cc.instantiate(self.buyStockPrefab);
-            let silkNode = buyStockUnderNode.getChildByName("SilkDeck");   
-            let jadeNode = buyStockUnderNode.getChildByName("JadeDeck");   
-            let coffeeNode = buyStockUnderNode.getChildByName("CoffeeDeck");  
+            let silkNode = buyStockUnderNode.getChildByName("SilkDeck");
+            let jadeNode = buyStockUnderNode.getChildByName("JadeDeck");
+            let coffeeNode = buyStockUnderNode.getChildByName("CoffeeDeck");
             let ginsengNode = buyStockUnderNode.getChildByName("GinsengDeck");
 
             let silkString = silkNode.getComponent(cc.Label);
@@ -265,16 +264,36 @@ export default class ManilaControl extends BasicControl {
         }
 
     }
-    sendBuyStock(data){
+    sendBuyStock(data) {
         let self = this;
-        if (Global.currentPlayer === Global.playerUser) {            
+        if (Global.currentPlayer === Global.playerUser) {
             let stock = parseInt(data);
             let buystockmsgobj = JSON.parse(JSON.stringify(buystockmsg));
+            let stockprice;
+            switch (stock) {
+                case SilkColor:
+                    stockprice = Global.silkstockprice || 5
+                    break;
+                case JadeColor:
+                    stockprice = Global.jadestockprice || 5
+                    break;
+                case CoffeeColor:
+                    stockprice = Global.coffeestockprice || 5
+                    break;
+                case GinsengColor:
+                    stockprice = Global.ginsengstockprice || 5
+                    break;
+                default:
+                    stockprice = 0;
+            }
+            if (stockprice > Global.money) {
+                self.playNotEnoughMoney();
+                return
+            }
             buystockmsgobj.Req.Username = Global.playerUser;
             buystockmsgobj.Req.Stock = stock;
             ManilaSocket.send(buystockmsgobj);
             self.buyStockNode.active = false;
         }
-
     }
 }

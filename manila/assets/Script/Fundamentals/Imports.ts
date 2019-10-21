@@ -3,6 +3,11 @@ import { SocketDelegate, SocketEvent } from "./Network/SocketDelegate"
 export const address = "ws://localhost:8080/";
 export var SocketEvents = SocketEvent;
 export var ManilaSocket = new SocketDelegate(address);
+ 
+export const SilkColor    = 1;
+export const JadeColor    = 2;
+export const CoffeeColor  = 3;
+export const GinsengColor = 4;
 
 export const Errors = "000";
 export const LoginMsg = "001";
@@ -90,6 +95,10 @@ export var roomdetailmsg = {
         "SilkDeck": 0,
         "GinsengDeck": 0,
         "JadeDeck": 0,
+        "CoffeeStockPrice": 0,
+        "SilkStockPrice": 0,
+        "GinsengStockPrice": 0,
+        "JadeStockPrice": 0,
         "Mapp": [
             // {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false}
         ],
@@ -200,7 +209,7 @@ export var buystockmsg = {
     {        
         "Username": "",
         "RemindOrOperated": false, 
-        "Bought": false,
+        "Bought": 0,
         "SilkDeck": 0,
         "JadeDeck": 0,
         "CoffeeDeck": 0,

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"hello/baseroom"
 	"hello/global"
 	"hello/manila"
@@ -90,6 +91,10 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 		roomdetailmsg.Ans.HighestBidPrice = room.GetHighestBidPrice()
 		roomdetailmsg.Ans.CurrentPlayer = room.GetCurrentPlayer()
 		roomdetailmsg.Ans.Phase = room.GetPhase()
+		roomdetailmsg.Ans.JadeStockPrice = room.GetStockPrice(manila.JadeColor)
+		roomdetailmsg.Ans.SilkStockPrice = room.GetStockPrice(manila.SilkColor)
+		roomdetailmsg.Ans.CoffeeStockPrice = room.GetStockPrice(manila.CoffeeColor)
+		roomdetailmsg.Ans.GinsengStockPrice = room.GetStockPrice(manila.GinsengColor)
 
 		for k, v := range room.GetMap() {
 			mapSpot := pb3.MappS{Name: k, Taken: v.GetTaken(),
@@ -111,6 +116,7 @@ func RoomObjTellDeck(manilaRoom *manila.ManilaRoom) {
 		handmsg := new(pb3.HandMsg).New()
 		handmsg.Ans.Username = k
 		handmsg.Ans.Hand = v.GetStocks()
+		fmt.Println(k, handmsg.Ans.Hand)
 		SendMessage(messageType, handmsg, v.GetConnection())
 	}
 }

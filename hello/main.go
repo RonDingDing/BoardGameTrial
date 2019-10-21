@@ -1,29 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"hello/manila"
+	"math/rand"
+	"time"
+)
 
 func main() {
-	a := []string{"s", "a", "d"}
-	c := append(a, a...)
-	dic := map[string]bool{"s": true, "a": false, "d": false}
-	s := "s"
+	deck := make([]manila.ManilaStock, 0)
 
-	m := get(s, c, dic)
-	fmt.Print(m)
-}
-
-func get(username string, names []string, dic map[string]bool) string {
-	for i := 0; i < len(names); i++ {
-		if names[i] == username {
-			for m := i + 1; m < len(names); m++ {
-				checkName := names[m]
-				if username != checkName && dic[checkName] == true {
-					return checkName
-				}
-			}
-			break
+	for j := 1; j < 5; j++ {
+		for i := 0; i < 5; i++ {
+			card := new(manila.ManilaStock).New(j)
+			deck = append(deck, *card)
 		}
 	}
-	return ""
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < len(deck); i++ {
+		swap := rand.Intn(100) % len(deck)
+
+		deck[i], deck[swap] = deck[swap], deck[i]
+
+	}
+	fmt.Println(deck)
 
 }

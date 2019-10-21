@@ -12,7 +12,6 @@ import (
 	"log"
 
 	"github.com/astaxie/beego/orm"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -302,12 +301,17 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			RoomObjTellDeck(manilaRoom)
 
 		} else {
+			// 没有玩家能够投标了，通知船长要买股票
 			manilaRoom.SetPhase(manila.PhaseBuyStock)
 			captain := manilaRoom.GetHighestBidder()
+			captainObj := manilaRoom.GetManilaPlayers()[captain]
+			captainPrice := manilaRoom.GetHighestBidPrice()
+			captainObj.AddMoney(-captainPrice)
 			manilaRoom.SetCurrentPlayer(captain)
+			manilaRoom.SetHighestBidPrice(0)
 			buystockmsg := new(pb3.BuyStockMsg).New()
 			buystockmsg.Ans.Username = captain
-			buystockmsg.Ans.Bought = false
+			buystockmsg.Ans.Bought = 0
 			buystockmsg.Ans.RemindOrOperated = true
 			buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
 			buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
@@ -327,4 +331,53 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 		SendMessage(messageType, bidmsg, connection)
 	}
 
+}
+
+func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	buystockmsg := new(pb3.BuyStockMsg).New()
+	err := json.Unmarshal(message, &buystockmsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := buystockmsg.Req.Username
+	stockType := buystockmsg.Req.Stock
+	manilaRoom, _, _ := global.FindUserInManila(username)
+	if manilaRoom == nil {
+		buystockmsg.Error = msg.ErrUserNotInRoom
+		SendMessage(messageType, buystockmsg, connection)
+	} else {
+		stockBuyer := manilaRoom.GetManilaPlayers()[username]
+		stockPrice := manilaRoom.GetBuyStockPrice(stockType)
+		if stockBuyer.GetMoney() < stockPrice {
+			buystockmsg.Error = msg.ErrNotEnoughGameMoney
+			SendMessage(messageType, buystockmsg, connection)
+		} else if manilaRoom.GetOneDeck(stockType) == 0 {
+			buystockmsg.Error = msg.ErrNotEnoughGameMoney
+			SendMessage(messageType, buystockmsg, connection)
+		} else {
+			// 购买股票
+			stockBuyer.AddMoney(-stockPrice)
+			stockCard, _ := manilaRoom.TakeOneStock(stockType)
+			stockBuyer.AddHand(stockCard)
+
+			buystockmsg.Ans.Bought = stockType
+			buystockmsg.Ans.Username = username
+			buystockmsg.Ans.RemindOrOperated = false
+			buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
+			buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
+			buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
+			buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
+			RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
+
+			// 广播房间目前信息
+			roomdetailmsg := new(pb3.RoomDetailMsg).New()
+			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
+			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
+			// 为每位玩家发送其手牌具体信息
+			RoomObjTellDeck(manilaRoom)
+		}
+
+	}
 }
