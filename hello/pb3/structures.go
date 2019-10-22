@@ -450,3 +450,83 @@ func (self *BuyStockMsg) New() *BuyStockMsg {
 	self.Error = 0
 	return self
 }
+
+// ChangePhaseMsg
+
+type ChangePhaseMsgReq struct {
+}
+
+type ChangePhaseMsgAns struct {
+	RoomNum int
+	Phase   string
+}
+
+type ChangePhaseMsg struct {
+	Code  string
+	Req   *ChangePhaseMsgReq
+	Ans   *ChangePhaseMsgAns
+	Error int
+}
+
+func (self *ChangePhaseMsgReq) New() *ChangePhaseMsgReq {
+	return self
+}
+
+func (self *ChangePhaseMsgAns) New() *ChangePhaseMsgAns {
+	self.RoomNum = 0
+	self.Phase = ""
+	return self
+}
+
+func (self *ChangePhaseMsg) New() *ChangePhaseMsg {
+	self.Code = msg.ChangePhaseMsg
+	self.Req = new(ChangePhaseMsgReq).New()
+	self.Ans = new(ChangePhaseMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// PutBoatMsg
+
+type PutBoatMsgReq struct {
+	Username string
+	RoomNum  int
+	Except   int
+}
+
+type PutBoatMsgAns struct {
+	Username         string
+	RemindOrOperated bool
+	RoomNum          int
+	Except           int
+}
+
+type PutBoatMsg struct {
+	Code  string
+	Req   *PutBoatMsgReq
+	Ans   *PutBoatMsgAns
+	Error int
+}
+
+func (self *PutBoatMsgReq) New() *PutBoatMsgReq {
+	self.Username = ""
+	self.RoomNum = 0
+	self.Except = 0
+	return self
+}
+
+func (self *PutBoatMsgAns) New() *PutBoatMsgAns {
+	self.Username = ""
+	self.RoomNum = 0
+	self.Except = 0
+	self.RemindOrOperated = false
+	return self
+}
+
+func (self *PutBoatMsg) New() *PutBoatMsg {
+	self.Code = msg.PutBoatMsg
+	self.Req = new(PutBoatMsgReq).New()
+	self.Ans = new(PutBoatMsgAns).New()
+	self.Error = 0
+	return self
+}

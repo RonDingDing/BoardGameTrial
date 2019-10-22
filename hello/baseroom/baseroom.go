@@ -146,7 +146,7 @@ func (self *Room) Exit(name string) int {
 			return msg.ErrGameStarted
 		}
 	} else {
-		return msg.ErrUserNotInRoom
+		return msg.ErrUserIsNotInRoom
 	}
 }
 

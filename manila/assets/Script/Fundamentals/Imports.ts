@@ -244,8 +244,10 @@ export var putboatmsg = {
     },
     "Ans":
     {
+        "Username": "",
         "RoomNum": 0,
-        "Except": 0
+        "Except": 0,
+        "RemindOrOperated": false,
     },
     "Error": 0
 }

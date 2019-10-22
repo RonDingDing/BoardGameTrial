@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"hello/baseroom"
 	"hello/global"
 	"hello/manila"
@@ -116,7 +115,17 @@ func RoomObjTellDeck(manilaRoom *manila.ManilaRoom) {
 		handmsg := new(pb3.HandMsg).New()
 		handmsg.Ans.Username = k
 		handmsg.Ans.Hand = v.GetStocks()
-		fmt.Println(k, handmsg.Ans.Hand)
 		SendMessage(messageType, handmsg, v.GetConnection())
+	}
+}
+
+func RoomObjChangePhase(manilaRoom *manila.ManilaRoom, phase string) {
+	messageType := 1
+	manilaRoom.SetPhase(phase)
+	for _, v := range manilaRoom.GetManilaPlayers() {
+		changephasemsg := new(pb3.ChangePhaseMsg).New()
+		changephasemsg.Ans.RoomNum = manilaRoom.GetRoomNum()
+		changephasemsg.Ans.Phase = manilaRoom.GetPhase()
+		SendMessage(messageType, changephasemsg, v.GetConnection())
 	}
 }

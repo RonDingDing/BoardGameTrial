@@ -252,6 +252,7 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 
 			// 为每位玩家发送其手牌具体信息
 			RoomObjTellDeck(manilaRoom)
+			RoomObjChangePhase(manilaRoom, manila.PhaseBidding)
 		}
 
 		// 广播房间目前信息
@@ -259,7 +260,7 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
 		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
 	} else {
-		readymsg.Error = msg.ErrUserNotInRoom
+		readymsg.Error = msg.ErrUserIsNotInRoom
 		SendMessage(messageType, readymsg, connection)
 	}
 }
@@ -302,7 +303,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 
 		} else {
 			// 没有玩家能够投标了，通知船长要买股票
-			manilaRoom.SetPhase(manila.PhaseBuyStock)
+
 			captain := manilaRoom.GetHighestBidder()
 			captainObj := manilaRoom.GetManilaPlayers()[captain]
 			captainPrice := manilaRoom.GetHighestBidPrice()
@@ -317,17 +318,25 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
 			buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
 			buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
+
 			RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
+			RoomObjChangePhase(manilaRoom, manila.PhaseBuyStock)
 
 			// 广播房间目前信息
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
 			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
 			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
 
+			putboatmsg := new(pb3.PutBoatMsg).New()
+			putboatmsg.Ans.Username = captain
+			putboatmsg.Ans.RemindOrOperated = true
+			putboatmsg.Ans.RoomNum = manilaRoom.GetRoomNum()
+			RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+
 		}
 
 	} else {
-		bidmsg.Error = msg.ErrUserNotInRoom
+		bidmsg.Error = msg.ErrUserIsNotInRoom
 		SendMessage(messageType, bidmsg, connection)
 	}
 
@@ -344,40 +353,49 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 	stockType := buystockmsg.Req.Stock
 	manilaRoom, _, _ := global.FindUserInManila(username)
 	if manilaRoom == nil {
-		buystockmsg.Error = msg.ErrUserNotInRoom
+		buystockmsg.Error = msg.ErrUserIsNotInRoom
+		SendMessage(messageType, buystockmsg, connection)
+	} else if username != manilaRoom.GetHighestBidder() {
+		buystockmsg.Error = msg.ErrUserIsNotCaptain
 		SendMessage(messageType, buystockmsg, connection)
 	} else {
 		stockBuyer := manilaRoom.GetManilaPlayers()[username]
 		stockPrice := manilaRoom.GetBuyStockPrice(stockType)
-		if stockBuyer.GetMoney() < stockPrice {
-			buystockmsg.Error = msg.ErrNotEnoughGameMoney
-			SendMessage(messageType, buystockmsg, connection)
-		} else if manilaRoom.GetOneDeck(stockType) == 0 {
-			buystockmsg.Error = msg.ErrNotEnoughGameMoney
-			SendMessage(messageType, buystockmsg, connection)
-		} else {
-			// 购买股票
+
+		// 购买股票
+		if stockType != manila.EmptyColor {
+			if stockBuyer.GetMoney() < stockPrice {
+				buystockmsg.Error = msg.ErrNotEnoughGameMoney
+				SendMessage(messageType, buystockmsg, connection)
+				return
+			}
 			stockBuyer.AddMoney(-stockPrice)
-			stockCard, _ := manilaRoom.TakeOneStock(stockType)
+			stockCard, err := manilaRoom.TakeOneStock(stockType)
+			if err != nil {
+				buystockmsg.Error = msg.ErrNotEnoughStock
+				SendMessage(messageType, buystockmsg, connection)
+				return
+			}
 			stockBuyer.AddHand(stockCard)
-
-			buystockmsg.Ans.Bought = stockType
-			buystockmsg.Ans.Username = username
-			buystockmsg.Ans.RemindOrOperated = false
-			buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
-			buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
-			buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
-			buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
-			RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
-
-			// 广播房间目前信息
-			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
-
-			// 为每位玩家发送其手牌具体信息
-			RoomObjTellDeck(manilaRoom)
 		}
 
+		buystockmsg.Ans.Bought = stockType
+		buystockmsg.Ans.Username = username
+		buystockmsg.Ans.RemindOrOperated = false
+		buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
+		buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
+		buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
+		buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
+
+		RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
+		RoomObjChangePhase(manilaRoom, manila.PhasePutBoat)
+
+		// 广播房间目前信息
+		roomdetailmsg := new(pb3.RoomDetailMsg).New()
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
+		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
+		// 为每位玩家发送其手牌具体信息
+		RoomObjTellDeck(manilaRoom)
 	}
 }

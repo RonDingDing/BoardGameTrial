@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -40,6 +40,10 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Prefab)
     buyStockPrefab: cc.Prefab = null
 
+    @property(cc.Sprite)
+    buyStocker: cc.Sprite = null
+
+
     onLoad() {
         super.onLoad();
         let self = this;
@@ -51,10 +55,11 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(HandMsg, self.onHandMsg, self);
         EventMng.on(BuyStockMsg, self.onBuyStockMsg, self);
         EventMng.on(ChangePhaseMsg, self.onChangePhaseMsg, self);
+        EventMng.on(PutBoatMsg, self.onPutBoatMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
-        
+
 
     }
 
@@ -246,6 +251,19 @@ export default class ManilaControl extends BasicControl {
             ginsengString.string = message.Ans.GinsengDeck;
 
             self.buyStockNode.addChild(buyStockUnderNode);
+
+        } else if (!message.Ans.RemindOrOperated) {
+            let username = message.Ans.Username;
+            let bought = message.Ans.Bought;
+            let stockName = "";
+            if (bought > 0) {
+                stockName = "1 stock.";
+            }
+            else {
+                stockName = "0 stock.";
+            }
+
+            self.playBuyStocker(username + " bought " + stockName);
         }
 
     }
@@ -257,17 +275,13 @@ export default class ManilaControl extends BasicControl {
             let stockprice;
             switch (stock) {
                 case SilkColor:
-                    stockprice = Global.silkstockprice || 5
-                    break;
+                    stockprice = Global.silkstockprice || 5; break;
                 case JadeColor:
-                    stockprice = Global.jadestockprice || 5
-                    break;
+                    stockprice = Global.jadestockprice || 5; break;
                 case CoffeeColor:
-                    stockprice = Global.coffeestockprice || 5
-                    break;
+                    stockprice = Global.coffeestockprice || 5; break;
                 case GinsengColor:
-                    stockprice = Global.ginsengstockprice || 5
-                    break;
+                    stockprice = Global.ginsengstockprice || 5; break;
                 default:
                     stockprice = 0;
             }
@@ -282,27 +296,43 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    playCatcher(string){
+    playCatcher(string) {
         let self = this;
         self.phaseCatcher.node.active = true;
-        let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
-        phaseString.string = string;
-
         let action = cc.sequence(
             cc.callFunc(function () {
-                self.phaseCatcher.node.active = true;
+                let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
+                phaseString.string = string;
+
             }),
             cc.fadeTo(1.0, 255),
             cc.fadeTo(2.0, 0),
-            cc.callFunc(function () {
-                self.phaseCatcher.node.active = false;
-            })
         );
         self.phaseCatcher.node.runAction(action);
     }
-   
+
+    playBuyStocker(string) {
+        let self = this;
+        self.buyStocker.node.active = true;
+        let action = cc.sequence(
+            cc.callFunc(function () {
+                let phaseString = self.buyStocker.node.getChildByName("PhaseString").getComponent(cc.Label);
+                phaseString.string = string;
+
+            }),
+            cc.fadeTo(1.0, 255),
+            cc.fadeTo(2.0, 0),
+        );
+        self.buyStocker.node.runAction(action);
+    }
+
     onChangePhaseMsg(message) {
         let self = this;
         self.playCatcher(message.Ans.Phase);
+    }
+
+    onPutBoatMsg(message) {
+        let self = this;
+        console.log(message);
     }
 }
