@@ -35,6 +35,9 @@ export default class BasicControl extends cc.Component {
         let popUpNode: cc.Node = popUp.getChildByName("AlertString");
         let popUpString: cc.Label = popUpNode.getComponent(cc.Label);
         popUpString.string = content;
+        self.scheduleOnce(function(){
+            popUp.active = false;
+        }, 2);
 
     }
     popUpError(message) {

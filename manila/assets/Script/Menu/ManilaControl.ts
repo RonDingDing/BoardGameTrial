@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
@@ -43,6 +43,11 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Sprite)
     buyStocker: cc.Sprite = null
 
+    @property(cc.Node)
+    putBoatNode: cc.Node = null
+
+    @property(cc.Prefab)
+    putBoatPrefab: cc.Prefab = null
 
     onLoad() {
         super.onLoad();
@@ -59,8 +64,7 @@ export default class ManilaControl extends BasicControl {
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
-
-
+        EventMng.on("PutBoat", self.sendPutBoat, self);
     }
 
 
@@ -333,6 +337,29 @@ export default class ManilaControl extends BasicControl {
 
     onPutBoatMsg(message) {
         let self = this;
-        console.log(message);
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
+            self.putBoatNode.active = true;
+            self.putBoatNode.removeAllChildren();
+            let putBoatUnderNode = cc.instantiate(self.putBoatPrefab);
+            self.putBoatNode.addChild(putBoatUnderNode);
+        }
+    }
+
+    sendPutBoat(except, ok) {
+        let self = this;
+        console.log(except, ok);
+        if (ok) {
+            let putboatmsgobj = JSON.parse(JSON.stringify(putboatmsg));
+            putboatmsgobj.Req.Username = Global.playerUser;
+            putboatmsgobj.Req.RoomNum = Global.roomNum;
+            putboatmsgobj.Req.Except = except;
+            ManilaSocket.send(putboatmsgobj);
+            self.putBoatNode.active = false;
+        } else {
+            self.playPopup("请选择三种货物");
+        }
+
     }
 }

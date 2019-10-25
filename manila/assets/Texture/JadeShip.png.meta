@@ -1,0 +1,32 @@
+{
+  "ver": "2.3.1",
+  "uuid": "27e34fea-4311-4812-91d8-80afbf4f21de",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "platformSettings": {},
+  "subMetas": {
+    "JadeShip": {
+      "ver": "1.0.4",
+      "uuid": "cd431382-5e6e-4cbc-a38e-85a6061296d9",
+      "rawTextureUuid": "27e34fea-4311-4812-91d8-80afbf4f21de",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 160,
+      "height": 534,
+      "rawWidth": 160,
+      "rawHeight": 534,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

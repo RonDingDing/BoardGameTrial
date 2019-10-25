@@ -327,12 +327,6 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
 			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
 
-			putboatmsg := new(pb3.PutBoatMsg).New()
-			putboatmsg.Ans.Username = captain
-			putboatmsg.Ans.RemindOrOperated = true
-			putboatmsg.Ans.RoomNum = manilaRoom.GetRoomNum()
-			RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
-
 		}
 
 	} else {
@@ -351,7 +345,7 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 	}
 	username := buystockmsg.Req.Username
 	stockType := buystockmsg.Req.Stock
-	manilaRoom, _, _ := global.FindUserInManila(username)
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
 	if manilaRoom == nil {
 		buystockmsg.Error = msg.ErrUserIsNotInRoom
 		SendMessage(messageType, buystockmsg, connection)
@@ -397,5 +391,12 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 
 		// 为每位玩家发送其手牌具体信息
 		RoomObjTellDeck(manilaRoom)
+
+		// 告诉船长，要放船了
+		putboatmsg := new(pb3.PutBoatMsg).New()
+		putboatmsg.Ans.Username = username
+		putboatmsg.Ans.RemindOrOperated = true
+		putboatmsg.Ans.RoomNum = roomNum
+		RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
 	}
 }
