@@ -162,8 +162,10 @@ if __name__ == '__main__':
         },
         "Ans":
         {
+            "Username": "",
             "RoomNum": 0,
-            "Except": 0
+            "Except": 0,
+            "RemindOrOperated": false,
         },
         "Error": 0
     }

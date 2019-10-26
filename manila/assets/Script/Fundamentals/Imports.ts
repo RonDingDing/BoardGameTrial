@@ -178,7 +178,8 @@ export var bidmsg = {
     {
         "Username": "",
         "HighestBidPrice": 0,
-        "HighestBidder": ""
+        "HighestBidder": "",
+        "RoomNum": 0
     },
     "Error": 0
 }
@@ -210,6 +211,7 @@ export var buystockmsg = {
     "Ans":
     {
         "Username": "",
+        "RoomNum": 0,
         "RemindOrOperated": false,
         "Bought": 0,
         "SilkDeck": 0,

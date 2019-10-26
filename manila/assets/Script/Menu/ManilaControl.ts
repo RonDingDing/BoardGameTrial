@@ -256,7 +256,7 @@ export default class ManilaControl extends BasicControl {
 
             self.buyStockNode.addChild(buyStockUnderNode);
 
-        } else if (!message.Ans.RemindOrOperated) {
+        } else if (!message.Ans.RemindOrOperated && message.Ans.RoomNum === Global.roomNum) {
             let username = message.Ans.Username;
             let bought = message.Ans.Bought;
             let stockName = "";
@@ -332,7 +332,9 @@ export default class ManilaControl extends BasicControl {
 
     onChangePhaseMsg(message) {
         let self = this;
-        self.playCatcher(message.Ans.Phase);
+        if (Global.roomNum === message.Ans.RoomNum) {
+            self.playCatcher(message.Ans.Phase);
+        }
     }
 
     onPutBoatMsg(message) {
@@ -344,12 +346,13 @@ export default class ManilaControl extends BasicControl {
             self.putBoatNode.removeAllChildren();
             let putBoatUnderNode = cc.instantiate(self.putBoatPrefab);
             self.putBoatNode.addChild(putBoatUnderNode);
+        } else {
+            console.log(message);
         }
     }
 
     sendPutBoat(except, ok) {
         let self = this;
-        console.log(except, ok);
         if (ok) {
             let putboatmsgobj = JSON.parse(JSON.stringify(putboatmsg));
             putboatmsgobj.Req.Username = Global.playerUser;

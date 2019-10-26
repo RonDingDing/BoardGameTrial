@@ -13,7 +13,7 @@ import (
 
 type ManilaRoom struct {
 	room            *baseroom.Room
-	mapp            map[string]ManilaSpot
+	mapp            map[string]*ManilaSpot
 	silkdeck        []ManilaStock
 	coffeedeck      []ManilaStock
 	ginsengdeck     []ManilaStock
@@ -240,16 +240,85 @@ func (self *ManilaRoom) CanStartGame() bool {
 	return false
 }
 
-func (self *ManilaRoom) ResetMap() {
-	self.mapp = DeepCopy(MappingOrigin)
-}
-
 func (self *ManilaRoom) GetRoom() *baseroom.Room {
 	return self.room
 }
 
-func (self *ManilaRoom) GetMap() map[string]ManilaSpot {
+func (self *ManilaRoom) ResetMap() {
+	mappingOrigin := map[string]*ManilaSpot{
+		"1tick": &ManilaSpot{"1tick", "", 4, 6, true},
+		"2tick": &ManilaSpot{"2tick", "", 3, 8, true},
+		"3tick": &ManilaSpot{"3tick", "", 2, 15, true},
+
+		"1fail": &ManilaSpot{"1fail", "", 4, 6, true},
+		"2fail": &ManilaSpot{"2fail", "", 3, 8, true},
+		"3fail": &ManilaSpot{"3fail", "", 2, 15, true},
+
+		"1pirate": &ManilaSpot{"1pirate", "", 5, 0, true},
+		"2pirate": &ManilaSpot{"2pirate", "", 5, 0, true},
+
+		"1drag": &ManilaSpot{"1drag", "", 2, 0, true},
+		"2drag": &ManilaSpot{"2drag", "", 5, 0, true},
+
+		"repair": &ManilaSpot{"repair", "", 0, 10, true},
+
+		"1silk": &ManilaSpot{"1silk", "", 3, 0, false},
+		"2silk": &ManilaSpot{"2silk", "", 4, 0, false},
+		"3silk": &ManilaSpot{"3silk", "", 5, 0, false},
+
+		"1jade": &ManilaSpot{"1jade", "", 3, 0, false},
+		"2jade": &ManilaSpot{"2jade", "", 4, 0, false},
+		"3jade": &ManilaSpot{"3jade", "", 5, 0, false},
+		"4jade": &ManilaSpot{"4jade", "", 5, 0, false},
+
+		"1ginseng": &ManilaSpot{"1ginseng", "", 1, 0, false},
+		"2ginseng": &ManilaSpot{"2ginseng", "", 2, 0, false},
+		"3ginseng": &ManilaSpot{"3ginseng", "", 3, 0, false},
+
+		"1coffee": &ManilaSpot{"1coffee", "", 2, 0, false},
+		"2coffee": &ManilaSpot{"2coffee", "", 3, 0, false},
+		"3coffee": &ManilaSpot{"3coffee", "", 4, 0, false},
+	}
+	self.mapp = mappingOrigin
+}
+
+func (self *ManilaRoom) GetMap() map[string]*ManilaSpot {
 	return self.mapp
+}
+
+func (self *ManilaRoom) SetMapOnboard(cargoType int) {
+	switch cargoType {
+	case SilkColor:
+		onesilk := self.mapp["1silk"]
+		onesilk.SetOnboard(true)
+		twosilk := self.mapp["2silk"]
+		twosilk.SetOnboard(true)
+		threesilk := self.mapp["3silk"]
+		threesilk.SetOnboard(true)
+	case JadeColor:
+		onejade := self.mapp["1jade"]
+		onejade.SetOnboard(true)
+		twojade := self.mapp["2jade"]
+		twojade.SetOnboard(true)
+		threejade := self.mapp["3jade"]
+		threejade.SetOnboard(true)
+		fourjade := self.mapp["4jade"]
+		fourjade.SetOnboard(true)
+	case CoffeeColor:
+		onecoffee := self.mapp["1coffee"]
+		onecoffee.SetOnboard(true)
+		twocoffee := self.mapp["2coffee"]
+		twocoffee.SetOnboard(true)
+		threecoffee := self.mapp["3coffee"]
+		threecoffee.SetOnboard(true)
+	case GinsengColor:
+		oneginseng := self.mapp["1ginseng"]
+		oneginseng.SetOnboard(true)
+		twoginseng := self.mapp["2ginseng"]
+		twoginseng.SetOnboard(true)
+		threeginseng := self.mapp["3ginseng"]
+		threeginseng.SetOnboard(true)
+	}
 }
 
 func (self *ManilaRoom) ResetDecks() {

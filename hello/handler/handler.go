@@ -246,6 +246,7 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 			manilaRoom.SetCurrentPlayer(firstPlayer)
 			manilaRoom.SetHighestBidder(firstPlayer)
 			bidmsg.Ans.Username = firstPlayer
+			bidmsg.Ans.RoomNum = roomNum
 			bidmsg.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
 			bidmsg.Ans.HighestBidder = manilaRoom.GetHighestBidder()
 			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
@@ -274,7 +275,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 	}
 	username := bidmsg.Req.Username
 	bid := bidmsg.Req.Bid
-	manilaRoom, _, _ := global.FindUserInManila(username)
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
 	if manilaRoom != nil {
 		if bid != 0 {
 			manilaRoom.SetHighestBidPrice(bid)
@@ -286,12 +287,13 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 		if hasBidder {
 			nextBidder := manilaRoom.NextBidder(username, bidderMap)
 			// 广播投标信息
-			bidmsg2 := new(pb3.BidMsg).New()
 			manilaRoom.SetCurrentPlayer(nextBidder)
-			bidmsg2.Ans.Username = nextBidder
-			bidmsg2.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
-			bidmsg2.Ans.HighestBidder = manilaRoom.GetHighestBidder()
-			RoomObjBroadcastMessage(messageType, bidmsg2, manilaRoom)
+			bidmsg := bidmsg
+			bidmsg.Ans.Username = nextBidder
+			bidmsg.Ans.RoomNum = roomNum
+			bidmsg.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
+			bidmsg.Ans.HighestBidder = manilaRoom.GetHighestBidder()
+			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
 
 			// 广播房间目前信息
 			roomdetailmsg := new(pb3.RoomDetailMsg).New()
@@ -312,6 +314,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			manilaRoom.SetHighestBidPrice(0)
 			buystockmsg := new(pb3.BuyStockMsg).New()
 			buystockmsg.Ans.Username = captain
+			buystockmsg.Ans.RoomNum = roomNum
 			buystockmsg.Ans.Bought = 0
 			buystockmsg.Ans.RemindOrOperated = true
 			buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
@@ -375,6 +378,7 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 
 		buystockmsg.Ans.Bought = stockType
 		buystockmsg.Ans.Username = username
+		buystockmsg.Ans.RoomNum = roomNum
 		buystockmsg.Ans.RemindOrOperated = false
 		buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
 		buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
@@ -398,5 +402,42 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 		putboatmsg.Ans.RemindOrOperated = true
 		putboatmsg.Ans.RoomNum = roomNum
 		RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+	}
+}
+
+func HandlePutBoatMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	putboatmsg := new(pb3.PutBoatMsg).New()
+	err := json.Unmarshal(message, &putboatmsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := putboatmsg.Req.Username
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
+	if manilaRoom == nil {
+		putboatmsg.Error = msg.ErrUserIsNotInRoom
+		SendMessage(messageType, putboatmsg, connection)
+	} else if username != manilaRoom.GetHighestBidder() {
+		putboatmsg.Error = msg.ErrUserIsNotCaptain
+		SendMessage(messageType, putboatmsg, connection)
+	} else {
+		for _, cargoType := range []int{manila.SilkColor, manila.JadeColor, manila.CoffeeColor, manila.GinsengColor} {
+			if cargoType != putboatmsg.Req.Except {
+				manilaRoom.SetMapOnboard(cargoType)
+			}
+		}
+		putboatmsg.Ans.Username = username
+		putboatmsg.Ans.RemindOrOperated = false
+		putboatmsg.Ans.RoomNum = roomNum
+		putboatmsg.Ans.Except = putboatmsg.Req.Except
+		RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+
+		// 广播房间目前信息
+		roomdetailmsg := new(pb3.RoomDetailMsg).New()
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
+		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
+		// 为每位玩家发送其手牌具体信息
+		RoomObjTellDeck(manilaRoom)
 	}
 }

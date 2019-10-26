@@ -333,6 +333,7 @@ type BidMsgReq struct {
 
 type BidMsgAns struct {
 	Username        string
+	RoomNum         int
 	HighestBidPrice int
 	HighestBidder   string
 }
@@ -352,6 +353,7 @@ func (self *BidMsgReq) New() *BidMsgReq {
 
 func (self *BidMsgAns) New() *BidMsgAns {
 	self.Username = ""
+	self.RoomNum = 0
 	self.HighestBidPrice = 0
 	self.HighestBidder = ""
 	return self
@@ -411,6 +413,7 @@ type BuyStockMsgReq struct {
 
 type BuyStockMsgAns struct {
 	Username         string
+	RoomNum          int
 	RemindOrOperated bool
 	Bought           int
 	SilkDeck         int
@@ -434,6 +437,7 @@ func (self *BuyStockMsgReq) New() *BuyStockMsgReq {
 
 func (self *BuyStockMsgAns) New() *BuyStockMsgAns {
 	self.Username = ""
+	self.RoomNum = 0
 	self.RemindOrOperated = false
 	self.Bought = 0
 	self.SilkDeck = 0
