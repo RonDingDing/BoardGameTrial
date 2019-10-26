@@ -12,10 +12,11 @@ export default class PutBoater extends cc.Component {
     selectedLength = 0;
 
     pressSelect(event, num) {
-        const SilkColor = "1";
-        const JadeColor = "2";
-        const CoffeeColor = "3";
-        const GinsengColor = "4";
+        const CoffeeColor = "1";
+        const SilkColor = "2";
+        const GinsengColor = "3";
+        const JadeColor = "4";
+
         let self = this;
         let originValue = self.selected[num];
         self.selected[num] = originValue === 0 ? 1 : 0;

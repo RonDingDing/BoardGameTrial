@@ -4,10 +4,10 @@ export const address = "ws://localhost:8080/";
 export var SocketEvents = SocketEvent;
 export var ManilaSocket = new SocketDelegate(address);
 
-export const SilkColor = 1;
-export const JadeColor = 2;
-export const CoffeeColor = 3;
-export const GinsengColor = 4;
+export const CoffeeColor = 1;
+export const SilkColor = 2;
+export const GinsengColor = 3;
+export const JadeColor = 4;
 
 export const Errors = "000";
 export const LoginMsg = "001";

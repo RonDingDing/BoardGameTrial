@@ -1,5 +1,6 @@
 import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
+import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
 const { ccclass, property } = cc._decorator;
@@ -49,10 +50,15 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Prefab)
     putBoatPrefab: cc.Prefab = null
 
+    @property(cc.SpriteFrame)
+    stockToken: cc.SpriteFrame = null
+
+    @property([cc.Prefab])
+    shipSprites: [cc.Prefab] = [new cc.Prefab()]
+
     onLoad() {
         super.onLoad();
         let self = this;
-        // // self.j();
         self.renderGlobal();
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
         EventMng.on(GameStartMsg, self.onGameStartMsg, self);
@@ -70,13 +76,13 @@ export default class ManilaControl extends BasicControl {
 
     renderGlobal() {
         let self = this;
-        if (Global.started === false) {
-            self.mapSprite.node.active = false;
-            self.readySprite.node.active = true;
-
-        } else {
+        if (Global.started) {
             self.mapSprite.node.active = true;
             self.readySprite.node.active = false;
+            self.renderMap();
+        } else {
+            self.mapSprite.node.active = false;
+            self.readySprite.node.active = true;
         }
 
         let allPlayers = Global.allPlayerName;
@@ -84,7 +90,7 @@ export default class ManilaControl extends BasicControl {
         let len = allPlayers.length;
         let myIndex = allPlayers.indexOf(myName);
         if (myIndex !== -1) {
-            // 设定显示顺序
+            // 设定玩家显示顺序
             let orderedO = []
             for (let i = 0; i < allPlayers.length; i++) {
                 if (allPlayers[i] !== "") {
@@ -94,12 +100,12 @@ export default class ManilaControl extends BasicControl {
 
             let ordered = orderedO.splice(myIndex, len).concat(orderedO.splice(0, len));
 
-            // 设定准备按钮状态
+            // 设定大的准备按钮状态
             self.readySprite.getComponent(cc.Sprite).spriteFrame = Global.readied ? self.readyChoices[1] : self.readyChoices[0];
 
-            let ystart = 500;
-            let xstart = 270;
-            let ymargin = -200;
+            let ystart = MapCoor.playerYstart;
+            let xstart = MapCoor.playerXstart;
+            let ymargin = MapCoor.playerYmargin;
             self.putNode.removeAllChildren();
 
             for (let i = 0; i < ordered.length; i++) {
@@ -108,7 +114,7 @@ export default class ManilaControl extends BasicControl {
                 let player = Global.allPlayers[username];
                 let scriptPlayer = cc.instantiate(self.nameScript);
 
-                // 设置属性
+                // 设置玩家属性
                 let tokenSpriteNode = scriptPlayer.getChildByName("Token")
                 let tokenSprite = tokenSpriteNode.getComponent(cc.Sprite);
                 tokenSprite.spriteFrame = self.pawnChoice[player.Seat - 1];
@@ -129,7 +135,7 @@ export default class ManilaControl extends BasicControl {
                 let offlineNode = scriptPlayer.getChildByName("Offline");
                 offlineNode.active = player.Online ? false : true;
 
-                // 设定位置
+                // 设定玩家展示节点位置
                 scriptPlayer.y = ystart;
                 scriptPlayer.x = xstart;
                 ystart += ymargin;
@@ -146,6 +152,65 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
+    renderMap() {
+        let self = this;
+        let mapNode = self.mapSprite.node;
+        mapNode.removeAllChildren();
+
+        // 股票价格展示
+        let y = MapCoor.stockYstart;
+        let x = MapCoor.stockXstart;
+
+        let prices = [Global.coffeestockprice, Global.silkstockprice, Global.ginsengstockprice, Global.jadestockprice];
+        for (let i = 0; i < 4; i++) {
+            let priceUnderNode = new cc.Node;
+            let priceSprite = priceUnderNode.addComponent(cc.Sprite);
+            priceSprite.spriteFrame = self.stockToken;
+            mapNode.addChild(priceUnderNode);
+            y = MapCoor.stockYstart + MapCoor.stockPriceGap[prices[i]] * MapCoor.stockYmargin;
+            x += MapCoor.stockXmargin;
+            priceUnderNode.x = x;
+            priceUnderNode.y = y;
+        }
+
+        // 船展示 TODO
+        if (Global.mapp) {
+            let cargoNames = ["1coffee", "1silk", "1ginseng", "1jade"];
+            let onboardCargo = [];
+            console.log("Global.mapp:", Global.mapp);
+           
+            for (let j = 0; j < cargoNames.length; j++) {
+                console.log("cargoNames[j]:", cargoNames[j]);
+                console.log("Global.mapp[cargoNames[j]]:", Global.mapp[cargoNames[j]]);
+                if (Global.mapp[cargoNames[j]].Onboard) {
+                    if (cargoNames[j] === "1coffee") {
+                        onboardCargo.push(CoffeeColor);
+                    } else if (cargoNames[j] === "1silk") {
+                        onboardCargo.push(SilkColor);
+                    } else if (cargoNames[j] === "1ginseng") {
+                        onboardCargo.push(GinsengColor);
+                    } else if (cargoNames[j] === "1jade") {
+                        onboardCargo.push(JadeColor);
+                    }
+                }
+            }
+            console.log("onboardCargo:", onboardCargo);
+            if (onboardCargo.length !== 0) {
+                // for (let i = 0; i < 3; i++) {
+                //     let shipUnderNode = new cc.Node;
+                //     let shipSprite = shipUnderNode.addComponent(cc.Sprite);
+                //     let prefab = self.shipSprites[onboardCargo[i]-1];           
+                  
+                //     shipSprite.spriteFrame .setOriginalSize(new cc.Size(35, 114));
+                //     shipUnderNode.rotation = 7;
+                //     shipUnderNode.x = MapCoor.shipXstart[i];
+                //     shipUnderNode.y = MapCoor.shipYstart[i];
+                //     mapNode.addChild(shipUnderNode);
+                // }
+            }
+        }
+
+    }
 
     onRoomDetailMsg(message) {
         let self = this;
@@ -346,8 +411,6 @@ export default class ManilaControl extends BasicControl {
             self.putBoatNode.removeAllChildren();
             let putBoatUnderNode = cc.instantiate(self.putBoatPrefab);
             self.putBoatNode.addChild(putBoatUnderNode);
-        } else {
-            console.log(message);
         }
     }
 

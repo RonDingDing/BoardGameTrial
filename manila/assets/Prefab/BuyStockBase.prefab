@@ -130,8 +130,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 550,
-      "height": 980
+      "width": 400,
+      "height": 700
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -236,8 +236,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 200,
-      "height": 330
+      "width": 150,
+      "height": 247
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -246,8 +246,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": -130,
-      "y": 215,
+      "x": 100,
+      "y": 150,
       "z": 0
     },
     "_scale": {
@@ -380,7 +380,7 @@
     "component": "",
     "_componentId": "cb3fcDDdL1PTbeek+9uV5KG",
     "handler": "pressBuyStock",
-    "customEventData": "1"
+    "customEventData": "2"
   },
   {
     "__type__": "cc.Node",
@@ -505,8 +505,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 200,
-      "height": 330
+      "width": 150,
+      "height": 247
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -515,8 +515,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": 130,
-      "y": 215,
+      "x": 100,
+      "y": -150,
       "z": 0
     },
     "_scale": {
@@ -649,7 +649,7 @@
     "component": "",
     "_componentId": "cb3fcDDdL1PTbeek+9uV5KG",
     "handler": "pressBuyStock",
-    "customEventData": "2"
+    "customEventData": "4"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -693,8 +693,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 200,
-      "height": 330
+      "width": 150,
+      "height": 247
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -703,8 +703,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": -130,
-      "y": -180,
+      "x": -100,
+      "y": 150,
       "z": 0
     },
     "_scale": {
@@ -837,7 +837,7 @@
     "component": "",
     "_componentId": "cb3fcDDdL1PTbeek+9uV5KG",
     "handler": "pressBuyStock",
-    "customEventData": "3"
+    "customEventData": "1"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -881,8 +881,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 200,
-      "height": 330
+      "width": 150,
+      "height": 247
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -891,8 +891,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": 130,
-      "y": -180,
+      "x": -100,
+      "y": -150,
       "z": 0
     },
     "_scale": {
@@ -1025,7 +1025,7 @@
     "component": "",
     "_componentId": "cb3fcDDdL1PTbeek+9uV5KG",
     "handler": "pressBuyStock",
-    "customEventData": "4"
+    "customEventData": "3"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1076,8 +1076,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": 130,
-      "y": 20,
+      "x": 100,
+      "y": -300,
       "z": 0
     },
     "_scale": {
@@ -1179,8 +1179,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": -130,
-      "y": 20,
+      "x": 100,
+      "y": 0,
       "z": 0
     },
     "_scale": {
@@ -1282,8 +1282,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": 130,
-      "y": -380,
+      "x": -100,
+      "y": -300,
       "z": 0
     },
     "_scale": {
@@ -1385,8 +1385,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": -130,
-      "y": -380,
+      "x": -100,
+      "y": 0,
       "z": 0
     },
     "_scale": {
@@ -1481,8 +1481,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 400,
-      "height": 80
+      "width": 200,
+      "height": 40
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -1492,7 +1492,7 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -463,
+      "y": -357.04,
       "z": 0
     },
     "_scale": {
@@ -1666,8 +1666,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 88.93,
-      "height": 50.4
+      "width": 66.69,
+      "height": 37.8
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -1677,7 +1677,7 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -460,
+      "y": -354.04,
       "z": 0
     },
     "_scale": {
@@ -1716,8 +1716,8 @@
     "_useOriginalSize": false,
     "_string": "Pass",
     "_N$string": "Pass",
-    "_fontSize": 40,
-    "_lineHeight": 40,
+    "_fontSize": 30,
+    "_lineHeight": 30,
     "_enableWrapText": true,
     "_N$file": null,
     "_isSystemFontUsed": true,

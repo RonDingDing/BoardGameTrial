@@ -1468,6 +1468,23 @@
     "putBoatPrefab": {
       "__uuid__": "770fe49b-2166-48b0-aefb-6f28b6ca1599"
     },
+    "stockToken": {
+      "__uuid__": "e835f929-5f63-4588-b2ce-f7ceb06a6934"
+    },
+    "shipSprites": [
+      {
+        "__uuid__": "9b40895b-1b70-47b4-bf02-c22d05ce0468"
+      },
+      {
+        "__uuid__": "6e8e2744-edbd-4886-a170-03c4f46d7093"
+      },
+      {
+        "__uuid__": "2859ecfd-4edd-4cfc-b2af-a5f3370e45da"
+      },
+      {
+        "__uuid__": "9a9a19ae-48c6-407a-a6df-1393cbb4f705"
+      }
+    ],
     "_id": "26tRbzzDhFo5iwLaPbsEnG"
   },
   {
