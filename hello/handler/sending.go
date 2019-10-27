@@ -7,6 +7,7 @@ import (
 	"hello/manila"
 	"hello/pb3"
 	"log"
+	"sort"
 
 	"github.com/gorilla/websocket"
 )
@@ -100,6 +101,13 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 				Price: v.GetPrice(), Award: v.GetAward(), Onboard: v.GetOnboard()}
 			roomdetailmsg.Ans.Mapp = append(roomdetailmsg.Ans.Mapp, mapSpot)
 		}
+
+		for d, w := range room.GetShip() {
+			ship := pb3.ShipS{ShipType: d, Step: w}
+			roomdetailmsg.Ans.Ship = append(roomdetailmsg.Ans.Ship, ship)
+		}
+		sort.Sort(pb3.ShipSArray(roomdetailmsg.Ans.Ship))
+
 		for n, p := range room.GetManilaPlayers() {
 			pl := pb3.PlayersS{Name: n, Stock: p.GetStockNum(),
 				Money: p.GetMoney(), Online: p.GetOnline(),

@@ -98,6 +98,7 @@ export default class BasicControl extends cc.Component {
             Global.highestBidPrice = message.Ans.HighestBidPrice;
             Global.currentPlayer = message.Ans.CurrentPlayer;
             Global.phase = message.Ans.Phase;
+            Global.ship = message.Ans.Ship;
         }
     }
 

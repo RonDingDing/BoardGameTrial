@@ -204,9 +204,21 @@ type PlayersS struct {
 	Canbid bool
 }
 
+type ShipS struct {
+	ShipType int
+	Step     int
+}
+
+type ShipSArray []ShipS
+
+func (s ShipSArray) Len() int           { return len(s) }
+func (s ShipSArray) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s ShipSArray) Less(i, j int) bool { return s[i].ShipType < s[j].ShipType }
+
 type RoomDetailMsgAns struct {
 	GameNum           int
 	Mapp              []MappS
+	Ship              []ShipS
 	PlayerName        []string
 	PlayerNumForStart int
 	PlayerNumMax      int

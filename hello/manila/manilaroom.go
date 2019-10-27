@@ -14,6 +14,7 @@ import (
 type ManilaRoom struct {
 	room            *baseroom.Room
 	mapp            map[string]*ManilaSpot
+	ships           map[int]int
 	silkdeck        []ManilaStock
 	coffeedeck      []ManilaStock
 	ginsengdeck     []ManilaStock
@@ -280,13 +281,19 @@ func (self *ManilaRoom) ResetMap() {
 		"3coffee": &ManilaSpot{"3coffee", "", 4, 0, false},
 	}
 	self.mapp = mappingOrigin
+
+	shipMap := make(map[int]int)
+	for _, color := range []int{CoffeeColor, SilkColor, GinsengColor, JadeColor} {
+		shipMap[color] = -1
+	}
+	self.ships = shipMap
 }
 
 func (self *ManilaRoom) GetMap() map[string]*ManilaSpot {
 	return self.mapp
 }
 
-func (self *ManilaRoom) SetMapOnboard(cargoType int) {
+func (self *ManilaRoom) SetMapOnboard(cargoType int, step int) {
 	switch cargoType {
 	case SilkColor:
 		onesilk := self.mapp["1silk"]
@@ -295,6 +302,7 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int) {
 		twosilk.SetOnboard(true)
 		threesilk := self.mapp["3silk"]
 		threesilk.SetOnboard(true)
+		self.ships[cargoType] = step
 	case JadeColor:
 		onejade := self.mapp["1jade"]
 		onejade.SetOnboard(true)
@@ -304,6 +312,7 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int) {
 		threejade.SetOnboard(true)
 		fourjade := self.mapp["4jade"]
 		fourjade.SetOnboard(true)
+		self.ships[cargoType] = step
 	case CoffeeColor:
 		onecoffee := self.mapp["1coffee"]
 		onecoffee.SetOnboard(true)
@@ -311,6 +320,7 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int) {
 		twocoffee.SetOnboard(true)
 		threecoffee := self.mapp["3coffee"]
 		threecoffee.SetOnboard(true)
+		self.ships[cargoType] = step
 	case GinsengColor:
 		oneginseng := self.mapp["1ginseng"]
 		oneginseng.SetOnboard(true)
@@ -318,7 +328,12 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int) {
 		twoginseng.SetOnboard(true)
 		threeginseng := self.mapp["3ginseng"]
 		threeginseng.SetOnboard(true)
+		self.ships[cargoType] = step
 	}
+}
+
+func (self *ManilaRoom) GetShip() map[int]int{
+	return self.ships
 }
 
 func (self *ManilaRoom) ResetDecks() {

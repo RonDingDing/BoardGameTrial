@@ -421,9 +421,9 @@ func HandlePutBoatMsg(messageType int, message []byte, connection *websocket.Con
 		putboatmsg.Error = msg.ErrUserIsNotCaptain
 		SendMessage(messageType, putboatmsg, connection)
 	} else {
-		for _, cargoType := range []int{manila.SilkColor, manila.JadeColor, manila.CoffeeColor, manila.GinsengColor} {
+		for _, cargoType := range []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor} {
 			if cargoType != putboatmsg.Req.Except {
-				manilaRoom.SetMapOnboard(cargoType)
+				manilaRoom.SetMapOnboard(cargoType, 0)
 			}
 		}
 		putboatmsg.Ans.Username = username

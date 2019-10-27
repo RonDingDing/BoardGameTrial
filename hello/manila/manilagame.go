@@ -9,10 +9,10 @@ const (
 	GinsengVend = 18
 
 	EmptyColor   = 0
-	SilkColor    = 1
-	JadeColor    = 2
-	CoffeeColor  = 3
-	GinsengColor = 4
+	CoffeeColor  = 1
+	SilkColor    = 2
+	GinsengColor = 3
+	JadeColor    = 4
 
 	OriginalMoney      = 30
 	OriginalDeckNumber = 5
@@ -36,8 +36,6 @@ var (
 	JadePos    = 0
 	CoffeePos  = 0
 	GinsengPos = 0
-
-	
 )
 
 type ManilaSpot struct {

@@ -54,11 +54,14 @@ export default class ManilaControl extends BasicControl {
     stockToken: cc.SpriteFrame = null
 
     @property([cc.Prefab])
-    shipSprites: [cc.Prefab] = [new cc.Prefab()]
+    shipPrefab: [cc.Prefab] = [new cc.Prefab()]
 
     onLoad() {
         super.onLoad();
         let self = this;
+
+        self.j();
+
         self.renderGlobal();
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
         EventMng.on(GameStartMsg, self.onGameStartMsg, self);
@@ -73,6 +76,17 @@ export default class ManilaControl extends BasicControl {
         EventMng.on("PutBoat", self.sendPutBoat, self);
     }
 
+    j() {
+        // let self = this;
+        // Global.started = true;
+        // Global.ship = [
+        //     { ShipType: 1, Step: -1 },
+        //     { ShipType: 2, Step: 14 },
+        //     { ShipType: 3, Step: 15},
+        //     { ShipType: 4, Step: 19 }
+        // ]
+
+    }
 
     renderGlobal() {
         let self = this;
@@ -174,42 +188,44 @@ export default class ManilaControl extends BasicControl {
         }
 
         // 船展示 TODO
-        if (Global.mapp) {
-            let cargoNames = ["1coffee", "1silk", "1ginseng", "1jade"];
+        if (Global.ship) {
             let onboardCargo = [];
-            console.log("Global.mapp:", Global.mapp);
-           
-            for (let j = 0; j < cargoNames.length; j++) {
-                console.log("cargoNames[j]:", cargoNames[j]);
-                console.log("Global.mapp[cargoNames[j]]:", Global.mapp[cargoNames[j]]);
-                if (Global.mapp[cargoNames[j]].Onboard) {
-                    if (cargoNames[j] === "1coffee") {
-                        onboardCargo.push(CoffeeColor);
-                    } else if (cargoNames[j] === "1silk") {
-                        onboardCargo.push(SilkColor);
-                    } else if (cargoNames[j] === "1ginseng") {
-                        onboardCargo.push(GinsengColor);
-                    } else if (cargoNames[j] === "1jade") {
-                        onboardCargo.push(JadeColor);
-                    }
+            for (let j = 0; j < Global.ship.length; j++) {
+                if (Global.ship[j].Step >= 0) {
+                    onboardCargo.push(Global.ship[j]);
                 }
             }
-            console.log("onboardCargo:", onboardCargo);
-            if (onboardCargo.length !== 0) {
-                // for (let i = 0; i < 3; i++) {
-                //     let shipUnderNode = new cc.Node;
-                //     let shipSprite = shipUnderNode.addComponent(cc.Sprite);
-                //     let prefab = self.shipSprites[onboardCargo[i]-1];           
-                  
-                //     shipSprite.spriteFrame .setOriginalSize(new cc.Size(35, 114));
-                //     shipUnderNode.rotation = 7;
-                //     shipUnderNode.x = MapCoor.shipXstart[i];
-                //     shipUnderNode.y = MapCoor.shipYstart[i];
-                //     mapNode.addChild(shipUnderNode);
-                // }
+            console.log(Global.ship);
+            console.log(onboardCargo);
+            if (onboardCargo.length === 3) {
+                for (let shipSocket = 0; shipSocket < 3; shipSocket++) {
+                    let shipType = onboardCargo[shipSocket].ShipType;
+                    let step = onboardCargo[shipSocket].Step;
+                    let shipUnderNode = cc.instantiate(self.shipPrefab[shipType - 1]);
+                    mapNode.addChild(shipUnderNode);
+                    self.setShipPosition(shipUnderNode, shipSocket, step);
+                }
             }
         }
+    }
 
+    setShipPosition(shipUnderNode, shipsocket, step) {
+        let x = 0;
+        let y = 0;
+        let r = 0;
+        if (step < 0) {
+            x = MapCoor.shipXout;
+            y = MapCoor.shipYout;
+        } else if (step <= 19) {
+            x = MapCoor.shipXs[step][shipsocket];
+            y = MapCoor.shipYs[step][shipsocket];
+            r = MapCoor.shipRs[step][shipsocket];
+        }
+
+
+        shipUnderNode.x = x;
+        shipUnderNode.y = y;
+        shipUnderNode.angle = -r;
     }
 
     onRoomDetailMsg(message) {

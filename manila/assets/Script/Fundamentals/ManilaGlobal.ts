@@ -25,4 +25,5 @@ export namespace Global {
     export let phase = "";
     export let money = 0;
     export let hand = [];
+    export let ship = [];
 }

@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "SilkShip",
+    "_name": "ShipSilk",
     "_objFlags": 0,
     "_parent": null,
     "_children": [
@@ -50,8 +50,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 162,
-      "height": 531
+      "width": 55,
+      "height": 183
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -60,8 +60,8 @@
     },
     "_position": {
       "__type__": "cc.Vec3",
-      "x": 383.334,
-      "y": 676.751,
+      "x": 321.428,
+      "y": 123.249,
       "z": 0
     },
     "_scale": {
@@ -74,7 +74,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": 0
+      "z": -6.582000000000001
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -113,8 +113,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 100
+      "width": 35,
+      "height": 35
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -124,7 +124,7 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 85,
+      "y": 30,
       "z": 0
     },
     "_scale": {
@@ -339,7 +339,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "58BQRG8W1LAaz2PLh+UrOS",
+    "fileId": "05u0N53wlAxrSIRf216hSK",
     "sync": false
   },
   {
@@ -350,7 +350,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "0eVI/9KUhCLrGWNk4zxVMk",
+    "fileId": "95Y4YQO0JHkIv/IyNK0nD0",
     "sync": false
   },
   {
@@ -384,8 +384,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 100
+      "width": 35,
+      "height": 35
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -395,7 +395,7 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -41,
+      "y": -15,
       "z": 0
     },
     "_scale": {
@@ -540,7 +540,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "0d7/PHRhJDoq8NXN8mq7tw",
+    "fileId": "81xdcKqOVGT5rcqKMunP+h",
     "sync": false
   },
   {
@@ -574,8 +574,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 100,
-      "height": 100
+      "width": 35,
+      "height": 35
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -585,7 +585,7 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -172.5,
+      "y": -59,
       "z": 0
     },
     "_scale": {
@@ -720,7 +720,7 @@
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
     "handler": "pressInvest",
-    "customEventData": "3silk"
+    "customEventData": "silk"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -730,7 +730,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "94OEF0RQtKHL9J0y9Pz7pu",
+    "fileId": "d96lqAyBBB9oxeApsYXdIU",
     "sync": false
   },
   {
@@ -752,7 +752,7 @@
       "__uuid__": "003ba6ac-9939-4ea0-a770-82cb15a743f8"
     },
     "_type": 0,
-    "_sizeMode": 1,
+    "_sizeMode": 0,
     "_fillType": 0,
     "_fillCenter": {
       "__type__": "cc.Vec2",
@@ -773,7 +773,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "87znK3I+tAK7DMxu/OIQTy",
+    "fileId": "85xNCw95dCUZb2DQXeDkfA",
     "sync": false
   }
 ]
