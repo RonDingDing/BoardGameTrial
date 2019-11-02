@@ -81,15 +81,8 @@ export default class BasicControl extends cc.Component {
                     Global.money = playerList[j].Money;
                 }
             }
-            Global.silkdeck = message.Ans.SilkDeck;
-            Global.jadedeck = message.Ans.JadeDeck;
-            Global.ginsengdeck = message.Ans.GinsengDeck;
-            Global.coffeedeck = message.Ans.CoffeeDeck;
-            Global.silkstockprice = message.Ans.SilkStockPrice;
-            Global.jadestockprice = message.Ans.JadeStockPrice;
-            Global.ginsengstockprice = message.Ans.GinsengStockPrice;
-            Global.coffeestockprice = message.Ans.CoffeeStockPrice;
-
+            Global.deck = message.Ans.Deck;
+            Global.stockprice = message.Ans.StockPrice;
             Global.round = message.Ans.Round;
             Global.roomNum = message.Ans.RoomNum;
             Global.allPlayerName = message.Ans.PlayerName;

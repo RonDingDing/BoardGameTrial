@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
@@ -24,7 +24,7 @@ export default class ManilaControl extends BasicControl {
     putNode: cc.Node = null
 
     @property([cc.SpriteFrame])
-    readyChoices: [cc.SpriteFrame] = [new cc.SpriteFrame()]
+    readyChoices: [cc.SpriteFrame, cc.SpriteFrame, cc.SpriteFrame] = [new cc.SpriteFrame(), new cc.SpriteFrame(), new cc.SpriteFrame()]
 
     @property(cc.Sprite)
     phaseCatcher: cc.Sprite = null
@@ -56,6 +56,12 @@ export default class ManilaControl extends BasicControl {
     @property([cc.Prefab])
     shipPrefab: [cc.Prefab] = [new cc.Prefab()]
 
+    @property(cc.Node)
+    dragBoatNode: cc.Node = null
+
+    @property(cc.Prefab)
+    dragBoatPrefab: cc.Prefab = null
+
     onLoad() {
         super.onLoad();
         let self = this;
@@ -70,6 +76,7 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(BuyStockMsg, self.onBuyStockMsg, self);
         EventMng.on(ChangePhaseMsg, self.onChangePhaseMsg, self);
         EventMng.on(PutBoatMsg, self.onPutBoatMsg, self);
+        EventMng.on(DragBoatMsg, self.onDragBoatMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
@@ -175,7 +182,7 @@ export default class ManilaControl extends BasicControl {
         let y = MapCoor.stockYstart;
         let x = MapCoor.stockXstart;
 
-        let prices = [Global.coffeestockprice, Global.silkstockprice, Global.ginsengstockprice, Global.jadestockprice];
+        let prices = Global.stockprice;
         for (let i = 0; i < 4; i++) {
             let priceUnderNode = new cc.Node;
             let priceSprite = priceUnderNode.addComponent(cc.Sprite);
@@ -188,25 +195,20 @@ export default class ManilaControl extends BasicControl {
         }
 
         // 船展示 TODO
-        if (Global.ship) {
-            let onboardCargo = [];
-            for (let j = 0; j < Global.ship.length; j++) {
-                if (Global.ship[j].Step >= 0) {
-                    onboardCargo.push(Global.ship[j]);
-                }
-            }
-            console.log(Global.ship);
-            console.log(onboardCargo);
-            if (onboardCargo.length === 3) {
-                for (let shipSocket = 0; shipSocket < 3; shipSocket++) {
-                    let shipType = onboardCargo[shipSocket].ShipType;
-                    let step = onboardCargo[shipSocket].Step;
-                    let shipUnderNode = cc.instantiate(self.shipPrefab[shipType - 1]);
-                    mapNode.addChild(shipUnderNode);
-                    self.setShipPosition(shipUnderNode, shipSocket, step);
+        let shipSocket = 0;
+        for (let shipType = 0; shipType < Global.ship.length; shipType++) {
+            let step = Global.ship[shipType];
+            if (step >= 0 && step <= 19) {
+                let shipUnderNode = cc.instantiate(self.shipPrefab[shipType]);
+                self.mapSprite.node.addChild(shipUnderNode);
+                self.setShipPosition(shipUnderNode, shipSocket, step);
+                shipSocket += 1;
+                if (shipSocket > 3) {
+                    break;
                 }
             }
         }
+
     }
 
     setShipPosition(shipUnderNode, shipsocket, step) {
@@ -221,8 +223,6 @@ export default class ManilaControl extends BasicControl {
             y = MapCoor.shipYs[step][shipsocket];
             r = MapCoor.shipRs[step][shipsocket];
         }
-
-
         shipUnderNode.x = x;
         shipUnderNode.y = y;
         shipUnderNode.angle = -r;
@@ -324,16 +324,16 @@ export default class ManilaControl extends BasicControl {
             let ginsengNode = buyStockUnderNode.getChildByName("GinsengDeck");
 
             let silkString = silkNode.getComponent(cc.Label);
-            silkString.string = message.Ans.SilkDeck;
+            silkString.string = message.Ans.Deck[SilkColor - 1];
 
             let jadeString = jadeNode.getComponent(cc.Label);
-            jadeString.string = message.Ans.JadeDeck;
+            jadeString.string = message.Ans.Deck[JadeColor - 1];
 
             let coffeeString = coffeeNode.getComponent(cc.Label);
-            coffeeString.string = message.Ans.CoffeeDeck;
+            coffeeString.string = message.Ans.Deck[CoffeeColor - 1];
 
             let ginsengString = ginsengNode.getComponent(cc.Label);
-            ginsengString.string = message.Ans.GinsengDeck;
+            ginsengString.string = message.Ans.Deck[GinsengColor - 1];
 
             self.buyStockNode.addChild(buyStockUnderNode);
 
@@ -360,18 +360,22 @@ export default class ManilaControl extends BasicControl {
             let stockprice;
             switch (stock) {
                 case SilkColor:
-                    stockprice = Global.silkstockprice || 5; break;
+                    stockprice = Global.stockprice[SilkColor - 1] || 5; break;
                 case JadeColor:
-                    stockprice = Global.jadestockprice || 5; break;
+                    stockprice = Global.stockprice[JadeColor - 1] || 5; break;
                 case CoffeeColor:
-                    stockprice = Global.coffeestockprice || 5; break;
+                    stockprice = Global.stockprice[CoffeeColor - 1] || 5; break;
                 case GinsengColor:
-                    stockprice = Global.ginsengstockprice || 5; break;
+                    stockprice = Global.stockprice[GinsengColor] || 5; break;
                 default:
                     stockprice = 0;
             }
             if (stockprice > Global.money) {
                 self.playNotEnoughMoney();
+                return
+            }
+            if (Global.deck[stock - 1] === 0) {
+                self.playPopup("没有足够的股票可买")
                 return
             }
             buystockmsgobj.Req.Username = Global.playerUser;
@@ -441,6 +445,43 @@ export default class ManilaControl extends BasicControl {
             self.putBoatNode.active = false;
         } else {
             self.playPopup("请选择三种货物");
+        }
+    }
+
+    onDragBoatMsg(message) {
+        let self = this;
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
+            self.dragBoatNode.active = true;
+            self.dragBoatNode.removeAllChildren();
+            let dragBoatUnderNode = cc.instantiate(self.dragBoatPrefab);
+            self.dragBoatNode.addChild(dragBoatUnderNode);
+            let draggerScript = dragBoatUnderNode.getChildByName("Dragger").getComponent("Dragger");
+            let pics = draggerScript.shipPics;
+            draggerScript.phase = message.Ans.Phase;
+
+            let dragable = message.Ans.Dragable;
+            if (dragable.length < 3) {
+                for (let i = 0; i < 3 - dragable.length; i++) {
+                    dragable.push(0);
+                }
+            }
+            for (let i = 0; i < dragable.length; i++) {
+                let spriteNode = dragBoatUnderNode.getChildByName('Stock' + (i + 1));
+                let sprite = spriteNode.getComponent(cc.Sprite);
+                let dragShipType = dragable[i];
+                if (dragShipType === 0) {
+                    dragBoatUnderNode.getChildByName('Stock' + (i + 1)).active = false;
+                    dragBoatUnderNode.getChildByName('MinusStock' + (i + 1)).active = false;
+                    dragBoatUnderNode.getChildByName('PlusStock' + (i + 1)).active = false;
+                    dragBoatUnderNode.getChildByName('DragStock' + (i + 1)).active = false;
+                } else {
+                    sprite.spriteFrame = pics[dragShipType - 1];
+                }
+
+            }
+
         }
 
     }

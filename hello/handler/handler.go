@@ -317,10 +317,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			buystockmsg.Ans.RoomNum = roomNum
 			buystockmsg.Ans.Bought = 0
 			buystockmsg.Ans.RemindOrOperated = true
-			buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
-			buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
-			buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
-			buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
+			buystockmsg.Ans.Deck = manilaRoom.GetDecks()
 
 			RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
 			RoomObjChangePhase(manilaRoom, manila.PhaseBuyStock)
@@ -380,10 +377,7 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 		buystockmsg.Ans.Username = username
 		buystockmsg.Ans.RoomNum = roomNum
 		buystockmsg.Ans.RemindOrOperated = false
-		buystockmsg.Ans.SilkDeck = manilaRoom.GetOneDeck(manila.SilkColor)
-		buystockmsg.Ans.JadeDeck = manilaRoom.GetOneDeck(manila.JadeColor)
-		buystockmsg.Ans.CoffeeDeck = manilaRoom.GetOneDeck(manila.CoffeeColor)
-		buystockmsg.Ans.GinsengDeck = manilaRoom.GetOneDeck(manila.GinsengColor)
+		buystockmsg.Ans.Deck = manilaRoom.GetDecks()
 
 		RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
 		RoomObjChangePhase(manilaRoom, manila.PhasePutBoat)
@@ -431,6 +425,7 @@ func HandlePutBoatMsg(messageType int, message []byte, connection *websocket.Con
 		putboatmsg.Ans.RoomNum = roomNum
 		putboatmsg.Ans.Except = putboatmsg.Req.Except
 		RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+		RoomObjChangePhase(manilaRoom, manila.PhaseDragBoat)
 
 		// 广播房间目前信息
 		roomdetailmsg := new(pb3.RoomDetailMsg).New()
@@ -439,5 +434,23 @@ func HandlePutBoatMsg(messageType int, message []byte, connection *websocket.Con
 
 		// 为每位玩家发送其手牌具体信息
 		RoomObjTellDeck(manilaRoom)
+
+		// 告诉船长，要拉船了
+		dragboatmsg := new(pb3.DragBoatMsg).New()
+		dragboatmsg.Ans.Username = username
+		dragboatmsg.Ans.RemindOrOperated = true
+		dragboatmsg.Ans.RoomNum = roomNum
+		dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
+		dragboatmsg.Ans.Ship = manilaRoom.GetShip()
+
+		all := []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor}
+		dragable := []int{}
+		for _, v := range all {
+			if v != putboatmsg.Req.Except {
+				dragable = append(dragable, v)
+			}
+		}
+		dragboatmsg.Ans.Dragable = dragable
+		RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
 	}
 }

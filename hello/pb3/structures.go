@@ -204,40 +204,24 @@ type PlayersS struct {
 	Canbid bool
 }
 
-type ShipS struct {
-	ShipType int
-	Step     int
-}
-
-type ShipSArray []ShipS
-
-func (s ShipSArray) Len() int           { return len(s) }
-func (s ShipSArray) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s ShipSArray) Less(i, j int) bool { return s[i].ShipType < s[j].ShipType }
-
 type RoomDetailMsgAns struct {
 	GameNum           int
 	Mapp              []MappS
-	Ship              []ShipS
+	Ship              []int
 	PlayerName        []string
 	PlayerNumForStart int
 	PlayerNumMax      int
 	Players           []PlayersS
 	RoomNum           int
 	Round             int
-	CoffeeDeck        int
-	GinsengDeck       int
-	JadeDeck          int
-	SilkDeck          int
-	CoffeeStockPrice  int
-	GinsengStockPrice int
-	JadeStockPrice    int
-	SilkStockPrice    int
-	Started           bool
-	HighestBidder     string
-	HighestBidPrice   int
-	CurrentPlayer     string
-	Phase             string
+	Deck              []int
+	StockPrice        []int
+
+	Started         bool
+	HighestBidder   string
+	HighestBidPrice int
+	CurrentPlayer   string
+	Phase           string
 }
 
 type RoomDetailMsg struct {
@@ -280,14 +264,8 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.Players = make([]PlayersS, 0)
 	self.RoomNum = 0
 	self.Round = 0
-	self.SilkDeck = 0
-	self.GinsengDeck = 0
-	self.JadeDeck = 0
-	self.CoffeeDeck = 0
-	self.SilkStockPrice = 0
-	self.GinsengStockPrice = 0
-	self.JadeStockPrice = 0
-	self.CoffeeStockPrice = 0
+	self.Deck = make([]int, 4)
+	self.StockPrice = make([]int, 4)
 	self.Started = false
 	self.HighestBidder = ""
 	self.HighestBidPrice = 0
@@ -428,10 +406,7 @@ type BuyStockMsgAns struct {
 	RoomNum          int
 	RemindOrOperated bool
 	Bought           int
-	SilkDeck         int
-	JadeDeck         int
-	CoffeeDeck       int
-	GinsengDeck      int
+	Deck             []int
 }
 
 type BuyStockMsg struct {
@@ -452,10 +427,7 @@ func (self *BuyStockMsgAns) New() *BuyStockMsgAns {
 	self.RoomNum = 0
 	self.RemindOrOperated = false
 	self.Bought = 0
-	self.SilkDeck = 0
-	self.JadeDeck = 0
-	self.CoffeeDeck = 0
-	self.GinsengDeck = 0
+	self.Deck = make([]int, 4)
 	return self
 }
 
@@ -543,6 +515,57 @@ func (self *PutBoatMsg) New() *PutBoatMsg {
 	self.Code = msg.PutBoatMsg
 	self.Req = new(PutBoatMsgReq).New()
 	self.Ans = new(PutBoatMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// DragBoatMsg
+
+type DragBoatMsgReq struct {
+	Username string
+	RoomNum  int
+	ShipDrag []int
+	Phase    string
+}
+
+type DragBoatMsgAns struct {
+	Username         string
+	Phase            string
+	RoomNum          int
+	RemindOrOperated bool
+	Ship             []int
+	Dragable         []int
+}
+
+type DragBoatMsg struct {
+	Code  string
+	Req   *DragBoatMsgReq
+	Ans   *DragBoatMsgAns
+	Error int
+}
+
+func (self *DragBoatMsgReq) New() *DragBoatMsgReq {
+	self.Username = ""
+	self.RoomNum = 0
+	self.ShipDrag = make([]int, 0)
+	self.Phase = ""
+	return self
+}
+
+func (self *DragBoatMsgAns) New() *DragBoatMsgAns {
+	self.Username = ""
+	self.RoomNum = 0
+	self.RemindOrOperated = false
+	self.Ship = make([]int, 0)
+	self.Phase = ""
+	self.Dragable = make([]int, 0)
+	return self
+}
+
+func (self *DragBoatMsg) New() *DragBoatMsg {
+	self.Code = msg.DragBoatMsg
+	self.Req = new(DragBoatMsgReq).New()
+	self.Ans = new(DragBoatMsgAns).New()
 	self.Error = 0
 	return self
 }

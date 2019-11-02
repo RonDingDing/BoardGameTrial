@@ -14,7 +14,7 @@ import (
 type ManilaRoom struct {
 	room            *baseroom.Room
 	mapp            map[string]*ManilaSpot
-	ships           map[int]int
+	ships           []int
 	silkdeck        []ManilaStock
 	coffeedeck      []ManilaStock
 	ginsengdeck     []ManilaStock
@@ -28,12 +28,16 @@ type ManilaRoom struct {
 	stockPrice      []int
 }
 
-func (self *ManilaRoom) GetStockPrice(typing int) int {
-	return self.stockPrice[typing]
+func (self *ManilaRoom) GetOneStockPrice(typing int) int {
+	return self.stockPrice[typing-1]
+}
+
+func (self *ManilaRoom) GetStockPrice() []int {
+	return self.stockPrice
 }
 
 func (self *ManilaRoom) GetBuyStockPrice(typing int) int {
-	price := self.stockPrice[typing]
+	price := self.stockPrice[typing-1]
 	if price == 0 {
 		return 5
 	}
@@ -41,7 +45,7 @@ func (self *ManilaRoom) GetBuyStockPrice(typing int) int {
 }
 
 func (self *ManilaRoom) SetStockPrice(typing int, price int) {
-	self.stockPrice[typing] = price
+	self.stockPrice[typing-1] = price
 }
 
 func (self *ManilaRoom) HasOtherBidder(username string) (bool, map[string]bool) {
@@ -281,12 +285,7 @@ func (self *ManilaRoom) ResetMap() {
 		"3coffee": &ManilaSpot{"3coffee", "", 4, 0, false},
 	}
 	self.mapp = mappingOrigin
-
-	shipMap := make(map[int]int)
-	for _, color := range []int{CoffeeColor, SilkColor, GinsengColor, JadeColor} {
-		shipMap[color] = -1
-	}
-	self.ships = shipMap
+	self.ships = []int{-1, -1, -1, -1}
 }
 
 func (self *ManilaRoom) GetMap() map[string]*ManilaSpot {
@@ -302,7 +301,7 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int, step int) {
 		twosilk.SetOnboard(true)
 		threesilk := self.mapp["3silk"]
 		threesilk.SetOnboard(true)
-		self.ships[cargoType] = step
+		self.ships[cargoType-1] = step
 	case JadeColor:
 		onejade := self.mapp["1jade"]
 		onejade.SetOnboard(true)
@@ -312,7 +311,7 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int, step int) {
 		threejade.SetOnboard(true)
 		fourjade := self.mapp["4jade"]
 		fourjade.SetOnboard(true)
-		self.ships[cargoType] = step
+		self.ships[cargoType-1] = step
 	case CoffeeColor:
 		onecoffee := self.mapp["1coffee"]
 		onecoffee.SetOnboard(true)
@@ -320,7 +319,7 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int, step int) {
 		twocoffee.SetOnboard(true)
 		threecoffee := self.mapp["3coffee"]
 		threecoffee.SetOnboard(true)
-		self.ships[cargoType] = step
+		self.ships[cargoType-1] = step
 	case GinsengColor:
 		oneginseng := self.mapp["1ginseng"]
 		oneginseng.SetOnboard(true)
@@ -328,11 +327,11 @@ func (self *ManilaRoom) SetMapOnboard(cargoType int, step int) {
 		twoginseng.SetOnboard(true)
 		threeginseng := self.mapp["3ginseng"]
 		threeginseng.SetOnboard(true)
-		self.ships[cargoType] = step
+		self.ships[cargoType-1] = step
 	}
 }
 
-func (self *ManilaRoom) GetShip() map[int]int{
+func (self *ManilaRoom) GetShip() []int {
 	return self.ships
 }
 
@@ -341,7 +340,7 @@ func (self *ManilaRoom) ResetDecks() {
 	self.coffeedeck = []ManilaStock{}
 	self.ginsengdeck = []ManilaStock{}
 	self.silkdeck = []ManilaStock{}
-	self.stockPrice = []int{0, 0, 0, 0, 0}
+	self.stockPrice = []int{0, 0, 0, 0}
 	for _, color := range []int{JadeColor, SilkColor, CoffeeColor, GinsengColor} {
 		card := new(ManilaStock).New(color)
 		for j := 0; j < OriginalDeckNumber; j++ {
@@ -382,7 +381,12 @@ func (self *ManilaRoom) GetOneDeck(typing int) int {
 }
 
 func (self *ManilaRoom) GetDecks() []int {
-	return []int{self.GetOneDeck(SilkColor), self.GetOneDeck(CoffeeColor), self.GetOneDeck(GinsengColor), self.GetOneDeck(JadeColor)}
+	decks := []int{0, 0, 0, 0}
+	for _, v := range []int{CoffeeColor, SilkColor, GinsengColor, JadeColor} {
+		leng := self.GetOneDeck(v)
+		decks[v-1] = leng
+	}
+	return decks
 }
 
 func (self *ManilaRoom) GetManilaPlayers() map[string]*ManilaPlayer {

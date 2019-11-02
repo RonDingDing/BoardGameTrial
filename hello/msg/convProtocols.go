@@ -17,6 +17,7 @@ const (
 	BuyStockMsg    = "009"
 	ChangePhaseMsg = "010"
 	PutBoatMsg     = "011"
+	DragBoatMsg    = "012"
 
 	NorAlreadyInRoom      = 1
 	NorNewEntered         = 2

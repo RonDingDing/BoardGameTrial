@@ -7,7 +7,6 @@ import (
 	"hello/manila"
 	"hello/pb3"
 	"log"
-	"sort"
 
 	"github.com/gorilla/websocket"
 )
@@ -82,31 +81,22 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
 		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
 		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
-		roomdetailmsg.Ans.SilkDeck = room.GetOneDeck(manila.SilkColor)
-		roomdetailmsg.Ans.CoffeeDeck = room.GetOneDeck(manila.CoffeeColor)
-		roomdetailmsg.Ans.GinsengDeck = room.GetOneDeck(manila.GinsengColor)
-		roomdetailmsg.Ans.JadeDeck = room.GetOneDeck(manila.JadeColor)
+		roomdetailmsg.Ans.Deck = room.GetDecks()
+
 		roomdetailmsg.Ans.Round = room.GetRound()
 		roomdetailmsg.Ans.HighestBidder = room.GetHighestBidder()
 		roomdetailmsg.Ans.HighestBidPrice = room.GetHighestBidPrice()
 		roomdetailmsg.Ans.CurrentPlayer = room.GetCurrentPlayer()
 		roomdetailmsg.Ans.Phase = room.GetPhase()
-		roomdetailmsg.Ans.JadeStockPrice = room.GetStockPrice(manila.JadeColor)
-		roomdetailmsg.Ans.SilkStockPrice = room.GetStockPrice(manila.SilkColor)
-		roomdetailmsg.Ans.CoffeeStockPrice = room.GetStockPrice(manila.CoffeeColor)
-		roomdetailmsg.Ans.GinsengStockPrice = room.GetStockPrice(manila.GinsengColor)
+		roomdetailmsg.Ans.StockPrice = room.GetStockPrice()
+
+		roomdetailmsg.Ans.Ship = room.GetShip()
 
 		for k, v := range room.GetMap() {
 			mapSpot := pb3.MappS{Name: k, Taken: v.GetTaken(),
 				Price: v.GetPrice(), Award: v.GetAward(), Onboard: v.GetOnboard()}
 			roomdetailmsg.Ans.Mapp = append(roomdetailmsg.Ans.Mapp, mapSpot)
 		}
-
-		for d, w := range room.GetShip() {
-			ship := pb3.ShipS{ShipType: d, Step: w}
-			roomdetailmsg.Ans.Ship = append(roomdetailmsg.Ans.Ship, ship)
-		}
-		sort.Sort(pb3.ShipSArray(roomdetailmsg.Ans.Ship))
 
 		for n, p := range room.GetManilaPlayers() {
 			pl := pb3.PlayersS{Name: n, Stock: p.GetStockNum(),

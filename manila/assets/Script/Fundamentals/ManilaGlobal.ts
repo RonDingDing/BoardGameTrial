@@ -6,14 +6,8 @@ export namespace Global {
     export let seat = 0;
     export let mapp = {};
     export let allPlayers = {};
-    export let silkdeck = 0;
-    export let jadedeck = 0;
-    export let coffeedeck = 0;
-    export let ginsengdeck = 0;
-    export let silkstockprice = 0;
-    export let jadestockprice = 0;
-    export let coffeestockprice = 0;
-    export let ginsengstockprice = 0;
+    export let deck = []; 
+    export let stockprice = []; 
     export let round = 0;
     export let roomNum = 0;
     export let allPlayerName = [];

@@ -9,6 +9,14 @@ export const SilkColor = 2;
 export const GinsengColor = 3;
 export const JadeColor = 4;
 
+export const PhaseBidding      = "Bidding"
+export const PhaseBuyStock     = "BuyStock"
+export const PhasePutBoat      = "PutBoat"
+export const PhaseDragBoat     = "DragBoat"
+export const PhaseInvest       = "Invest"
+export const PhasePostDragBoat = "PostDragBoat"
+export const PhaseSettle       = "Settle"
+
 export const Errors = "000";
 export const LoginMsg = "001";
 export const SignUpMsg = "002";
@@ -21,6 +29,7 @@ export const HandMsg = "008";
 export const BuyStockMsg = "009";
 export const ChangePhaseMsg = "010";
 export const PutBoatMsg = "011";
+export const DragBoatMsg = "012";
 
 export const NorAlreadyInRoom = 1
 export const NorNewEntered = 2
@@ -92,19 +101,21 @@ export var roomdetailmsg = {
     },
     "Ans":
     {
-        "GameNum": 0,
-        "CoffeeDeck": 0,
-        "SilkDeck": 0,
-        "GinsengDeck": 0,
-        "JadeDeck": 0,
-        "CoffeeStockPrice": 0,
-        "SilkStockPrice": 0,
-        "GinsengStockPrice": 0,
-        "JadeStockPrice": 0,
+        "GameNum": 0,     
+        "Deck": [
+            // 0
+        ],
+        
+        "StockPrice":  [
+            // 0
+        ],
+        
         "Mapp": [
             // {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false}
         ],
-        "PlayerName": [],
+        "PlayerName": [
+            // ""
+        ],
         "PlayerNumForStart": 0,
         "PlayerNumMax": 0,
         "Players": [
@@ -115,7 +126,10 @@ export var roomdetailmsg = {
         "Started": false,
         "HighestBidder": "",
         "CurrentPlayer": "",
-        "Phase": ""
+        "Phase": "",
+        "Ship": [
+            // {"ShipType": 0, "Step": 0}
+        ]
     },
     "Error": 0
 }
@@ -250,6 +264,34 @@ export var putboatmsg = {
         "RoomNum": 0,
         "Except": 0,
         "RemindOrOperated": false,
+    },
+    "Error": 0
+}
+
+
+export var dragboatmsg = {
+    "Code": DragBoatMsg,
+    "Req":
+    {
+        "Username": "",
+        "RoomNum": 0,
+        "ShipDrag": [
+            // 0, 0, 0, 0
+        ],
+        "Phase": ""
+    },
+    "Ans":
+    {
+        "Username": "",
+        "Phase": "",
+        "RoomNum": 0,
+        "RemindOrOperated": false,
+        "Ship": [
+            // 0, 0, 0, 0
+        ],       
+        "Dragable": [
+            // 0, 0, 0 
+        ]
     },
     "Error": 0
 }

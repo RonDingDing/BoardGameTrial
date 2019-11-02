@@ -13,8 +13,6 @@ export default class LoginControl extends BasicControl {
     @property(cc.EditBox)
     passwordEditBox: cc.EditBox = null
 
-
-
     onLoad() {
         super.onLoad();
         var self = this;
