@@ -30,6 +30,7 @@ export const BuyStockMsg = "009";
 export const ChangePhaseMsg = "010";
 export const PutBoatMsg = "011";
 export const DragBoatMsg = "012";
+export const InvestMsg = "013";
 
 export const NorAlreadyInRoom = 1
 export const NorNewEntered = 2
@@ -129,7 +130,8 @@ export var roomdetailmsg = {
         "Phase": "",
         "Ship": [
             // {"ShipType": 0, "Step": 0}
-        ]
+        ],
+        "RenderAfter": 0
     },
     "Error": 0
 }
@@ -292,6 +294,25 @@ export var dragboatmsg = {
         "Dragable": [
             // 0, 0, 0 
         ]
+    },
+    "Error": 0
+}
+
+
+export var investmsg = {
+    "Code": InvestMsg,
+    "Req":
+    {
+        "Username": "",
+        "RoomNum": 0,
+        "Invest": "",
+    },
+    "Ans":
+    {
+        "Username": "",         
+        "RoomNum": 0,
+        "RemindOrOperated": false,    
+        "Invest": "",     
     },
     "Error": 0
 }

@@ -1,10 +1,11 @@
 import EventMng from "../Script/Fundamentals/Manager/EventMng";
-
+import { PhaseDragBoat } from "../Script/Fundamentals/Imports"
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Dragger extends cc.Component {
     sum: [number, number, number] = [0, 0, 0]
+    dragable: [number] = [0]
     phase: string
 
     @property([cc.SpriteFrame])
@@ -35,10 +36,12 @@ export default class Dragger extends cc.Component {
         for (let i = 0; i < self.sum.length; i++) {
             realSum += self.sum[i];
         }
-        if (realSum === 9) {
-            EventMng.emit("Drag", true);
+        if (realSum === 9 && self.phase === PhaseDragBoat) {
+            EventMng.emit("DragBoat", self.dragable, self.sum, true);
+            self.sum = [0, 0, 0];
+            self.phase = "";
         } else {
-            EventMng.emit("Drag", false);
+            EventMng.emit("DragBoat", self.dragable, self.sum, false);
         }
 
     }

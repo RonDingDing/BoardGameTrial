@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "CoffeeShip",
+    "_name": "ShipCoffee",
     "_objFlags": 0,
     "_parent": null,
     "_children": [
@@ -337,7 +337,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "2242f2dc-7e8e-43e7-929a-1e160f99e839"
     },
     "fileId": "c6+ODESzdHN5brlb3Glrtm",
     "sync": false
@@ -348,7 +348,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "2242f2dc-7e8e-43e7-929a-1e160f99e839"
     },
     "fileId": "c2F7Ju39RFr7VaWnHUU3wm",
     "sync": false
@@ -538,7 +538,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "2242f2dc-7e8e-43e7-929a-1e160f99e839"
     },
     "fileId": "33xmcGWdBB57CB1oITFV47",
     "sync": false
@@ -728,7 +728,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "2242f2dc-7e8e-43e7-929a-1e160f99e839"
     },
     "fileId": "57FDPLxPVKNbGT3Awr6umF",
     "sync": false
@@ -771,7 +771,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "2242f2dc-7e8e-43e7-929a-1e160f99e839"
     },
     "fileId": "eeV1gtqtRHqLw9gsdFcmxM",
     "sync": false

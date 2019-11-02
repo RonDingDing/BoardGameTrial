@@ -222,6 +222,7 @@ type RoomDetailMsgAns struct {
 	HighestBidPrice int
 	CurrentPlayer   string
 	Phase           string
+	RenderAfter     float32
 }
 
 type RoomDetailMsg struct {
@@ -271,6 +272,7 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.HighestBidPrice = 0
 	self.CurrentPlayer = ""
 	self.Phase = ""
+	self.RenderAfter = 0.0
 	return self
 }
 
@@ -566,6 +568,51 @@ func (self *DragBoatMsg) New() *DragBoatMsg {
 	self.Code = msg.DragBoatMsg
 	self.Req = new(DragBoatMsgReq).New()
 	self.Ans = new(DragBoatMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// InvestMsg
+
+type InvestMsgReq struct {
+	Username string
+	RoomNum  int
+	Invest   string
+}
+
+type InvestMsgAns struct {
+	Username         string
+	RoomNum          int
+	RemindOrOperated bool
+	Invest           string
+}
+
+type InvestMsg struct {
+	Code  string
+	Req   *InvestMsgReq
+	Ans   *InvestMsgAns
+	Error int
+}
+
+func (self *InvestMsgReq) New() *InvestMsgReq {
+	self.Username = ""
+	self.RoomNum = 0
+	self.Invest = ""
+	return self
+}
+
+func (self *InvestMsgAns) New() *InvestMsgAns {
+	self.Username = ""
+	self.RoomNum = 0
+	self.RemindOrOperated = false
+	self.Invest = ""
+	return self
+}
+
+func (self *InvestMsg) New() *InvestMsg {
+	self.Code = ""
+	self.Req = new(InvestMsgReq).New()
+	self.Ans = new(InvestMsgAns).New()
 	self.Error = 0
 	return self
 }

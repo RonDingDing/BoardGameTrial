@@ -40,6 +40,8 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 		go handler.HandleBuyStockMsg(messageType, message, connection, code.Code, ormManager)
 	case msg.PutBoatMsg:
 		go handler.HandlePutBoatMsg(messageType, message, connection, code.Code, ormManager)
+	case msg.DragBoatMsg:
+		go handler.HandleDragBoatMsg(messageType, message, connection, code.Code, ormManager)
 	default:
 		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
 	}

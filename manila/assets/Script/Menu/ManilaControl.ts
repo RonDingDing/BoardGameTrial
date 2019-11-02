@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
@@ -8,8 +8,6 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default class ManilaControl extends BasicControl {
 
-    @property([cc.SpriteFrame])
-    pawnChoice: [cc.SpriteFrame] = [new cc.SpriteFrame()]
 
     @property(cc.Prefab)
     nameScript: cc.Prefab = null
@@ -17,14 +15,15 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Sprite)
     mapSprite: cc.Sprite = null
 
-    @property(cc.Sprite)
-    readySprite: cc.Sprite = null
+    @property(cc.Node)
+    readyNode: cc.Node = null
+
+    @property(cc.Prefab)
+    readyPrefab: cc.Prefab = null
 
     @property(cc.Node)
     putNode: cc.Node = null
 
-    @property([cc.SpriteFrame])
-    readyChoices: [cc.SpriteFrame, cc.SpriteFrame, cc.SpriteFrame] = [new cc.SpriteFrame(), new cc.SpriteFrame(), new cc.SpriteFrame()]
 
     @property(cc.Sprite)
     phaseCatcher: cc.Sprite = null
@@ -68,7 +67,7 @@ export default class ManilaControl extends BasicControl {
 
         self.j();
 
-        self.renderGlobal();
+        self.renderGlobal(0);
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
         EventMng.on(GameStartMsg, self.onGameStartMsg, self);
         EventMng.on(BidMsg, self.onBidMsg, self);
@@ -77,33 +76,30 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(ChangePhaseMsg, self.onChangePhaseMsg, self);
         EventMng.on(PutBoatMsg, self.onPutBoatMsg, self);
         EventMng.on(DragBoatMsg, self.onDragBoatMsg, self);
+        EventMng.on(InvestMsg, self.onInvestMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
         EventMng.on("PutBoat", self.sendPutBoat, self);
+        EventMng.on("DragBoat", self.sendDragBoat, self);
     }
 
     j() {
         // let self = this;
         // Global.started = true;
-        // Global.ship = [
-        //     { ShipType: 1, Step: -1 },
-        //     { ShipType: 2, Step: 14 },
-        //     { ShipType: 3, Step: 15},
-        //     { ShipType: 4, Step: 19 }
-        // ]
+        // Global.stockprice = [5, 5, 5, 5]
 
     }
 
-    renderGlobal() {
+    renderGlobal(time: number) {
         let self = this;
         if (Global.started) {
             self.mapSprite.node.active = true;
-            self.readySprite.node.active = false;
-            self.renderMap();
+            self.readyNode.active = false;
+            self.scheduleOnce(self.renderMap, time);
         } else {
             self.mapSprite.node.active = false;
-            self.readySprite.node.active = true;
+            self.readyNode.active = true;
         }
 
         let allPlayers = Global.allPlayerName;
@@ -122,7 +118,11 @@ export default class ManilaControl extends BasicControl {
             let ordered = orderedO.splice(myIndex, len).concat(orderedO.splice(0, len));
 
             // 设定大的准备按钮状态
-            self.readySprite.getComponent(cc.Sprite).spriteFrame = Global.readied ? self.readyChoices[1] : self.readyChoices[0];
+            let readyButton = cc.instantiate(self.readyPrefab);
+            self.readyNode.removeAllChildren();
+            self.readyNode.addChild(readyButton);
+            let readyScript = readyButton.getChildByName("ReadyButtonC").getComponent("ReadyButton");
+            readyButton.getComponent(cc.Sprite).spriteFrame = Global.readied ? readyScript.readyPics[1] : readyScript.readyPics[0];
 
             let ystart = MapCoor.playerYstart;
             let xstart = MapCoor.playerXstart;
@@ -137,8 +137,13 @@ export default class ManilaControl extends BasicControl {
 
                 // 设置玩家属性
                 let tokenSpriteNode = scriptPlayer.getChildByName("Token")
+                let nameScripter = scriptPlayer.getChildByName("NameScripter").getComponent("NameScripter");
+                let pawnChoices = nameScripter.pawnPics;
+                let readyChoices = nameScripter.readyPics;
+
+
                 let tokenSprite = tokenSpriteNode.getComponent(cc.Sprite);
-                tokenSprite.spriteFrame = self.pawnChoice[player.Seat - 1];
+                tokenSprite.spriteFrame = pawnChoices[player.Seat - 1];
                 let name = scriptPlayer.getChildByName("Name").getComponent(cc.Label);
                 name.string = username;
                 let money = scriptPlayer.getChildByName("Money").getComponent(cc.Label);
@@ -148,10 +153,10 @@ export default class ManilaControl extends BasicControl {
                 let stateSpriteNode = scriptPlayer.getChildByName("State");
                 if (Global.started == false) {
                     stateSpriteNode.active = player.Ready ? true : false;
-                    stateSpriteNode.getComponent(cc.Sprite).spriteFrame = self.readyChoices[0];
+                    stateSpriteNode.getComponent(cc.Sprite).spriteFrame = readyChoices[0];
                 } else {
                     stateSpriteNode.active = player.Name === Global.currentPlayer ? true : false;
-                    stateSpriteNode.getComponent(cc.Sprite).spriteFrame = self.readyChoices[2];
+                    stateSpriteNode.getComponent(cc.Sprite).spriteFrame = readyChoices[2];
                 }
                 let offlineNode = scriptPlayer.getChildByName("Offline");
                 offlineNode.active = player.Online ? false : true;
@@ -188,8 +193,10 @@ export default class ManilaControl extends BasicControl {
             let priceSprite = priceUnderNode.addComponent(cc.Sprite);
             priceSprite.spriteFrame = self.stockToken;
             mapNode.addChild(priceUnderNode);
-            y = MapCoor.stockYstart + MapCoor.stockPriceGap[prices[i]] * MapCoor.stockYmargin;
-            x += MapCoor.stockXmargin;
+            // y = MapCoor.stockYstart + MapCoor.stockPriceGap[prices[i]] * MapCoor.stockYmargin;
+            // x += MapCoor.stockXmargin;
+            y = MapCoor.stockYs[MapCoor.stockPriceGap[prices[i]]][i];
+            x = MapCoor.stockXs[MapCoor.stockPriceGap[prices[i]]][i];
             priceUnderNode.x = x;
             priceUnderNode.y = y;
         }
@@ -211,7 +218,7 @@ export default class ManilaControl extends BasicControl {
 
     }
 
-    setShipPosition(shipUnderNode, shipsocket, step) {
+    setShipPosition(shipUnderNode: cc.Node, shipsocket: number, step: number) {
         let x = 0;
         let y = 0;
         let r = 0;
@@ -234,7 +241,7 @@ export default class ManilaControl extends BasicControl {
             self.popUpError(message);
         } else {
             self.messageToGlobal(message);
-            self.renderGlobal();
+            self.renderGlobal(message.Ans.RenderAfter);
         }
     }
 
@@ -285,7 +292,7 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    sendBid(data) {
+    sendBid(data: string) {
         let self = this;
         if (Global.currentPlayer === Global.playerUser) {
             let dp = parseInt(data);
@@ -352,7 +359,7 @@ export default class ManilaControl extends BasicControl {
         }
 
     }
-    sendBuyStock(data) {
+    sendBuyStock(data: string) {
         let self = this;
         if (Global.currentPlayer === Global.playerUser) {
             let stock = parseInt(data);
@@ -385,13 +392,13 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    playCatcher(string) {
+    playCatcher(strings: string) {
         let self = this;
         self.phaseCatcher.node.active = true;
         let action = cc.sequence(
             cc.callFunc(function () {
                 let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
-                phaseString.string = string;
+                phaseString.string = strings;
 
             }),
             cc.fadeTo(1.0, 255),
@@ -400,13 +407,13 @@ export default class ManilaControl extends BasicControl {
         self.phaseCatcher.node.runAction(action);
     }
 
-    playBuyStocker(string) {
+    playBuyStocker(strings: string) {
         let self = this;
         self.buyStocker.node.active = true;
         let action = cc.sequence(
             cc.callFunc(function () {
                 let phaseString = self.buyStocker.node.getChildByName("PhaseString").getComponent(cc.Label);
-                phaseString.string = string;
+                phaseString.string = strings;
 
             }),
             cc.fadeTo(1.0, 255),
@@ -434,7 +441,7 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    sendPutBoat(except, ok) {
+    sendPutBoat(except: number, ok: boolean) {
         let self = this;
         if (ok) {
             let putboatmsgobj = JSON.parse(JSON.stringify(putboatmsg));
@@ -460,6 +467,7 @@ export default class ManilaControl extends BasicControl {
             let draggerScript = dragBoatUnderNode.getChildByName("Dragger").getComponent("Dragger");
             let pics = draggerScript.shipPics;
             draggerScript.phase = message.Ans.Phase;
+            draggerScript.dragable = message.Ans.Dragable;
 
             let dragable = message.Ans.Dragable;
             if (dragable.length < 3) {
@@ -479,10 +487,59 @@ export default class ManilaControl extends BasicControl {
                 } else {
                     sprite.spriteFrame = pics[dragShipType - 1];
                 }
-
             }
-
+        } else if (!message.Ans.RemindOrOperated && message.Ans.RoomNum === Global.roomNum) {
+            let ship = message.Ans.Ship;
+            self.shipMove(ship);
         }
+    }
 
+    shipMove(ship: [number]) {
+        let self = this;
+        let dic = { [CoffeeColor]: "Coffee", [SilkColor]: "Silk", [GinsengColor]: "Ginseng", [JadeColor]: "Jade" };
+        let shipSocket = 0;
+        for (let shipType = 0; shipType < ship.length; shipType++) {
+            let step = ship[shipType];
+            if (step >= 0 && step <= 19) {
+                let shipUnderNode = self.mapSprite.node.getChildByName("Ship" + dic[shipType + 1]);
+                let x = MapCoor.shipXs[step][shipSocket];
+                let y = MapCoor.shipYs[step][shipSocket];
+                let r = MapCoor.shipRs[step][shipSocket];
+                let action = cc.spawn(
+                    cc.moveTo(1, new cc.Vec2(x, y)),
+                    cc.rotateTo(1, r)
+                );
+
+                // action.easing(cc.easeInOut(1.0));
+                shipUnderNode.runAction(action);
+                shipSocket += 1;
+                if (shipSocket > 3) {
+                    break;
+                }
+            }
+        }
+    }
+
+    sendDragBoat(dragable: [number], sum: [number], ok: boolean) {
+        let self = this;
+        if (ok) {
+            let shipDrag = [0, 0, 0, 0];
+            for (let i = 0; i < dragable.length; i++) {
+                shipDrag[dragable[i] - 1] = sum[i];
+            }
+            let dragboatmsgobj = JSON.parse(JSON.stringify(dragboatmsg));
+            dragboatmsgobj.Req.Username = Global.playerUser;
+            dragboatmsgobj.Req.RoomNum = Global.roomNum;
+            dragboatmsgobj.Req.Phase = Global.phase;
+            dragboatmsgobj.Req.ShipDrag = shipDrag;
+            ManilaSocket.send(dragboatmsgobj);
+            self.dragBoatNode.active = false;
+        } else {
+            self.playPopup("请输入合适的步数！");
+        }
+    }
+
+    onInvestMsg(message) {
+        console.log(message);
     }
 }
