@@ -610,7 +610,7 @@ func (self *InvestMsgAns) New() *InvestMsgAns {
 }
 
 func (self *InvestMsg) New() *InvestMsg {
-	self.Code = ""
+	self.Code = msg.InvestMsg
 	self.Req = new(InvestMsgReq).New()
 	self.Ans = new(InvestMsgAns).New()
 	self.Error = 0
