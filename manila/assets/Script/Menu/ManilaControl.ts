@@ -32,9 +32,11 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Node)
     putNode: cc.Node = null
 
+    @property(cc.Node)
+    catchNode: cc.Node = null
 
-    @property(cc.Sprite)
-    phaseCatcher: cc.Sprite = null
+    @property(cc.Prefab)
+    catchPrefab: cc.Prefab = null
 
     @property(cc.Node)
     bidNode: cc.Node = null
@@ -100,7 +102,10 @@ export default class ManilaControl extends BasicControl {
     }
 
     j() {
-        // let self = this;
+        let self = this;
+        // self.scheduleOnce(function () { self.playCatcher("1") }, 0);
+        // self.scheduleOnce(function () { self.playCatcher("2") }, 0.1);
+        // 
         // Global.started = true;
         // Global.stockprice = [0, 20, 5, 30];
         // Global.ship = [1, 1, -1, 1];
@@ -447,7 +452,7 @@ export default class ManilaControl extends BasicControl {
                 stockName = "0 stock.";
             }
 
-            self.playBuyStocker(username + " bought " + stockName);
+            self.playCatcher(username + " bought " + stockName, 350);
         }
 
     }
@@ -484,34 +489,37 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    playCatcher(strings: string) {
+    // playCatcher(strings: string) {
+    //     let self = this;
+    //     // self.phaseCatcher.node.active = true;
+    //     // let action = cc.sequence(
+    //     //     cc.callFunc(function () {
+    //     //         let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
+    //     //         phaseString.string = strings;
+
+    //     //     }),
+    //     //     cc.fadeTo(1.0, 255),
+    //     //     cc.fadeTo(2.0, 0),
+    //     // );
+    //     // self.phaseCatcher.node.runAction(action);
+    //     self.playBuyStocker(strings);
+    // }
+
+    playCatcher(strings: string, start: number = 580) {
         let self = this;
-        self.phaseCatcher.node.active = true;
-        let action = cc.sequence(
-            cc.callFunc(function () {
-                let phaseString = self.phaseCatcher.node.getChildByName("PhaseString").getComponent(cc.Label);
-                phaseString.string = strings;
+        self.catchNode.active = true;
+        let catchee = cc.instantiate(self.catchPrefab);
+        catchee.opacity = 0;
+        catchee.position = new cc.Vec2(-500, start);
+        let phaseString = catchee.getChildByName("PhaseString").getComponent(cc.Label);
+        phaseString.string = strings;
+        self.catchNode.addChild(catchee);
+        let action = cc.spawn(
+            cc.sequence(cc.fadeIn(3), cc.fadeOut(3)),
 
-            }),
-            cc.fadeTo(1.0, 255),
-            cc.fadeTo(2.0, 0),
+            cc.moveTo(6.0, new cc.Vec2(500, start))
         );
-        self.phaseCatcher.node.runAction(action);
-    }
-
-    playBuyStocker(strings: string) {
-        let self = this;
-        self.buyStocker.node.active = true;
-        let action = cc.sequence(
-            cc.callFunc(function () {
-                let phaseString = self.buyStocker.node.getChildByName("PhaseString").getComponent(cc.Label);
-                phaseString.string = strings;
-
-            }),
-            cc.fadeTo(1.0, 255),
-            cc.fadeTo(2.0, 0),
-        );
-        self.buyStocker.node.runAction(action);
+        catchee.runAction(action);
     }
 
     onChangePhaseMsg(message) {
@@ -605,7 +613,9 @@ export default class ManilaControl extends BasicControl {
                 );
 
                 // action.easing(cc.easeInOut(1.0));
-                shipUnderNode.runAction(action);
+                if (shipUnderNode) {
+                    shipUnderNode.runAction(action);
+                }
                 shipSocket += 1;
                 if (shipSocket > 3) {
                     break;
@@ -629,7 +639,7 @@ export default class ManilaControl extends BasicControl {
             ManilaSocket.send(dragboatmsgobj);
             self.dragBoatNode.active = false;
         } else {
-            self.playPopup("请输入合适的步数！");
+            self.playPopup("三种船加起来应该是9步！");
         }
     }
 
@@ -638,10 +648,12 @@ export default class ManilaControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
-            console.log(1, message);
+            self.playCatcher("Your turn to invest", 350);
             Global.canInvest = true;
-        } else if (!message.Ans.RemindOrOperated){
-            console.log(2, message);
+        } else if (!message.Ans.RemindOrOperated) {
+            let invest = message.Ans.Invest;
+            // TODO
+            self.playCatcher(message.Ans.Username + " invested " + invest);
         }
     }
 

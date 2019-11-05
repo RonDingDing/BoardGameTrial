@@ -513,25 +513,35 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 	}
 	username := investmsg.Req.Username
 	invest := investmsg.Req.Invest
-	manilaRoom, _, roomNum:= global.FindUserInManila(username)
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
 	if manilaRoom == nil {
 		investmsg.Error = msg.ErrUserIsNotInRoom
 	} else {
 		investPoint, ok := manilaRoom.GetMap()[invest]
-		if (!ok) {
+		if !ok {
 			investmsg.Error = msg.ErrInvalidInvestPoint
 			SendMessage(messageType, investmsg, connection)
 			return
 		}
-		if investPoint.GetTaken() != ""{
+		if investPoint.GetTaken() != "" {
 			investmsg.Error = msg.ErrInvestPointTaken
 			SendMessage(messageType, investmsg, connection)
 			return
 		}
+		player := manilaRoom.GetManilaPlayers()[username]
+		price := investPoint.GetPrice()
+		if (price > player.GetMoney()){
+			investmsg.Error = msg.ErrNotEnoughGameMoney
+			SendMessage(messageType, investmsg, connection)
+			return
+		}
+
+		player.AddMoney(-price)
 		investPoint.SetTaken(username)
+		// 比较特殊的 repair 在这里结算
 		if invest == "repair" {
 			award := investPoint.GetAward()
-			manilaRoom.GetManilaPlayers()[username].AddMoney(award)
+			player.AddMoney(award)
 		}
 		investmsg.Ans.Username = username
 		investmsg.Ans.RemindOrOperated = false
@@ -539,10 +549,26 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 		investmsg.Ans.Invest = invest
 		RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
 		nextUser, nextPhase := manilaRoom.NextPlayer(username)
+		manilaRoom.SetCurrentPlayer(nextUser)
+		special := len(manilaRoom.GetPlayerName()) == 3 && manilaRoom.GetRound() == 1
+		if (!nextPhase) || (special) {
+			// 不是下一个阶段，继续投资
+			investmsg := new(pb3.InvestMsg).New()
+			investmsg.Ans.Username = nextUser
+			investmsg.Ans.RemindOrOperated = true
+			investmsg.Ans.RoomNum = roomNum
+			RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
+			if special {
+				manilaRoom.AddRound()
+			}
 
-		// TODO
-	 
- 
+		} else {
+			// 下一个阶段
+			RoomObjChangePhase(manilaRoom, manila.PhaseCastDice)
+			// TODO 
+		}
+
+
 		// 广播房间目前信息
 		roomdetailmsg := new(pb3.RoomDetailMsg).New()
 		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom, 2)

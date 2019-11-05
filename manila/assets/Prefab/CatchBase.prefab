@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Catcher",
+    "_name": "Catch",
     "_objFlags": 0,
     "_parent": null,
     "_children": [
@@ -22,7 +22,7 @@
       }
     ],
     "_active": true,
-    "_level": 2,
+    "_level": 1,
     "_components": [
       {
         "__id__": 5
@@ -41,8 +41,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 733,
-      "height": 224
+      "width": 1200,
+      "height": 200
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -52,14 +52,14 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 1.491,
-      "y": -31.801,
+      "y": -137.903,
       "z": 0
     },
     "_scale": {
       "__type__": "cc.Vec3",
       "x": 0.5,
       "y": 0.5,
-      "z": 1
+      "z": 0.5
     },
     "_eulerAngles": {
       "__type__": "cc.Vec3",
@@ -94,15 +94,15 @@
     "_opacity": 255,
     "_color": {
       "__type__": "cc.Color",
-      "r": 206,
-      "g": 24,
-      "b": 24,
+      "r": 0,
+      "g": 0,
+      "b": 0,
       "a": 255
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 283.54,
-      "height": 126
+      "width": 226.84,
+      "height": 100.8
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -151,8 +151,8 @@
     "_useOriginalSize": false,
     "_string": "Phase",
     "_N$string": "Phase",
-    "_fontSize": 100,
-    "_lineHeight": 100,
+    "_fontSize": 80,
+    "_lineHeight": 80,
     "_enableWrapText": true,
     "_N$file": null,
     "_isSystemFontUsed": true,
@@ -171,9 +171,9 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "615cf064-9740-4ccf-90e2-7bc93cede4ba"
     },
-    "fileId": "2d6PLQNY1CP7Irih/NkRTn",
+    "fileId": "d4AxEu7eRBZrH/ZvlM4cOj",
     "sync": false
   },
   {
@@ -195,7 +195,7 @@
       "__uuid__": "68fbc100-d3c5-4346-9aaf-0858445b4835"
     },
     "_type": 0,
-    "_sizeMode": 1,
+    "_sizeMode": 0,
     "_fillType": 0,
     "_fillCenter": {
       "__type__": "cc.Vec2",
@@ -214,9 +214,9 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "615cf064-9740-4ccf-90e2-7bc93cede4ba"
     },
-    "fileId": "3847GFxAJI7qfe57bT78ZI",
+    "fileId": "eenS1X4/RNRKV6lcXFXx8R",
     "sync": false
   }
 ]
