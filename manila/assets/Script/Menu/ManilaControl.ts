@@ -87,7 +87,8 @@ export default class ManilaControl extends BasicControl {
     j() {
         // let self = this;
         // Global.started = true;
-        // Global.stockprice = [0, 20, 5, 30]
+        // Global.stockprice = [0, 20, 5, 30];
+        // Global.ship = [1,1,1,-1];
         
 
     }
@@ -216,19 +217,21 @@ export default class ManilaControl extends BasicControl {
     }
 
     setShipPosition(shipUnderNode: cc.Node, shipsocket: number, step: number) {
-        let x = 0;
-        let y = 0;
+        // let x = 0;
+        // let y = 0;
+        let point = MapCoor.shipPointOut;
         let r = 0;
         if (step < 0) {
-            x = MapCoor.shipXout;
-            y = MapCoor.shipYout;
+            point = MapCoor.shipPointOut;
         } else if (step <= 19) {
-            x = MapCoor.shipXs[step][shipsocket];
-            y = MapCoor.shipYs[step][shipsocket];
+            // x = MapCoor.shipXs[step][shipsocket];
+            // y = MapCoor.shipYs[step][shipsocket];
+            point = MapCoor.shipPoints[step][shipsocket];
             r = MapCoor.shipRs[step][shipsocket];
         }
-        shipUnderNode.x = x;
-        shipUnderNode.y = y;
+        // shipUnderNode.x = x;
+        // shipUnderNode.y = y;
+        shipUnderNode.position = new cc.Vec2(point[0], point[1]);
         shipUnderNode.angle = -r;
     }
 
@@ -499,11 +502,13 @@ export default class ManilaControl extends BasicControl {
             let step = ship[shipType];
             if (step >= 0 && step <= 19) {
                 let shipUnderNode = self.mapSprite.node.getChildByName("Ship" + dic[shipType + 1]);
-                let x = MapCoor.shipXs[step][shipSocket];
-                let y = MapCoor.shipYs[step][shipSocket];
+                // let x = MapCoor.shipXs[step][shipSocket];
+                // let y = MapCoor.shipYs[step][shipSocket];
+                let position = MapCoor.shipPoints[step][shipSocket];
                 let r = MapCoor.shipRs[step][shipSocket];
                 let action = cc.spawn(
-                    cc.moveTo(1, new cc.Vec2(x, y)),
+                    // cc.moveTo(1, new cc.Vec2(x, y)),
+                    cc.moveTo(1, new cc.Vec2(position[0], position[1])),
                     cc.rotateTo(1, r)
                 );
 
