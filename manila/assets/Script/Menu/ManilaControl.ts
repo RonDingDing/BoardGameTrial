@@ -5,6 +5,14 @@ import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
 const { ccclass, property } = cc._decorator;
 
+function startsWith(str: string, prefix: string) {
+    return str.slice(0, prefix.length) === prefix;
+}
+
+function endsWith(str: string, suffix: string) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
 @ccclass
 export default class ManilaControl extends BasicControl {
 
@@ -89,7 +97,7 @@ export default class ManilaControl extends BasicControl {
         // Global.started = true;
         // Global.stockprice = [0, 20, 5, 30];
         // Global.ship = [1,1,1,-1];
-        
+
 
     }
 
@@ -194,7 +202,7 @@ export default class ManilaControl extends BasicControl {
             priceSprite.spriteFrame = self.stockToken;
             mapNode.addChild(priceUnderNode);
             let eachPrice = prices[i];
-            let coor = MapCoor.stockPriceGap[eachPrice];           
+            let coor = MapCoor.stockPriceGap[eachPrice];
             let point = MapCoor.stockPoints[coor][i];
             priceUnderNode.position = new cc.Vec2(point[0], point[1]);
         }
