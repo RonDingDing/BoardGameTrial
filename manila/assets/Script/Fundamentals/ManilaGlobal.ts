@@ -20,4 +20,5 @@ export namespace Global {
     export let money = 0;
     export let hand = [];
     export let ship = [];
+    export let canInvest = false;
 }

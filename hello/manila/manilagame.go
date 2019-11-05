@@ -22,6 +22,7 @@ const (
 	PhasePutBoat      = "PutBoat"
 	PhaseDragBoat     = "DragBoat"
 	PhaseInvest       = "Invest"
+	PhaseCastDice     = "CastDice"
 	PhasePostDragBoat = "PostDragBoat"
 	PhaseSettle       = "Settle"
 )

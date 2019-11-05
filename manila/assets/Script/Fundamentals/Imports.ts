@@ -9,13 +9,13 @@ export const SilkColor = 2;
 export const GinsengColor = 3;
 export const JadeColor = 4;
 
-export const PhaseBidding      = "Bidding"
-export const PhaseBuyStock     = "BuyStock"
-export const PhasePutBoat      = "PutBoat"
-export const PhaseDragBoat     = "DragBoat"
-export const PhaseInvest       = "Invest"
+export const PhaseBidding = "Bidding"
+export const PhaseBuyStock = "BuyStock"
+export const PhasePutBoat = "PutBoat"
+export const PhaseDragBoat = "DragBoat"
+export const PhaseInvest = "Invest"
 export const PhasePostDragBoat = "PostDragBoat"
-export const PhaseSettle       = "Settle"
+export const PhaseSettle = "Settle"
 
 export const Errors = "000";
 export const LoginMsg = "001";
@@ -47,7 +47,9 @@ export const ErrUserNotInRoom = -8
 export const ErrFailedEntering = -9
 export const ErrNotEnoughGameMoney = -10
 export const ErrUserNotCaptain = -11
-
+export const ErrNotEnoughStock = -12
+export const ErrInvalidInvestPoint = -13
+export const ErrInvestPointTaken = -14
 
 export var errors = {
     "Code": Errors,
@@ -102,15 +104,15 @@ export var roomdetailmsg = {
     },
     "Ans":
     {
-        "GameNum": 0,     
+        "GameNum": 0,
         "Deck": [
             // 0
         ],
-        
-        "StockPrice":  [
+
+        "StockPrice": [
             // 0
         ],
-        
+
         "Mapp": [
             // {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false}
         ],
@@ -290,7 +292,7 @@ export var dragboatmsg = {
         "RemindOrOperated": false,
         "Ship": [
             // 0, 0, 0, 0
-        ],       
+        ],
         "Dragable": [
             // 0, 0, 0 
         ]
@@ -309,10 +311,10 @@ export var investmsg = {
     },
     "Ans":
     {
-        "Username": "",         
+        "Username": "",
         "RoomNum": 0,
-        "RemindOrOperated": false,    
-        "Invest": "",     
+        "RemindOrOperated": false,
+        "Invest": "",
     },
     "Error": 0
 }

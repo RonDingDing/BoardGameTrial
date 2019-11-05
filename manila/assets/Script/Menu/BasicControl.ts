@@ -1,7 +1,7 @@
 const { ccclass, property } = cc._decorator;
 import EventMng from "../Fundamentals/Manager/EventMng";
 import {
-    SocketEvents, ErrNoHandler, ErrUserExit, ErrUserNotExit, ErrCannotEnterRoom, ErrNoSuchPlayer, ErrCannotExitRoom, ErrGameStarted, ErrUserNotInRoom, ErrFailedEntering, ErrUserNotCaptain
+    SocketEvents, ErrNoHandler, ErrUserExit, ErrUserNotExit, ErrCannotEnterRoom, ErrNoSuchPlayer, ErrCannotExitRoom, ErrGameStarted, ErrUserNotInRoom, ErrFailedEntering, ErrUserNotCaptain, ErrNotEnoughStock, ErrInvalidInvestPoint, ErrInvestPointTaken
 } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 
@@ -35,7 +35,7 @@ export default class BasicControl extends cc.Component {
         let popUpNode: cc.Node = popUp.getChildByName("AlertString");
         let popUpString: cc.Label = popUpNode.getComponent(cc.Label);
         popUpString.string = content;
-        self.scheduleOnce(function(){
+        self.scheduleOnce(function () {
             popUp.active = false;
         }, 2);
 
@@ -63,6 +63,12 @@ export default class BasicControl extends cc.Component {
                 self.playPopup("用户不在房间"); break
             case ErrUserNotCaptain:
                 self.playPopup("用户不是船长"); break
+            case ErrNotEnoughStock:
+                self.playPopup("不够股票"); break
+            case ErrInvalidInvestPoint:
+                self.playPopup("错误的投资点"); break
+            case ErrInvestPointTaken:
+                self.playPopup("投资点已被占据"); break
         }
     }
 

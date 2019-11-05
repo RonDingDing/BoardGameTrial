@@ -75,6 +75,22 @@ func (self *ManilaRoom) NextBidder(username string, mapp map[string]bool) string
 	return ""
 }
 
+func (self *ManilaRoom) NextPlayer(username string) (string, bool) {
+	names := self.GetPlayerName()
+	startPlayer := self.GetHighestBidder()
+	roundList := append(names, names...)
+	nextPhase := false
+	for i, n := range roundList {
+		if n == username {
+			if (roundList[i+1] == startPlayer){
+				nextPhase = true
+			}
+			return roundList[i+1], nextPhase
+		}
+	}
+	return "", nextPhase
+}
+
 func (self *ManilaRoom) GetHighestBidPrice() int {
 	return self.highestBidPrice
 }
@@ -121,8 +137,13 @@ func (self *ManilaRoom) SetHighestBidder(bidder string) {
 func (self *ManilaRoom) GetRound() int {
 	return self.round
 }
+
 func (self *ManilaRoom) SetRound(round int) {
 	self.round = round
+}
+
+func (self *ManilaRoom) AddRound() {
+	self.round += 1
 }
 
 func (self *ManilaRoom) GetRoomNum() int {

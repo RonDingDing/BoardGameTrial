@@ -1436,6 +1436,9 @@
     "dragBoatPrefab": {
       "__uuid__": "a8a03f74-c2b4-4c70-9685-a5d12f1171e4"
     },
+    "pawnPrefab": {
+      "__uuid__": "cb1ee0b9-3d42-4e6b-ba7d-d89ebfe69e4a"
+    },
     "_id": "26tRbzzDhFo5iwLaPbsEnG"
   },
   {

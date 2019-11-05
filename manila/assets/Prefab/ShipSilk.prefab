@@ -258,7 +258,7 @@
     },
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
-    "handler": "pressInvest",
+    "handler": "investOnboat",
     "customEventData": "1silk"
   },
   {
@@ -329,6 +329,23 @@
       "__id__": 6
     },
     "_enabled": true,
+    "pawnPics": [
+      {
+        "__uuid__": "7993df69-9691-45f1-98c9-d9ee5f0dc898"
+      },
+      {
+        "__uuid__": "8b9fa0e1-8d98-4a8a-828c-ec433846ede6"
+      },
+      {
+        "__uuid__": "e3f3536a-686f-4c16-b0ef-8df09ea743f0"
+      },
+      {
+        "__uuid__": "bdc2e171-3d66-4558-a48b-6650a896d5c8"
+      },
+      {
+        "__uuid__": "a39042fa-6ae0-4975-9148-35242b71b026"
+      }
+    ],
     "_id": ""
   },
   {
@@ -337,7 +354,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "b255dfb3-fb52-45c0-a4e2-2de997126b8c"
     },
     "fileId": "05u0N53wlAxrSIRf216hSK",
     "sync": false
@@ -348,7 +365,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "b255dfb3-fb52-45c0-a4e2-2de997126b8c"
     },
     "fileId": "95Y4YQO0JHkIv/IyNK0nD0",
     "sync": false
@@ -529,7 +546,7 @@
     },
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
-    "handler": "pressInvest",
+    "handler": "investOnboat",
     "customEventData": "2silk"
   },
   {
@@ -538,7 +555,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "b255dfb3-fb52-45c0-a4e2-2de997126b8c"
     },
     "fileId": "81xdcKqOVGT5rcqKMunP+h",
     "sync": false
@@ -719,8 +736,8 @@
     },
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
-    "handler": "pressInvest",
-    "customEventData": "silk"
+    "handler": "investOnboat",
+    "customEventData": "3silk"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -728,7 +745,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "b255dfb3-fb52-45c0-a4e2-2de997126b8c"
     },
     "fileId": "d96lqAyBBB9oxeApsYXdIU",
     "sync": false
@@ -771,7 +788,7 @@
       "__id__": 1
     },
     "asset": {
-      "__id__": 0
+      "__uuid__": "b255dfb3-fb52-45c0-a4e2-2de997126b8c"
     },
     "fileId": "85xNCw95dCUZb2DQXeDkfA",
     "sync": false

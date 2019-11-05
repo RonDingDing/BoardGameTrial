@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
@@ -69,6 +69,11 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Prefab)
     dragBoatPrefab: cc.Prefab = null
 
+    @property(cc.Prefab)
+    pawnPrefab: cc.Prefab = null
+
+    dic: Object = { [CoffeeColor]: "Coffee", [SilkColor]: "Silk", [GinsengColor]: "Ginseng", [JadeColor]: "Jade" };
+
     onLoad() {
         super.onLoad();
         let self = this;
@@ -90,15 +95,55 @@ export default class ManilaControl extends BasicControl {
         EventMng.on("BuyStock", self.sendBuyStock, self);
         EventMng.on("PutBoat", self.sendPutBoat, self);
         EventMng.on("DragBoat", self.sendDragBoat, self);
+        EventMng.on("InvestOnshore", self.sendInvest, self);
+        EventMng.on("InvestOnboat", self.sendInvest, self);
     }
 
     j() {
         // let self = this;
         // Global.started = true;
         // Global.stockprice = [0, 20, 5, 30];
-        // Global.ship = [1,1,1,-1];
+        // Global.ship = [1, 1, -1, 1];
 
+        // Global.mapp = {
 
+        //     "1tick": { "Name": "1tick", "Taken": "", "Price": 4, "Award": 6, "Onboard": true },
+        //     "2tick": { "Name": "2tick", "Taken": "", "Price": 3, "Award": 8, "Onboard": true },
+        //     "3tick": { "Name": "3tick", "Taken": "", "Price": 2, "Award": 15, "Onboard": true },
+
+        //     "1fail": { "Name": "1fail", "Taken": "", "Price": 4, "Award": 6, "Onboard": true },
+        //     "2fail": { "Name": "2fail", "Taken": "", "Price": 3, "Award": 8, "Onboard": true },
+        //     "3fail": { "Name": "3fail", "Taken": "", "Price": 2, "Award": 15, "Onboard": true },
+
+        //     "1pirate": { "Name": "1pirate", "Taken": "", "Price": 5, "Award": 0, "Onboard": true },
+        //     "2pirate": { "Name": "2pirate", "Taken": "", "Price": 5, "Award": 0, "Onboard": true },
+
+        //     "1drag": { "Name": "1drag", "Taken": "", "Price": 2, "Award": 0, "Onboard": true },
+        //     "2drag": { "Name": "2drag", "Taken": "", "Price": 5, "Award": 0, "Onboard": true },
+
+        //     "repair": { "Name": "repair", "Taken": "", "Price": 0, "Award": 10, "Onboard": true },
+
+        //     "1coffee": { "Name": "1coffee", "Taken": "a", "Price": 2, "Award": 0, "Onboard": false },
+        //     "2coffee": { "Name": "2coffee", "Taken": "a", "Price": 3, "Award": 0, "Onboard": false },
+        //     "3coffee": { "Name": "3coffee", "Taken": "a", "Price": 4, "Award": 0, "Onboard": false },
+
+        //     "1silk": { "Name": "1silk", "Taken": "a", "Price": 3, "Award": 0, "Onboard": false },
+        //     "2silk": { "Name": "2silk", "Taken": "b", "Price": 4, "Award": 0, "Onboard": false },
+        //     "3silk": { "Name": "3silk", "Taken": "c", "Price": 5, "Award": 0, "Onboard": false },
+
+        //     "1jade": { "Name": "1jade", "Taken": "a", "Price": 3, "Award": 0, "Onboard": false },
+        //     "2jade": { "Name": "2jade", "Taken": "b", "Price": 4, "Award": 0, "Onboard": false },
+        //     "3jade": { "Name": "3jade", "Taken": "c", "Price": 5, "Award": 0, "Onboard": false },
+        //     "4jade": { "Name": "4jade", "Taken": "", "Price": 5, "Award": 0, "Onboard": false },
+
+        //     "1ginseng": { "Name": "1ginseng", "Taken": "a", "Price": 1, "Award": 0, "Onboard": false },
+        //     "2ginseng": { "Name": "2ginseng", "Taken": "b", "Price": 2, "Award": 0, "Onboard": false },
+        //     "3ginseng": { "Name": "3ginseng", "Taken": "c", "Price": 3, "Award": 0, "Onboard": false },
+        // };
+
+        // Global.allPlayers = {
+        //     "a": { "Money": 12, "Name": "a", "Online": true, "Stock": 3, "Seat": 1, "Ready": false, "Canbid": true }, "b": { "Money": 30, "Name": "b", "Online": true, "Stock": 2, "Seat": 2, "Ready": false, "Canbid": false }, "c": { "Money": 30, "Name": "c", "Online": true, "Stock": 2, "Seat": 3, "Ready": false, "Canbid": false }
+        // };
     }
 
     renderGlobal(time: number) {
@@ -194,7 +239,6 @@ export default class ManilaControl extends BasicControl {
         mapNode.removeAllChildren();
 
         // 股票价格展示
-
         let prices = Global.stockprice;
         for (let i = 0; i < 4; i++) {
             let priceUnderNode = new cc.Node;
@@ -207,7 +251,7 @@ export default class ManilaControl extends BasicControl {
             priceUnderNode.position = new cc.Vec2(point[0], point[1]);
         }
 
-        // 船展示 TODO
+        // 船展示
         let shipSocket = 0;
         for (let shipType = 0; shipType < Global.ship.length; shipType++) {
             let step = Global.ship[shipType];
@@ -218,6 +262,46 @@ export default class ManilaControl extends BasicControl {
                 shipSocket += 1;
                 if (shipSocket > 3) {
                     break;
+                }
+
+                // 展示船上投资
+                let shipName = self.dic[shipType + 1].toLowerCase();
+                for (let k = 1; k < 5; k++) {
+                    let investPointKey = ("" + k + shipName);
+                    if (Global.mapp.hasOwnProperty(investPointKey)) {
+                        let taken = Global.mapp[investPointKey].Taken;
+                        if (taken !== "") {
+                            let seat = Global.allPlayers[taken].Seat;
+                            let pawnSprite = shipUnderNode.getChildByName(investPointKey).getComponent(cc.Sprite);
+                            let pawnChoices = shipUnderNode.getChildByName("BoatInvest").getComponent("BoatInvest").pawnPics;
+                            pawnSprite.spriteFrame = pawnChoices[seat - 1];
+                        }
+                    }
+                }
+            }
+        }
+
+        // 展示岸上投资
+        for (let pointName in Global.mapp) {
+
+            if (!endsWith(pointName, "coffee")
+                && !endsWith(pointName, "silk")
+                && !endsWith(pointName, "ginseng")
+                && !endsWith(pointName, "jade")
+            ) {
+
+                let pawnPosition = MapCoor.investOnshore[pointName];
+                let pawn = cc.instantiate(self.pawnPrefab);
+                pawn.name = pointName;
+                pawn.position = new cc.Vec2(pawnPosition[0], pawnPosition[1]);
+                mapNode.addChild(pawn);
+                if (Global.mapp[pointName].Taken !== "") {
+                    let taken = Global.mapp[pointName].Taken;
+                    let seat = Global.allPlayers[taken].Seat;
+                    let pawnSprite = pawn.getChildByName("Pawn").getComponent(cc.Sprite);
+                    let pawnPicChoice = pawn.getChildByName("Pawner").getComponent("Pawner").pawnPics;
+                    pawnSprite.spriteFrame = pawnPicChoice[seat - 1];
+
                 }
             }
         }
@@ -504,12 +588,12 @@ export default class ManilaControl extends BasicControl {
 
     shipMove(ship: [number]) {
         let self = this;
-        let dic = { [CoffeeColor]: "Coffee", [SilkColor]: "Silk", [GinsengColor]: "Ginseng", [JadeColor]: "Jade" };
+
         let shipSocket = 0;
         for (let shipType = 0; shipType < ship.length; shipType++) {
             let step = ship[shipType];
             if (step >= 0 && step <= 19) {
-                let shipUnderNode = self.mapSprite.node.getChildByName("Ship" + dic[shipType + 1]);
+                let shipUnderNode = self.mapSprite.node.getChildByName("Ship" + self.dic[shipType + 1]);
                 // let x = MapCoor.shipXs[step][shipSocket];
                 // let y = MapCoor.shipYs[step][shipSocket];
                 let position = MapCoor.shipPoints[step][shipSocket];
@@ -550,6 +634,36 @@ export default class ManilaControl extends BasicControl {
     }
 
     onInvestMsg(message) {
-        console.log(message);
+        let self = this;
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
+            console.log(1, message);
+            Global.canInvest = true;
+        } else if (!message.Ans.RemindOrOperated){
+            console.log(2, message);
+        }
     }
+
+
+    sendInvest(invest: string) {
+        let self = this;
+        if (Global.canInvest) {
+            let investPoint = Global.mapp[invest];
+            if (!investPoint.Taken) {
+                if (Global.money < investPoint.Price) {
+                    self.playNotEnoughMoney();
+                } else {
+                    let investmsgobj = JSON.parse(JSON.stringify(investmsg));
+                    investmsgobj.Req.Username = Global.playerUser;
+                    investmsgobj.Req.RoomNum = Global.roomNum;
+                    investmsgobj.Req.Invest = invest;
+                    ManilaSocket.send(investmsgobj);
+                    Global.canInvest = false;
+                }
+            }
+        }
+    }
+
+
 }

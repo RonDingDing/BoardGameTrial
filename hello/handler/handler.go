@@ -245,6 +245,7 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 			bidmsg := new(pb3.BidMsg).New()
 			manilaRoom.SetCurrentPlayer(firstPlayer)
 			manilaRoom.SetHighestBidder(firstPlayer)
+			manilaRoom.SetRound(1)
 			bidmsg.Ans.Username = firstPlayer
 			bidmsg.Ans.RoomNum = roomNum
 			bidmsg.Ans.HighestBidPrice = manilaRoom.GetHighestBidPrice()
@@ -474,7 +475,9 @@ func HandleDragBoatMsg(messageType int, message []byte, connection *websocket.Co
 		shipDrag := dragboatmsg.Req.ShipDrag
 		for k, v := range shipDrag {
 			step := manilaRoom.GetShip()[k]
-			manilaRoom.SetMapOnboard(k+1, v+step)
+			if step >= 0 {
+				manilaRoom.SetMapOnboard(k+1, v+step)
+			}
 		}
 		dragboatmsg.Ans.Username = username
 		dragboatmsg.Ans.RemindOrOperated = false
@@ -498,5 +501,54 @@ func HandleDragBoatMsg(messageType int, message []byte, connection *websocket.Co
 		investmsg.Ans.RemindOrOperated = true
 		investmsg.Ans.RoomNum = roomNum
 		RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
+	}
+}
+
+func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	investmsg := new(pb3.InvestMsg).New()
+	err := json.Unmarshal(message, &investmsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := investmsg.Req.Username
+	invest := investmsg.Req.Invest
+	manilaRoom, _, roomNum:= global.FindUserInManila(username)
+	if manilaRoom == nil {
+		investmsg.Error = msg.ErrUserIsNotInRoom
+	} else {
+		investPoint, ok := manilaRoom.GetMap()[invest]
+		if (!ok) {
+			investmsg.Error = msg.ErrInvalidInvestPoint
+			SendMessage(messageType, investmsg, connection)
+			return
+		}
+		if investPoint.GetTaken() != ""{
+			investmsg.Error = msg.ErrInvestPointTaken
+			SendMessage(messageType, investmsg, connection)
+			return
+		}
+		investPoint.SetTaken(username)
+		if invest == "repair" {
+			award := investPoint.GetAward()
+			manilaRoom.GetManilaPlayers()[username].AddMoney(award)
+		}
+		investmsg.Ans.Username = username
+		investmsg.Ans.RemindOrOperated = false
+		investmsg.Ans.RoomNum = roomNum
+		investmsg.Ans.Invest = invest
+		RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
+		nextUser, nextPhase := manilaRoom.NextPlayer(username)
+
+		// TODO
+	 
+ 
+		// 广播房间目前信息
+		roomdetailmsg := new(pb3.RoomDetailMsg).New()
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom, 2)
+		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
+		// 为每位玩家发送其手牌具体信息
+		RoomObjTellDeck(manilaRoom)
 	}
 }

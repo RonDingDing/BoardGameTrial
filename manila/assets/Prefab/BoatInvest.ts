@@ -4,8 +4,10 @@ const {ccclass, property} = cc._decorator;
 
 @ccclass
 export default class BoatInvest extends cc.Component {
-
-    pressInvest(event, customEventData) {
-        EventMng.emit("Invest", customEventData);
+    @property([cc.SpriteFrame])
+    pawnPics : [cc.SpriteFrame] = [new cc.SpriteFrame]
+    
+    investOnboat(event, customEventData) {
+        EventMng.emit("InvestOnboat", customEventData);
     }
 }

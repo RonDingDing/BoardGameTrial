@@ -35,6 +35,8 @@ const (
 	ErrNotEnoughGameMoney = -10
 	ErrUserIsNotCaptain   = -11
 	ErrNotEnoughStock     = -12
+	ErrInvalidInvestPoint = -13
+	ErrInvestPointTaken = -14
 
 	LoungeNum = 0
 )
