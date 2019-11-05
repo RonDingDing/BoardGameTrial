@@ -87,7 +87,8 @@ export default class ManilaControl extends BasicControl {
     j() {
         // let self = this;
         // Global.started = true;
-        // Global.stockprice = [5, 5, 5, 5]
+        // Global.stockprice = [0, 20, 5, 30]
+        
 
     }
 
@@ -184,8 +185,6 @@ export default class ManilaControl extends BasicControl {
         mapNode.removeAllChildren();
 
         // 股票价格展示
-        let y = MapCoor.stockYstart;
-        let x = MapCoor.stockXstart;
 
         let prices = Global.stockprice;
         for (let i = 0; i < 4; i++) {
@@ -193,12 +192,10 @@ export default class ManilaControl extends BasicControl {
             let priceSprite = priceUnderNode.addComponent(cc.Sprite);
             priceSprite.spriteFrame = self.stockToken;
             mapNode.addChild(priceUnderNode);
-            // y = MapCoor.stockYstart + MapCoor.stockPriceGap[prices[i]] * MapCoor.stockYmargin;
-            // x += MapCoor.stockXmargin;
-            y = MapCoor.stockYs[MapCoor.stockPriceGap[prices[i]]][i];
-            x = MapCoor.stockXs[MapCoor.stockPriceGap[prices[i]]][i];
-            priceUnderNode.x = x;
-            priceUnderNode.y = y;
+            let eachPrice = prices[i];
+            let coor = MapCoor.stockPriceGap[eachPrice];           
+            let point = MapCoor.stockPoints[coor][i];
+            priceUnderNode.position = new cc.Vec2(point[0], point[1]);
         }
 
         // 船展示 TODO
