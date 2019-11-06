@@ -82,7 +82,7 @@ export default class ManilaControl extends BasicControl {
 
         self.j();
 
-        self.renderGlobal(0);
+        self.renderGlobal();
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
         EventMng.on(GameStartMsg, self.onGameStartMsg, self);
         EventMng.on(BidMsg, self.onBidMsg, self);
@@ -103,8 +103,6 @@ export default class ManilaControl extends BasicControl {
 
     j() {
         let self = this;
-        // self.scheduleOnce(function () { self.playCatcher("1") }, 0);
-        // self.scheduleOnce(function () { self.playCatcher("2") }, 0.1);
         // 
         // Global.started = true;
         // Global.stockprice = [0, 20, 5, 30];
@@ -151,12 +149,12 @@ export default class ManilaControl extends BasicControl {
         // };
     }
 
-    renderGlobal(time: number) {
+    renderGlobal() {
         let self = this;
         if (Global.started) {
             self.mapSprite.node.active = true;
             self.readyNode.active = false;
-            self.scheduleOnce(self.renderMap, time);
+            self.renderMap();
         } else {
             self.mapSprite.node.active = false;
             self.readyNode.active = true;
@@ -338,7 +336,7 @@ export default class ManilaControl extends BasicControl {
             self.popUpError(message);
         } else {
             self.messageToGlobal(message);
-            self.renderGlobal(message.Ans.RenderAfter);
+            self.renderGlobal();
         }
     }
 
@@ -441,19 +439,20 @@ export default class ManilaControl extends BasicControl {
 
             self.buyStockNode.addChild(buyStockUnderNode);
 
-        } else if (!message.Ans.RemindOrOperated && message.Ans.RoomNum === Global.roomNum) {
-            let username = message.Ans.Username;
-            let bought = message.Ans.Bought;
-            let stockName = "";
-            if (bought > 0) {
-                stockName = "1 stock.";
-            }
-            else {
-                stockName = "0 stock.";
-            }
+        } 
+        // else if (!message.Ans.RemindOrOperated && message.Ans.RoomNum === Global.roomNum) {
+        //     let username = message.Ans.Username;
+        //     let bought = message.Ans.Bought;
+        //     let stockName = "";
+        //     if (bought > 0) {
+        //         stockName = "1 stock.";
+        //     }
+        //     else {
+        //         stockName = "0 stock.";
+        //     }
 
-            self.playCatcher(username + " bought " + stockName, 350);
-        }
+        //     self.playCatcher(username + " bought " + stockName, 350);
+        // }
 
     }
     sendBuyStock(data: string) {
@@ -523,10 +522,10 @@ export default class ManilaControl extends BasicControl {
     }
 
     onChangePhaseMsg(message) {
-        let self = this;
-        if (Global.roomNum === message.Ans.RoomNum) {
-            self.playCatcher(message.Ans.Phase);
-        }
+        // let self = this;
+        // if (Global.roomNum === message.Ans.RoomNum) {
+        //     self.playCatcher(message.Ans.Phase);
+        // }
     }
 
     onPutBoatMsg(message) {
@@ -588,9 +587,6 @@ export default class ManilaControl extends BasicControl {
                     sprite.spriteFrame = pics[dragShipType - 1];
                 }
             }
-        } else if (!message.Ans.RemindOrOperated && message.Ans.RoomNum === Global.roomNum) {
-            let ship = message.Ans.Ship;
-            self.shipMove(ship);
         }
     }
 
@@ -602,12 +598,9 @@ export default class ManilaControl extends BasicControl {
             let step = ship[shipType];
             if (step >= 0 && step <= 19) {
                 let shipUnderNode = self.mapSprite.node.getChildByName("Ship" + self.dic[shipType + 1]);
-                // let x = MapCoor.shipXs[step][shipSocket];
-                // let y = MapCoor.shipYs[step][shipSocket];
                 let position = MapCoor.shipPoints[step][shipSocket];
                 let r = MapCoor.shipRs[step][shipSocket];
                 let action = cc.spawn(
-                    // cc.moveTo(1, new cc.Vec2(x, y)),
                     cc.moveTo(1, new cc.Vec2(position[0], position[1])),
                     cc.rotateTo(1, r)
                 );
@@ -648,12 +641,12 @@ export default class ManilaControl extends BasicControl {
         if (message.Error < 0) {
             self.popUpError(message);
         } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
-            self.playCatcher("Your turn to invest", 350);
+            // self.playCatcher("Your turn to invest", 350);
             Global.canInvest = true;
         } else if (!message.Ans.RemindOrOperated) {
             let invest = message.Ans.Invest;
             // TODO
-            self.playCatcher(message.Ans.Username + " invested " + invest);
+            // self.playCatcher(message.Ans.Username + " invested " + invest);
         }
     }
 

@@ -222,7 +222,6 @@ type RoomDetailMsgAns struct {
 	HighestBidPrice int
 	CurrentPlayer   string
 	Phase           string
-	RenderAfter     float32
 }
 
 type RoomDetailMsg struct {
@@ -272,7 +271,6 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.HighestBidPrice = 0
 	self.CurrentPlayer = ""
 	self.Phase = ""
-	self.RenderAfter = 0.0
 	return self
 }
 
@@ -613,6 +611,42 @@ func (self *InvestMsg) New() *InvestMsg {
 	self.Code = msg.InvestMsg
 	self.Req = new(InvestMsgReq).New()
 	self.Ans = new(InvestMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// DiceMsg
+type DiceMsgReq struct {
+}
+
+type DiceMsgAns struct {
+	RoomNum  int
+	Dice     []int
+	CastTime int
+}
+
+type DiceMsg struct {
+	Code  string
+	Req   *DiceMsgReq
+	Ans   *DiceMsgAns
+	Error int
+}
+
+func (self *DiceMsgReq) New() *DiceMsgReq {
+	return self
+}
+
+func (self *DiceMsgAns) New() *DiceMsgAns {
+	self.RoomNum = 0
+	self.Dice = make([]int, 0)
+	self.CastTime = 0
+	return self
+}
+
+func (self *DiceMsg) New() *DiceMsg {
+	self.Code = msg.DiceMsg
+	self.Req = new(DiceMsgReq).New()
+	self.Ans = new(DiceMsgAns).New()
 	self.Error = 0
 	return self
 }

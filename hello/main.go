@@ -2,27 +2,23 @@ package main
 
 import (
 	"fmt"
-	"hello/manila"
 	"math/rand"
 	"time"
+	"strconv"
 )
 
-func main() {
-	deck := make([]manila.ManilaStock, 0)
-
-	for j := 1; j < 5; j++ {
-		for i := 0; i < 5; i++ {
-			card := new(manila.ManilaStock).New(j)
-			deck = append(deck, *card)
+func CastDice() []int {
+	rand.Seed(time.Now().UnixNano())
+	result := []int{0, 0, 0, 0}
+	for k, v := range []int{1, 2, 3, -1} {
+		if v != -1 {
+			result[k] = rand.Intn(6) + 1
 		}
 	}
-	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < len(deck); i++ {
-		swap := rand.Intn(100) % len(deck)
 
-		deck[i], deck[swap] = deck[swap], deck[i]
+	return result
+}
 
-	}
-	fmt.Println(deck)
-
+func main() {
+	fmt.Println(strconv.Itoa(1))
 }

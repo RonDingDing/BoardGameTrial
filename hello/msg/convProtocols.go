@@ -19,6 +19,7 @@ const (
 	PutBoatMsg     = "011"
 	DragBoatMsg    = "012"
 	InvestMsg      = "013"
+	DiceMsg ="014"
 
 	NorAlreadyInRoom      = 1
 	NorNewEntered         = 2

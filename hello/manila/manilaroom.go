@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"hello/baseroom"
 	"hello/msg"
+	"log"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -26,6 +28,20 @@ type ManilaRoom struct {
 	currentPlayer   string
 	phase           string
 	stockPrice      []int
+	casttime        int
+}
+
+func (self *ManilaRoom) GetCastTime() int {
+	return self.casttime
+}
+
+func (self *ManilaRoom) AddCastTime() int {
+	self.casttime++
+	return self.casttime
+}
+
+func (self *ManilaRoom) ResetCastTime() {
+	self.casttime = 0
 }
 
 func (self *ManilaRoom) GetOneStockPrice(typing int) int {
@@ -82,7 +98,7 @@ func (self *ManilaRoom) NextPlayer(username string) (string, bool) {
 	nextPhase := false
 	for i, n := range roundList {
 		if n == username {
-			if (roundList[i+1] == startPlayer){
+			if roundList[i+1] == startPlayer {
 				nextPhase = true
 			}
 			return roundList[i+1], nextPhase
@@ -191,6 +207,7 @@ func (self *ManilaRoom) New(roomNum int) *ManilaRoom {
 	self.room = new(baseroom.Room).New(roomNum, 1, 3, 5)
 	self.manilaplayers = make(map[string]*ManilaPlayer)
 	self.ResetMap()
+	self.ResetCastTime()
 	self.ResetDecks()
 	return self
 }
@@ -449,7 +466,7 @@ func (self *ManilaRoom) TakeOneStock(typing int) (ManilaStock, error) {
 }
 
 func (self *ManilaRoom) Deal2() {
-	deck := self.shuffleDeck()
+	deck := self.ShuffleDeck()
 	i := 0
 	for _, p := range self.manilaplayers {
 		for dealed := 0; dealed < 2; dealed++ {
@@ -467,16 +484,57 @@ func (self *ManilaRoom) SelectRandomPlayer() string {
 	for k, _ := range self.manilaplayers {
 		playerNames = append(playerNames, k)
 	}
-	num := rand.Intn(100) % len(playerNames)
+	num := rand.Intn(len(playerNames))
 	return playerNames[num]
 }
 
-func (self *ManilaRoom) shuffleDeck() []ManilaStock {
+func (self *ManilaRoom) ShuffleDeck() []ManilaStock {
 	deck := append(append(append(self.jadedeck, self.silkdeck...), self.ginsengdeck...), self.coffeedeck...)
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(deck); i++ {
-		swap := rand.Intn(100) % len(deck)
+		swap := rand.Intn(len(deck))
 		deck[i], deck[swap] = deck[swap], deck[i]
 	}
 	return deck
+}
+
+func (self *ManilaRoom) CastDice() ([]int, int) {
+	rand.Seed(time.Now().UnixNano())
+	result := []int{0, 0, 0, 0}
+	for k, v := range self.ships {
+		if v != -1 {
+			result[k] = rand.Intn(6) + 1
+		}
+	}
+
+	return result, self.AddCastTime()
+}
+
+func (self *ManilaRoom) RunShip(dice []int) {
+	for k, num := range dice {
+		origin := self.ships[k]
+		after := origin + num
+		if after > 13 {
+			for i := 1; i < 4; i++ {
+				spot := self.mapp[strconv.Itoa(i)+"tick"]
+				if spot.GetTaken() != "" {
+					after = i + 13
+					break
+				}
+			}
+		}
+		self.ships[k] = after
+	}
+}
+
+func (self *ManilaRoom) SettleRound() {
+	log.Println("Settle!")
+}
+
+func (self *ManilaRoom) PirateOnboard(){
+	log.Println("PirateOnboard!")
+}
+
+func (self *ManilaRoom) PostDrag(){
+	log.Println("Postdrag!")
 }

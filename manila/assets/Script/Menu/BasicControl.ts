@@ -73,6 +73,7 @@ export default class BasicControl extends cc.Component {
     }
 
     messageToGlobal(message) {
+        console.log("before: ", Global);
         if (message.Error >= 0 && message.Ans.RoomNum !== 0) {
             let mapList = message.Ans.Mapp || [];
             let playerList = message.Ans.Players || [];
@@ -99,6 +100,7 @@ export default class BasicControl extends cc.Component {
             Global.phase = message.Ans.Phase;
             Global.ship = message.Ans.Ship;
         }
+        console.log("after: ", Global);
     }
 
     onSocketOpen() {

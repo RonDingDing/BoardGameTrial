@@ -31,25 +31,26 @@ export const ChangePhaseMsg = "010";
 export const PutBoatMsg = "011";
 export const DragBoatMsg = "012";
 export const InvestMsg = "013";
+export const DiceMsg = "014";
 
-export const NorAlreadyInRoom = 1
-export const NorNewEntered = 2
-export const ErrNormal = 0
+export const NorAlreadyInRoom = 1;
+export const NorNewEntered = 2;
+export const ErrNormal = 0;
 
-export const ErrNoHandler = -1
-export const ErrUserExit = -2
-export const ErrUserNotExit = -3
-export const ErrCannotEnterRoom = -4
-export const ErrNoSuchPlayer = -5
-export const ErrCannotExitRoom = -6
-export const ErrGameStarted = -7
-export const ErrUserNotInRoom = -8
-export const ErrFailedEntering = -9
-export const ErrNotEnoughGameMoney = -10
-export const ErrUserNotCaptain = -11
-export const ErrNotEnoughStock = -12
-export const ErrInvalidInvestPoint = -13
-export const ErrInvestPointTaken = -14
+export const ErrNoHandler = -1;
+export const ErrUserExit = -2;
+export const ErrUserNotExit = -3;
+export const ErrCannotEnterRoom = -4;
+export const ErrNoSuchPlayer = -5;
+export const ErrCannotExitRoom = -6;
+export const ErrGameStarted = -7;
+export const ErrUserNotInRoom = -8;
+export const ErrFailedEntering = -9;
+export const ErrNotEnoughGameMoney = -10;
+export const ErrUserNotCaptain = -11;
+export const ErrNotEnoughStock = -12;
+export const ErrInvalidInvestPoint = -13;
+export const ErrInvestPointTaken = -14;
 
 export var errors = {
     "Code": Errors,
@@ -133,7 +134,6 @@ export var roomdetailmsg = {
         "Ship": [
             // {"ShipType": 0, "Step": 0}
         ],
-        "RenderAfter": 0
     },
     "Error": 0
 }
@@ -315,6 +315,23 @@ export var investmsg = {
         "RoomNum": 0,
         "RemindOrOperated": false,
         "Invest": "",
+    },
+    "Error": 0
+}
+
+export var dicemsg = {
+    "Code": DiceMsg,
+    "Req":
+    {
+    },
+    "Ans":
+    {
+        
+        "RoomNum": 0,
+        "Dice": [
+            0
+        ],
+        "CastTime": 0
     },
     "Error": 0
 }

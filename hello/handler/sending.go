@@ -59,13 +59,13 @@ func RoomObjBroadcastMessage(messageType int, messageObj interface{}, roomObj in
 func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum int) {
 	manilaRoom, base := global.FindRoomByNum(roomNum)
 	if base != nil {
-		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, base, 0)
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, base)
 	} else if manilaRoom != nil {
-		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom, 0)
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
 	}
 }
 
-func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomObj interface{}, renderAfter float32) {
+func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomObj interface{}) {
 	switch room := roomObj.(type) {
 	case *baseroom.Room:
 		roomdetailmsg.Ans.RoomNum = 0
@@ -74,7 +74,6 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 		roomdetailmsg.Ans.PlayerNumForStart = room.GetPlayerNumForStart()
 		roomdetailmsg.Ans.PlayerNumMax = room.GetPlayerNumMax()
 		roomdetailmsg.Ans.PlayerName = room.GetPlayerName()
-		roomdetailmsg.Ans.RenderAfter = renderAfter
 	case *manila.ManilaRoom:
 		roomdetailmsg.Ans.RoomNum = room.GetRoomNum()
 		roomdetailmsg.Ans.GameNum = room.GetGameNum()
@@ -105,7 +104,6 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 				Seat: p.GetSeat(), Ready: p.GetReadyOrNot(), Canbid: p.GetCanBid()}
 			roomdetailmsg.Ans.Players = append(roomdetailmsg.Ans.Players, pl)
 		}
-		roomdetailmsg.Ans.RenderAfter = renderAfter
 	}
 }
 

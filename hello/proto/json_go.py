@@ -149,27 +149,26 @@ def make_new(content):
 
 
 if __name__ == '__main__':
-    InvestMsg = "013"
+    DiceMsg = "014"
     false = False
     true = True
     obj = {
-        "Code": InvestMsg,
-        "Req":
-        {
-            "Username": "",
-            "RoomNum": 0,
-            "Invest": "",
-        },
-        "Ans":
-        {
-            "Username": "",
-            "RoomNum": 0,
-            "RemindOrOperated": false,
-            "Invest": "",
-        },
-        "Error": 0
-    }
-    content = to_go(obj, 'InvestMsg')
+    "Code": DiceMsg,
+    "Req":
+    {
+        "RoomNum": 0,
+        
+    },
+    "Ans":
+    {
+        
+        "RoomNum": 0,
+        "Dice": [
+            0
+        ]
+    },
+    "Error": 0}
+    content = to_go(obj, 'DiceMsg')
 
     print(content)
     new_content = make_new(content)

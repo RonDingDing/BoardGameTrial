@@ -25,19 +25,10 @@ const (
 	PhaseCastDice     = "CastDice"
 	PhasePostDragBoat = "PostDragBoat"
 	PhaseSettle       = "Settle"
+ 
 )
 
-var (
-	SilkDice    = 0
-	JadeDice    = 0
-	CoffeeDice  = 0
-	GinsengDice = 0
 
-	SilkPos    = 0
-	JadePos    = 0
-	CoffeePos  = 0
-	GinsengPos = 0
-)
 
 type ManilaSpot struct {
 	name    string
