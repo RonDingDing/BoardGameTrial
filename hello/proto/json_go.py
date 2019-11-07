@@ -149,26 +149,28 @@ def make_new(content):
 
 
 if __name__ == '__main__':
-    DiceMsg = "014"
+    PirateMsg = "015"
     false = False
     true = True
-    obj = {
-    "Code": DiceMsg,
+    obj = piratemsg = {
+    "Code": PirateMsg,
     "Req":
     {
-        "RoomNum": 0,
-        
+        "Pirate": "",
+        "Plunder": 0,
     },
     "Ans":
-    {
-        
+    {        
         "RoomNum": 0,
-        "Dice": [
-            0
-        ]
+        "ShipVacant": [
+            true
+        ],
+        "CastTime": 0,
+        "Pirate": ""
     },
-    "Error": 0}
-    content = to_go(obj, 'DiceMsg')
+    "Error": 0
+    }
+    content = to_go(obj, 'PirateMsg')
 
     print(content)
     new_content = make_new(content)

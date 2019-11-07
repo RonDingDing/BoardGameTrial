@@ -99,6 +99,7 @@ export default class BasicControl extends cc.Component {
             Global.currentPlayer = message.Ans.CurrentPlayer;
             Global.phase = message.Ans.Phase;
             Global.ship = message.Ans.Ship;
+            Global.castTime = message.Ans.CastTime;
         }
         console.log("after: ", Global);
     }

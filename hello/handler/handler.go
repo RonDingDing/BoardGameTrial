@@ -211,7 +211,6 @@ func HandleEnterRoomMsg(messageType int, message []byte, connection *websocket.C
 	roomdetailmsg2 := new(pb3.RoomDetailMsg).New()
 	HelperSetRoomPropertyRoomDetail(roomdetailmsg2, newRoomNum)
 	RoomBroadcastMessage(messageType, roomdetailmsg2, newRoomNum)
-	// RoomBroadcastMessage(messageType, enterroommsg, newRoomNum)
 
 	SendMessage(messageType, enterroommsg, connection)
 
@@ -253,7 +252,7 @@ func HandleReadyMsg(messageType int, message []byte, connection *websocket.Conn,
 			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
 
 			// 为每位玩家发送其手牌具体信息
-			RoomObjTellDeck(manilaRoom)
+			RoomObjTellHand(manilaRoom)
 			RoomObjChangePhase(manilaRoom, manila.PhaseBidding)
 		}
 
@@ -297,12 +296,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			RoomObjBroadcastMessage(messageType, bidmsg, manilaRoom)
 
 			// 广播房间目前信息
-			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
-
-			// 为每位玩家发送其手牌具体信息
-			RoomObjTellDeck(manilaRoom)
+			RoomObjTellRoomDetail(manilaRoom, nil)
 
 		} else {
 			// 没有玩家能够投标了，通知船长要买股票
@@ -324,9 +318,7 @@ func HandleBidMsg(messageType int, message []byte, connection *websocket.Conn, c
 			RoomObjChangePhase(manilaRoom, manila.PhaseBuyStock)
 
 			// 广播房间目前信息
-			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+			RoomObjTellRoomDetail(manilaRoom, nil)
 
 		}
 
@@ -384,12 +376,7 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 		RoomObjChangePhase(manilaRoom, manila.PhasePutBoat)
 
 		// 广播房间目前信息
-		roomdetailmsg := new(pb3.RoomDetailMsg).New()
-		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
-
-		// 为每位玩家发送其手牌具体信息
-		RoomObjTellDeck(manilaRoom)
+		RoomObjTellRoomDetail(manilaRoom, nil)
 
 		// 告诉船长，要放船了
 		putboatmsg := new(pb3.PutBoatMsg).New()
@@ -434,7 +421,7 @@ func HandlePutBoatMsg(messageType int, message []byte, connection *websocket.Con
 		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
 
 		// 为每位玩家发送其手牌具体信息
-		RoomObjTellDeck(manilaRoom)
+		RoomObjTellHand(manilaRoom)
 
 		// 告诉船长，要拉船了
 		dragboatmsg := new(pb3.DragBoatMsg).New()
@@ -488,12 +475,7 @@ func HandleDragBoatMsg(messageType int, message []byte, connection *websocket.Co
 		RoomObjChangePhase(manilaRoom, manila.PhaseInvest)
 
 		// 广播房间目前信息
-		roomdetailmsg := new(pb3.RoomDetailMsg).New()
-		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
-
-		// 为每位玩家发送其手牌具体信息
-		RoomObjTellDeck(manilaRoom)
+		RoomObjTellRoomDetail(manilaRoom, nil)
 
 		// 告诉船长，要投资了
 		investmsg := new(pb3.InvestMsg).New()
@@ -570,14 +552,6 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 			// 下一个阶段，投掷骰子
 			RoomObjChangePhase(manilaRoom, manila.PhaseCastDice)
 			dice, casttime := manilaRoom.CastDice()
-			manilaRoom.RunShip(dice)
-			if manilaRoom.GetMap()["1pirate"].GetTaken() != "" {
-				manilaRoom.PirateOnboard()
-			}
-			if manilaRoom.GetMap()["1drag"].GetTaken() != "" || manilaRoom.GetMap()["2drag"].GetTaken() != "" {
-				manilaRoom.PostDrag()
-			}
-
 			// 广播骰子信息
 			dicemsg := new(pb3.DiceMsg).New()
 			dicemsg.Ans.RoomNum = roomNum
@@ -585,15 +559,27 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 			dicemsg.Ans.CastTime = casttime
 			RoomObjBroadcastMessage(messageType, dicemsg, manilaRoom)
 
+			// 跑船
+			manilaRoom.RunShip(dice)
 			// 广播房间目前信息
-			roomdetailmsg := new(pb3.RoomDetailMsg).New()
-			HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-			RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+			RoomObjTellRoomDetail(manilaRoom, nil)
 
-			// 为每位玩家发送其手牌具体信息
-			RoomObjTellDeck(manilaRoom)
+			if manilaRoom.GetMap()["1pirate"].GetTaken() != "" {
+				// 海盗来袭
+				piratemsg := new(pb3.PirateMsg).New()
+				piratemsg.Ans.RoomNum = roomNum
+				piratemsg.Ans.CastTime = manilaRoom.GetCastTime()
+				piratemsg.Ans.Pirate = manilaRoom.GetMap()["1pirate"].GetTaken()
+				piratemsg.Ans.ShipVacant = manilaRoom.GetShipVacant()
+				piratemsg.Ans.RemindOrOperated = true
+				RoomObjBroadcastMessage(messageType, piratemsg, manilaRoom)
+			}
+			if manilaRoom.GetMap()["1drag"].GetTaken() != "" || manilaRoom.GetMap()["2drag"].GetTaken() != "" {
+				manilaRoom.PostDrag()
+			}
 
 			if casttime == 3 {
+				//
 				manilaRoom.SettleRound()
 			} else {
 				//  下一个阶段，投资
@@ -607,11 +593,9 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 		}
 
 		// 广播房间目前信息
-		roomdetailmsg := new(pb3.RoomDetailMsg).New()
-		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
-		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
-
-		// 为每位玩家发送其手牌具体信息
-		RoomObjTellDeck(manilaRoom)
+		RoomObjTellRoomDetail(manilaRoom, nil)
 	}
+}
+
+func HandlePirateMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
 }

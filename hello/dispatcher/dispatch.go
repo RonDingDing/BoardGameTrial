@@ -43,7 +43,9 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 	case msg.DragBoatMsg:
 		go handler.HandleDragBoatMsg(messageType, message, connection, code.Code, ormManager)
 	case msg.InvestMsg:
-		go handler.HandleInvestMsg(messageType, message, connection, code.Code, ormManager)	
+		go handler.HandleInvestMsg(messageType, message, connection, code.Code, ormManager)
+	case msg.PirateMsg:
+		go handler.HandlePirateMsg(messageType, message, connection, code.Code, ormManager)
 	default:
 		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
 	}

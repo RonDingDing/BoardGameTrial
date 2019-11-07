@@ -25,10 +25,14 @@ const (
 	PhaseCastDice     = "CastDice"
 	PhasePostDragBoat = "PostDragBoat"
 	PhaseSettle       = "Settle"
- 
 )
 
-
+var ColorString = map[int]string{
+	CoffeeColor:  "coffee",
+	SilkColor:    "silk",
+	GinsengColor: "ginseng",
+	JadeColor:    "jade",
+}
 
 type ManilaSpot struct {
 	name    string

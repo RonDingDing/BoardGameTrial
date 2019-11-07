@@ -32,6 +32,8 @@ export const PutBoatMsg = "011";
 export const DragBoatMsg = "012";
 export const InvestMsg = "013";
 export const DiceMsg = "014";
+export const PirateMsg = "015";
+export const PostDragMsg= "016";
 
 export const NorAlreadyInRoom = 1;
 export const NorNewEntered = 2;
@@ -134,6 +136,7 @@ export var roomdetailmsg = {
         "Ship": [
             // {"ShipType": 0, "Step": 0}
         ],
+        "CastTime": 0
     },
     "Error": 0
 }
@@ -332,6 +335,57 @@ export var dicemsg = {
             0
         ],
         "CastTime": 0
+    },
+    "Error": 0
+}
+
+
+export var piratemsg = {
+    "Code": PirateMsg,
+    "Req":
+    {
+        "RoomNum": 0,
+        "Pirate": "",
+        "Plunder": 0,
+    },
+    "Ans":
+    {        
+        "RoomNum": 0,
+        "ShipVacant": [
+            //true
+        ],
+        "CastTime": 0,
+        "Pirate": "",
+        "RemindOrOperated": false
+    },
+    "Error": 0
+}
+
+export var postdragmsg = {
+    "Code": PostDragMsg,
+    "Req":
+    {
+        "Username": "",
+        "DragSum": 0,
+        "RoomNum": 0,
+        "ShipDrag": [
+            // 0, 0, 0, 0
+        ],
+        "Phase": ""
+    },
+    "Ans":
+    {
+        "Username": "",
+        "Phase": "",
+        "DragSum": 0,
+        "RoomNum": 0,
+        "RemindOrOperated": false,
+        "Ship": [
+            // 0, 0, 0, 0
+        ],
+        "Dragable": [
+            // 0, 0, 0 
+        ]
     },
     "Error": 0
 }

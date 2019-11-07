@@ -216,12 +216,12 @@ type RoomDetailMsgAns struct {
 	Round             int
 	Deck              []int
 	StockPrice        []int
-
-	Started         bool
-	HighestBidder   string
-	HighestBidPrice int
-	CurrentPlayer   string
-	Phase           string
+	Started           bool
+	HighestBidder     string
+	HighestBidPrice   int
+	CurrentPlayer     string
+	Phase             string
+	CastTime          int
 }
 
 type RoomDetailMsg struct {
@@ -271,6 +271,7 @@ func (self *RoomDetailMsgAns) New() *RoomDetailMsgAns {
 	self.HighestBidPrice = 0
 	self.CurrentPlayer = ""
 	self.Phase = ""
+	self.CastTime = 0
 	return self
 }
 
@@ -647,6 +648,52 @@ func (self *DiceMsg) New() *DiceMsg {
 	self.Code = msg.DiceMsg
 	self.Req = new(DiceMsgReq).New()
 	self.Ans = new(DiceMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// PirateMsg
+type PirateMsgReq struct {
+	RoomNum int
+	Pirate  string
+	Plunder int
+}
+
+type PirateMsgAns struct {
+	RoomNum          int
+	ShipVacant       []bool
+	CastTime         int
+	Pirate           string
+	RemindOrOperated bool
+}
+
+type PirateMsg struct {
+	Code  string
+	Req   *PirateMsgReq
+	Ans   *PirateMsgAns
+	Error int
+}
+
+func (self *PirateMsgReq) New() *PirateMsgReq {
+	self.RoomNum = 0
+	self.Pirate = ""
+	self.Plunder = 0
+	return self
+}
+
+func (self *PirateMsgAns) New() *PirateMsgAns {
+	self.RoomNum = 0
+	self.ShipVacant = make([]bool, 0)
+	self.CastTime = 0
+	self.Pirate = ""
+	self.RemindOrOperated = false
+	return self
+}
+
+func (self *PirateMsg) New() *PirateMsg {
+	self.Code = msg.PirateMsg
+	self.Req = new(PirateMsgReq).New()
+	self.Ans = new(PirateMsgAns).New()
 	self.Error = 0
 	return self
 }

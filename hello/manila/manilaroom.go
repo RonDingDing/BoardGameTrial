@@ -373,6 +373,25 @@ func (self *ManilaRoom) GetShip() []int {
 	return self.ships
 }
 
+func (self *ManilaRoom) GetShipVacant() []bool {
+	vacant := []bool{false, false, false, false}
+	for k, v := range self.ships {
+		if v != -1 {
+			shipName := ColorString[k+1]
+			for i := 1; i < 5; i++ {
+				spotName := strconv.Itoa(i) + shipName
+				if spot, ok := self.mapp[spotName]; ok {
+					if spot.GetTaken() == "" {
+						vacant[k] = true
+						break
+					}
+				}
+			}
+		}
+	}
+	return vacant
+}
+
 func (self *ManilaRoom) ResetDecks() {
 	self.jadedeck = []ManilaStock{}
 	self.coffeedeck = []ManilaStock{}
@@ -510,20 +529,28 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 	return result, self.AddCastTime()
 }
 
+func (self *ManilaRoom) OccupyTick(shipName string) int {
+	for i := 1; i < 4; i++ {
+		spot := self.mapp[strconv.Itoa(i)+"tick"]
+		if spot.GetTaken() != "" {
+			after := i + 13
+			spot.SetTaken(shipName)
+			return after
+
+		}
+	}
+	return 0
+}
+
 func (self *ManilaRoom) RunShip(dice []int) {
 	for k, num := range dice {
 		origin := self.ships[k]
 		after := origin + num
+		anoafter := after
 		if after > 13 {
-			for i := 1; i < 4; i++ {
-				spot := self.mapp[strconv.Itoa(i)+"tick"]
-				if spot.GetTaken() != "" {
-					after = i + 13
-					break
-				}
-			}
+			anoafter = self.OccupyTick(ColorString[k+1])
 		}
-		self.ships[k] = after
+		self.ships[k] = anoafter
 	}
 }
 
@@ -531,10 +558,6 @@ func (self *ManilaRoom) SettleRound() {
 	log.Println("Settle!")
 }
 
-func (self *ManilaRoom) PirateOnboard(){
-	log.Println("PirateOnboard!")
-}
-
-func (self *ManilaRoom) PostDrag(){
+func (self *ManilaRoom) PostDrag() {
 	log.Println("Postdrag!")
 }

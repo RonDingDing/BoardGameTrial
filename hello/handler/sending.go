@@ -25,37 +25,6 @@ func SendMessage(messageType int, messageObj interface{}, connection *websocket.
 	}
 }
 
-func RoomBroadcastMessage(messageType int, messageObj interface{}, roomNum int) {
-	manila, base := global.FindRoomByNum(roomNum)
-	if manila != nil {
-		RoomObjBroadcastMessage(messageType, messageObj, manila)
-	} else if base != nil {
-		RoomObjBroadcastMessage(messageType, messageObj, base)
-	} else {
-		log.Println("Nil!")
-	}
-}
-
-func RoomObjBroadcastMessage(messageType int, messageObj interface{}, roomObj interface{}) {
-	messageReturn, err := json.Marshal(messageObj)
-	if err != nil {
-		log.Print(err)
-		return
-	}
-	switch roomObj := roomObj.(type) {
-	case *baseroom.Room:
-	case *manila.ManilaRoom:
-		for _, connection := range roomObj.GetAllConnections() {
-			err = connection.WriteMessage(messageType, messageReturn)
-			log.Printf("%-8s: %s %4s %s\n\n", "castroom", string(messageReturn), "to", connection.RemoteAddr())
-			if err != nil {
-				log.Print(err)
-				return
-			}
-		}
-	}
-}
-
 func HelperSetRoomPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomNum int) {
 	manilaRoom, base := global.FindRoomByNum(roomNum)
 	if base != nil {
@@ -89,7 +58,7 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 		roomdetailmsg.Ans.CurrentPlayer = room.GetCurrentPlayer()
 		roomdetailmsg.Ans.Phase = room.GetPhase()
 		roomdetailmsg.Ans.StockPrice = room.GetStockPrice()
-
+		roomdetailmsg.Ans.CastTime = room.GetCastTime()
 		roomdetailmsg.Ans.Ship = room.GetShip()
 
 		for k, v := range room.GetMap() {
@@ -107,13 +76,30 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 	}
 }
 
-func RoomObjTellDeck(manilaRoom *manila.ManilaRoom) {
+func RoomObjTellHand(manilaRoom *manila.ManilaRoom) {
 	messageType := 1
 	for k, v := range manilaRoom.GetManilaPlayers() {
 		handmsg := new(pb3.HandMsg).New()
 		handmsg.Ans.Username = k
 		handmsg.Ans.Hand = v.GetStocks()
 		SendMessage(messageType, handmsg, v.GetConnection())
+	}
+}
+
+func RoomObjTellRoomDetail(manilaRoom *manila.ManilaRoom, roomdetailmsg *pb3.RoomDetailMsg) {
+	// 广播房间目前信息
+	messageType := 1
+	if roomdetailmsg == nil {
+		roomdetailmsg = new(pb3.RoomDetailMsg).New()
+	}
+	if manilaRoom != nil {
+		HelperSetRoomObjPropertyRoomDetail(roomdetailmsg, manilaRoom)
+		RoomObjBroadcastMessage(messageType, roomdetailmsg, manilaRoom)
+
+		// 为每位玩家发送其手牌具体信息
+		RoomObjTellHand(manilaRoom)
+	} else {
+		log.Println("RoomObjTellRoomDetail: Room is nil!")
 	}
 }
 
@@ -125,5 +111,36 @@ func RoomObjChangePhase(manilaRoom *manila.ManilaRoom, phase string) {
 		changephasemsg.Ans.RoomNum = manilaRoom.GetRoomNum()
 		changephasemsg.Ans.Phase = manilaRoom.GetPhase()
 		SendMessage(messageType, changephasemsg, v.GetConnection())
+	}
+}
+
+func RoomBroadcastMessage(messageType int, messageObj interface{}, roomNum int) {
+	manila, base := global.FindRoomByNum(roomNum)
+	if manila != nil {
+		RoomObjBroadcastMessage(messageType, messageObj, manila)
+	} else if base != nil {
+		RoomObjBroadcastMessage(messageType, messageObj, base)
+	} else {
+		log.Println("Nil!")
+	}
+}
+
+func RoomObjBroadcastMessage(messageType int, messageObj interface{}, roomObj interface{}) {
+	messageReturn, err := json.Marshal(messageObj)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	switch roomObj := roomObj.(type) {
+	case *baseroom.Room:
+	case *manila.ManilaRoom:
+		for _, connection := range roomObj.GetAllConnections() {
+			err = connection.WriteMessage(messageType, messageReturn)
+			log.Printf("%-8s: %s %4s %s\n\n", "castroom", string(messageReturn), "to", connection.RemoteAddr())
+			if err != nil {
+				log.Print(err)
+				return
+			}
+		}
 	}
 }
