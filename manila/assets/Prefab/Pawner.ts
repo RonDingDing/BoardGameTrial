@@ -1,4 +1,5 @@
 import EventMng from "../Script/Fundamentals/Manager/EventMng";
+import { Global } from "../Script/Fundamentals/ManilaGlobal";
 
 const { ccclass, property } = cc._decorator;
 
@@ -10,6 +11,9 @@ export default class Pawner extends cc.Component {
     investOnshore() {
         let self = this;
         let data = self.node.parent.name;
+        if (data == "2pirate" && Global.mapp["1pirate"].Taken === ""){
+            data = "1pirate"
+        }
         EventMng.emit("InvestOnshore", data);
     }
 }

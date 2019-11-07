@@ -17,6 +17,18 @@ const (
 	OriginalMoney      = 30
 	OriginalDeckNumber = 5
 
+	OneTickSpot = 14
+	TwoTickSpot = 15
+	ThreeTickSpot = 16
+
+	OneFailSpot = 17
+	TwoFailSpot = 18
+	ThreeFailSpot = 19
+
+	VacantInvalid = -1
+	VacantNotVacant = 0
+	VacnatVacant = 1
+
 	PhaseBidding      = "Bidding"
 	PhaseBuyStock     = "BuyStock"
 	PhasePutBoat      = "PutBoat"

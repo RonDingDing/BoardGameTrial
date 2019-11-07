@@ -661,7 +661,7 @@ type PirateMsgReq struct {
 
 type PirateMsgAns struct {
 	RoomNum          int
-	ShipVacant       []bool
+	ShipVacant       []int
 	CastTime         int
 	Pirate           string
 	RemindOrOperated bool
@@ -683,7 +683,7 @@ func (self *PirateMsgReq) New() *PirateMsgReq {
 
 func (self *PirateMsgAns) New() *PirateMsgAns {
 	self.RoomNum = 0
-	self.ShipVacant = make([]bool, 0)
+	self.ShipVacant = make([]int, 0)
 	self.CastTime = 0
 	self.Pirate = ""
 	self.RemindOrOperated = false

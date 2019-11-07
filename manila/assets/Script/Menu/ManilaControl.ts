@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg, PirateMsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
@@ -74,6 +74,12 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Prefab)
     pawnPrefab: cc.Prefab = null
 
+    @property(cc.Node)
+    pirateNode: cc.Node = null
+
+    @property(cc.Prefab)
+    piratePrefab: cc.Prefab = null
+
     dic: Object = { [CoffeeColor]: "Coffee", [SilkColor]: "Silk", [GinsengColor]: "Ginseng", [JadeColor]: "Jade" };
 
     onLoad() {
@@ -92,6 +98,7 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(PutBoatMsg, self.onPutBoatMsg, self);
         EventMng.on(DragBoatMsg, self.onDragBoatMsg, self);
         EventMng.on(InvestMsg, self.onInvestMsg, self);
+        EventMng.on(PirateMsg, self.onPirateMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
@@ -99,6 +106,7 @@ export default class ManilaControl extends BasicControl {
         EventMng.on("DragBoat", self.sendDragBoat, self);
         EventMng.on("InvestOnshore", self.sendInvest, self);
         EventMng.on("InvestOnboat", self.sendInvest, self);
+        EventMng.on("Pirate", self.sendPirate, self);
     }
 
     j() {
@@ -439,7 +447,7 @@ export default class ManilaControl extends BasicControl {
 
             self.buyStockNode.addChild(buyStockUnderNode);
 
-        } 
+        }
         // else if (!message.Ans.RemindOrOperated && message.Ans.RoomNum === Global.roomNum) {
         //     let username = message.Ans.Username;
         //     let bought = message.Ans.Bought;
@@ -463,13 +471,13 @@ export default class ManilaControl extends BasicControl {
             let stockprice;
             switch (stock) {
                 case SilkColor:
-                    stockprice = Global.stockprice[SilkColor - 1] || 5; break;
+                    stockprice = Global.stockprice[SilkColor - 1] >= 0 ? Global.stockprice[SilkColor - 1] : 5; break;
                 case JadeColor:
-                    stockprice = Global.stockprice[JadeColor - 1] || 5; break;
+                    stockprice = Global.stockprice[JadeColor - 1] >= 0 ? Global.stockprice[JadeColor - 1] : 5; break;
                 case CoffeeColor:
-                    stockprice = Global.stockprice[CoffeeColor - 1] || 5; break;
+                    stockprice = Global.stockprice[CoffeeColor - 1] >= 0 ? Global.stockprice[CoffeeColor - 1] : 5; break;
                 case GinsengColor:
-                    stockprice = Global.stockprice[GinsengColor] || 5; break;
+                    stockprice = Global.stockprice[GinsengColor] >= 0 ? Global.stockprice[GinsengColor] : 5; break;
                 default:
                     stockprice = 0;
             }
@@ -670,5 +678,34 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
+    onPirateMsg(message) {
+        let self = this;
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else if (message.Ans.RemindOrOperated && message.Ans.Pirate === Global.playerUser) {
+            console.log(message);
+            self.pirateNode.active = true;
+            self.pirateNode.removeAllChildren();
+            let pirateUnderNode = cc.instantiate(self.piratePrefab);
+            let colors = [CoffeeColor, SilkColor, GinsengColor, JadeColor];
+            for (let i = 0; i < colors.length; i ++){
+                let pirateShipName = self.dic[colors[i]] + "PirateShip";
+                let pirateShip = pirateUnderNode.getChildByName(pirateShipName);
+                if (Global.castTime === 2){
+                    let vacant = message.Ans.ShipVacant[i];
+                    pirateShip.active = vacant > 0 ? true: false
+                } else if (Global.castTime === 3){
+                    let vacant = message.Ans.ShipVacant[i];
+                    pirateShip.active = vacant >= 0 ? true: false
+                }
+            }
+            self.pirateNode.addChild(pirateUnderNode);
 
+
+        }
+    }
+
+    sendPirate(data){
+        // TODO
+    }
 }

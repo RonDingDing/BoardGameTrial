@@ -29,6 +29,20 @@ type ManilaRoom struct {
 	phase           string
 	stockPrice      []int
 	casttime        int
+	tickFailSpot    map[int]string
+}
+
+func (self *ManilaRoom) GetTickFailSpot(spotName int) string {
+	if v, ok := self.tickFailSpot[spotName]; ok {
+		return v
+	}
+	return "!"
+}
+
+func (self *ManilaRoom) SetTickFailSpot(spotName int, shipName string) {
+	if spotName >= OneTickSpot && spotName <= ThreeFailSpot && (shipName == "coffee" || shipName == "silk" || shipName == "ginseng" || shipName == "jade") {
+		self.tickFailSpot[spotName] = shipName
+	}
 }
 
 func (self *ManilaRoom) GetCastTime() int {
@@ -324,6 +338,15 @@ func (self *ManilaRoom) ResetMap() {
 	}
 	self.mapp = mappingOrigin
 	self.ships = []int{-1, -1, -1, -1}
+	self.tickFailSpot = map[int]string{
+		OneTickSpot:   "",
+		TwoTickSpot:   "",
+		ThreeTickSpot: "",
+
+		OneFailSpot:   "",
+		TwoFailSpot:   "",
+		ThreeFailSpot: "",
+	}
 }
 
 func (self *ManilaRoom) GetMap() map[string]*ManilaSpot {
@@ -373,16 +396,27 @@ func (self *ManilaRoom) GetShip() []int {
 	return self.ships
 }
 
-func (self *ManilaRoom) GetShipVacant() []bool {
-	vacant := []bool{false, false, false, false}
+func (self *ManilaRoom) HasBoatForPirate() bool {
+	hasBoat := false
+	for _, v := range self.ships {
+		if v == 13 {
+			return true
+		}
+	}
+	return hasBoat
+}
+
+func (self *ManilaRoom) GetShipPirateVacant() []int {
+	vacant := []int{VacantInvalid, VacantInvalid, VacantInvalid, VacantInvalid}
 	for k, v := range self.ships {
-		if v != -1 {
+		if v != -1 || v == 13 {
+			vacant[k] = VacantNotVacant
 			shipName := ColorString[k+1]
 			for i := 1; i < 5; i++ {
 				spotName := strconv.Itoa(i) + shipName
 				if spot, ok := self.mapp[spotName]; ok {
 					if spot.GetTaken() == "" {
-						vacant[k] = true
+						vacant[k] = i
 						break
 					}
 				}
@@ -525,18 +559,16 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 			result[k] = rand.Intn(6) + 1
 		}
 	}
-
+	// return []int{5, 5, 5, 0}, self.AddCastTime()
 	return result, self.AddCastTime()
 }
 
 func (self *ManilaRoom) OccupyTick(shipName string) int {
 	for i := 1; i < 4; i++ {
-		spot := self.mapp[strconv.Itoa(i)+"tick"]
-		if spot.GetTaken() != "" {
-			after := i + 13
-			spot.SetTaken(shipName)
-			return after
-
+		spotName := 13 + i
+		if self.GetTickFailSpot(spotName) == "" {
+			self.SetTickFailSpot(spotName, shipName)
+			return spotName
 		}
 	}
 	return 0
@@ -545,12 +577,14 @@ func (self *ManilaRoom) OccupyTick(shipName string) int {
 func (self *ManilaRoom) RunShip(dice []int) {
 	for k, num := range dice {
 		origin := self.ships[k]
-		after := origin + num
-		anoafter := after
-		if after > 13 {
-			anoafter = self.OccupyTick(ColorString[k+1])
+		if origin < 13 {
+			after := origin + num
+			anoafter := after
+			if after > 13 {
+				anoafter = self.OccupyTick(ColorString[k+1])
+			}
+			self.ships[k] = anoafter
 		}
-		self.ships[k] = anoafter
 	}
 }
 
@@ -560,4 +594,15 @@ func (self *ManilaRoom) SettleRound() {
 
 func (self *ManilaRoom) PostDrag() {
 	log.Println("Postdrag!")
+}
+
+func (self *ManilaRoom) ThirteenToTick() {
+	for k, v := range self.ships {
+		shipName := ColorString[k+1]
+		if v == 13 {
+			anoafter := self.OccupyTick(shipName)
+			self.ships[k] = anoafter
+		}
+	}
+
 }

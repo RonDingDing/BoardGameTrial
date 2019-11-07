@@ -14,6 +14,7 @@ export const PhaseBuyStock = "BuyStock"
 export const PhasePutBoat = "PutBoat"
 export const PhaseDragBoat = "DragBoat"
 export const PhaseInvest = "Invest"
+export const PhasePirate = "Pirate"
 export const PhasePostDragBoat = "PostDragBoat"
 export const PhaseSettle = "Settle"
 
@@ -352,7 +353,7 @@ export var piratemsg = {
     {        
         "RoomNum": 0,
         "ShipVacant": [
-            //true
+            //0
         ],
         "CastTime": 0,
         "Pirate": "",

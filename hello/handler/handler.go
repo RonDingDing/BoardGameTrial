@@ -564,22 +564,26 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 			// 广播房间目前信息
 			RoomObjTellRoomDetail(manilaRoom, nil)
 
-			if manilaRoom.GetMap()["1pirate"].GetTaken() != "" {
+			if manilaRoom.GetMap()["1pirate"].GetTaken() != "" && manilaRoom.HasBoatForPirate() {
 				// 海盗来袭
 				piratemsg := new(pb3.PirateMsg).New()
 				piratemsg.Ans.RoomNum = roomNum
 				piratemsg.Ans.CastTime = manilaRoom.GetCastTime()
 				piratemsg.Ans.Pirate = manilaRoom.GetMap()["1pirate"].GetTaken()
-				piratemsg.Ans.ShipVacant = manilaRoom.GetShipVacant()
+				piratemsg.Ans.ShipVacant = manilaRoom.GetShipPirateVacant()
 				piratemsg.Ans.RemindOrOperated = true
 				RoomObjBroadcastMessage(messageType, piratemsg, manilaRoom)
+
+			} else {
+				manilaRoom.ThirteenToTick()
 			}
+
 			if manilaRoom.GetMap()["1drag"].GetTaken() != "" || manilaRoom.GetMap()["2drag"].GetTaken() != "" {
 				manilaRoom.PostDrag()
 			}
 
 			if casttime == 3 {
-				//
+				// 结算
 				manilaRoom.SettleRound()
 			} else {
 				//  下一个阶段，投资
