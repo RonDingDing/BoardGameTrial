@@ -559,8 +559,8 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 			result[k] = rand.Intn(6) + 1
 		}
 	}
-	// return []int{5, 5, 5, 0}, self.AddCastTime()
-	return result, self.AddCastTime()
+	return []int{5, 5, 5, 0}, self.AddCastTime()
+	// return result, self.AddCastTime()
 }
 
 func (self *ManilaRoom) OccupyTick(shipName string) int {

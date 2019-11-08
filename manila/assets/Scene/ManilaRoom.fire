@@ -54,7 +54,7 @@
     "_is3DNode": true,
     "groupIndex": 0,
     "autoReleaseAssets": false,
-    "_id": "f1de34e1-d4fd-4d75-9267-b9e082eef819"
+    "_id": "7cd2a1f8-6060-4c31-a7c4-4d3323cdb3b5"
   },
   {
     "__type__": "cc.Node",
@@ -1097,7 +1097,6 @@
     "buyStockPrefab": {
       "__uuid__": "9709fc8b-ad14-4c08-ac13-3d882d04113a"
     },
-    "buyStocker": null,
     "putBoatNode": {
       "__id__": 17
     },
@@ -1107,20 +1106,9 @@
     "stockToken": {
       "__uuid__": "e835f929-5f63-4588-b2ce-f7ceb06a6934"
     },
-    "shipPrefab": [
-      {
-        "__uuid__": "2242f2dc-7e8e-43e7-929a-1e160f99e839"
-      },
-      {
-        "__uuid__": "b255dfb3-fb52-45c0-a4e2-2de997126b8c"
-      },
-      {
-        "__uuid__": "7e5a0d88-2522-47ba-8b64-3160ba65d5c6"
-      },
-      {
-        "__uuid__": "605c0ceb-cbc1-4bc1-a061-325c70e9e5e7"
-      }
-    ],
+    "allShipsPrefab": {
+      "__uuid__": "ed166931-11ef-452f-a409-eaec447c5323"
+    },
     "dragBoatNode": {
       "__id__": 18
     },
