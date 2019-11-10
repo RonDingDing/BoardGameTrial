@@ -346,10 +346,10 @@ func HandleBuyStockMsg(messageType int, message []byte, connection *websocket.Co
 		SendMessage(messageType, buystockmsg, connection)
 	} else {
 		stockBuyer := manilaRoom.GetManilaPlayers()[username]
-		stockPrice := manilaRoom.GetBuyStockPrice(stockType)
 
 		// 购买股票
 		if stockType != manila.EmptyColor {
+			stockPrice := manilaRoom.GetBuyStockPrice(stockType)
 			if stockBuyer.GetMoney() < stockPrice {
 				buystockmsg.Error = msg.ErrNotEnoughGameMoney
 				SendMessage(messageType, buystockmsg, connection)
@@ -506,7 +506,7 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 			SendMessage(messageType, investmsg, connection)
 			return
 		}
-		if investPoint.GetTaken() != "" {
+		if investPoint.GetTaken() != "" && investPoint.GetName() != "none" {
 			investmsg.Error = msg.ErrInvestPointTaken
 			SendMessage(messageType, investmsg, connection)
 			return
@@ -612,7 +612,6 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 				// 结算
 				log.Println(5)
 				RoomObjChangePhase(manilaRoom, manila.PhaseSettle)
-				manilaRoom.ThirteenToTick()
 				manilaRoom.SettleRound()
 			}
 		}
@@ -647,7 +646,7 @@ func HandlePirateMsg(messageType int, message []byte, connection *websocket.Conn
 		case 1:
 		case 2:
 			log.Println(6)
-			manilaRoom.PirateInvest(pirate, shipPlundered)
+			manilaRoom.PirateInvest(pirate, shipPlundered, true)
 		case 3:
 			log.Println(7)
 			manilaRoom.PirateKill(pirate, shipPlundered)
@@ -687,6 +686,7 @@ func HandlePirateMsg(messageType int, message []byte, connection *websocket.Conn
 			// 投资
 			log.Println(9)
 			RoomObjChangePhase(manilaRoom, manila.PhaseInvest)
+			RoomObjTellRoomDetail(manilaRoom, nil)
 			captain := manilaRoom.GetHighestBidder()
 			manilaRoom.SetCurrentPlayer(captain)
 			manilaRoom.AddRound()
@@ -714,7 +714,7 @@ func HandlePirateMsg(messageType int, message []byte, connection *websocket.Conn
 
 			} else {
 				log.Println(11)
-				manilaRoom.ThirteenToTick()
+				RoomObjChangePhase(manilaRoom, manila.PhaseSettle)
 				manilaRoom.SettleRound()
 			}
 
@@ -782,7 +782,7 @@ func HandleDecideTickFailMsg(messageType int, message []byte, connection *websoc
 
 			} else {
 				log.Println(16)
-				manilaRoom.ThirteenToTick()
+				RoomObjChangePhase(manilaRoom, manila.PhaseSettle)
 				manilaRoom.SettleRound()
 			}
 		}

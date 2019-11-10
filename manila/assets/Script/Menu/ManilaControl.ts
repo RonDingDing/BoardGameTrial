@@ -696,19 +696,26 @@ export default class ManilaControl extends BasicControl {
         if (Global.canInvest) {
             let investPoint = Global.mapp[invest];
             let shipPoint = invest.slice(1).toLowerCase();
-            let color = StringColor[shipPoint];
-            let shipType = color - 1;
-            if (Global.ship[shipType] >= OneTickSpot && Global.ship[shipType] <= ThreeTickSpot) {
-                self.popUpError("无效的投资点");
-            } else if (investPoint.Taken) {
-                self.popUpError("无效的投资点");
-
-            } else if (!investPoint){
-                self.popUpError("无效的投资点");
-            } else if (!investPoint.Taken) {
+            if (!investPoint) {
+                self.playPopup("无效的投资点4");
+                return;
+            } else if (investPoint.Taken && invest != "none") {
+                self.playPopup("投资点已被占据");
+                return;
+            } else {
                 if (Global.money < investPoint.Price) {
                     self.playNotEnoughMoney();
                 } else {
+                    if (shipPoint == "coffee" || shipPoint == "silk" || shipPoint == "ginseng" || shipPoint == "jade") {
+                        let color = StringColor[shipPoint[0].toUpperCase() + shipPoint.slice(1)];
+                        console.log(color);
+                        let shipType = color - 1;
+                        if (Global.ship[shipType] >= OneTickSpot && Global.ship[shipType] <= ThreeTickSpot) {
+                            self.playPopup("无效的投资点3");
+                            return;
+                        }
+                    }
+
                     let investmsgobj = JSON.parse(JSON.stringify(investmsg));
                     investmsgobj.Req.Username = Global.playerUser;
                     investmsgobj.Req.RoomNum = Global.roomNum;

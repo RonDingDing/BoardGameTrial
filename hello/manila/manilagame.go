@@ -3,11 +3,6 @@ package manila
 import "fmt"
 
 const (
-	SilkVend    = 30
-	JadeVend    = 36
-	CoffeeVend  = 24
-	GinsengVend = 18
-
 	EmptyColor   = 0
 	CoffeeColor  = 1
 	SilkColor    = 2
@@ -53,6 +48,13 @@ var StringColor = map[string]int{
 	"silk":    SilkColor,
 	"ginseng": GinsengColor,
 	"jade":    JadeColor,
+}
+
+var ColorVend = map[int]int{
+	CoffeeColor:  24,
+	SilkColor:    30,
+	GinsengColor: 18,
+	JadeColor:    36,
 }
 
 type ManilaSpot struct {

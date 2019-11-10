@@ -10,7 +10,6 @@ export default class InvestPasser extends cc.Component {
     onPressInvestPass(){
         var self = this;
         EventMng.emit("InvestOnshore", "none")
-        self.node.parent.active = false;
     }
  
 }

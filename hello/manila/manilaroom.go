@@ -598,8 +598,8 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 			result[k] = rand.Intn(6) + 1
 		}
 	}
-	return []int{4, 3, 3, 0}, self.AddCastTime()
-	// return result, self.AddCastTime()
+	// return []int{4, 3, 3, 0}, self.AddCastTime()
+	return result, self.AddCastTime()
 }
 
 func (self *ManilaRoom) ThirteenShipFirst() int {
@@ -624,7 +624,7 @@ func (self *ManilaRoom) ThirteenToTick() {
 func (self *ManilaRoom) SmallerThanThirteenToFail() {
 	for k, v := range self.ships {
 		shipName := ColorString[k+1]
-		if v < 13 {
+		if v < 13 && v > 0 {
 			anoafter := self.OccupyFail(shipName)
 			self.ships[k] = anoafter
 		}
@@ -679,8 +679,126 @@ func (self *ManilaRoom) RunShip(dice []int) {
 	}
 }
 
+func (self *ManilaRoom) settleInitialization() map[string]int {
+	settle := make(map[string]int)
+	for _, playerName := range self.GetPlayerName() {
+		settle[playerName] = 0
+	}
+	return settle
+}
+
+func (self *ManilaRoom) settleCountTickFail() ([]string, []string) {
+	tick := make([]string, 0)
+	fail := make([]string, 0)
+
+	for shipType, step := range self.ships {
+		shipColor := shipType + 1
+		if shipName, ok := ColorString[shipColor]; ok {
+			if step >= OneTickSpot && step <= ThreeTickSpot {
+				tick = append(tick, shipName)
+			} else if step >= OneFailSpot && step <= ThreeFailSpot {
+				fail = append(fail, shipName)
+			}
+		}
+	}
+	return tick, fail
+}
+
+func (self *ManilaRoom) settleTickFail(tickOrFail []string, typing string, settle map[string]int) map[string]int {
+	for i := 1; i <= len(tickOrFail); i++ {
+		if investPoint, ok := self.mapp[strconv.Itoa(i)+typing]; ok {
+			if _, mk := self.manilaplayers[investPoint.GetTaken()]; mk {
+				settle[investPoint.GetTaken()] += investPoint.GetAward()
+			}
+		}
+	}
+	return settle
+}
+
+func (self *ManilaRoom) settleTickFailOnShip(tickOrFail []string, typing string, settle map[string]int) map[string]int {
+	for _, shipName := range tickOrFail {
+		invested := make(map[string]int)
+		investedSum := 0
+		for j := 1; j < 5; j++ {
+			if investPoint, ok := self.mapp[strconv.Itoa(j)+shipName]; ok {
+				investerName := investPoint.GetTaken()
+				if _, mk := self.manilaplayers[investerName]; mk {
+					if (!investPoint.GetIsPassenger() && typing == "fail") || (typing == "tick") {
+						investedSum++
+						if _, tk := invested[investerName]; tk {
+							invested[investerName]++
+						} else {
+							invested[investerName] = 1
+						}
+					}
+				}
+			}
+		}
+		for k, v := range invested {
+			settle[k] += ColorVend[StringColor[shipName]] / investedSum * v
+		}
+	}
+	return settle
+}
+
+func (self *ManilaRoom) settleInsurance(fail []string, settle map[string]int) map[string]int {
+	payment := 0
+	for i := 1; i <= len(fail); i++ {
+		if point, ok := self.mapp[strconv.Itoa(i)+"fail"]; ok {
+			payment += point.GetAward()
+		}
+	}
+	invester := self.mapp["repair"].GetTaken()
+	if invester != "" {
+		settle[invester] += -payment
+	}
+	return settle
+}
+
+func (self *ManilaRoom) settleSave(settle map[string]int) {
+	for n, v := range settle {
+		if player, ok := self.GetManilaPlayers()[n]; ok {
+			originMoney := player.GetMoney()
+			if v < 0 && -v > originMoney {
+				player.AddMoney(-originMoney)
+			} else {
+				player.AddMoney(v)
+			}
+		}
+	}
+}
+
 func (self *ManilaRoom) SettleRound() {
 	log.Println("Settle!")
+
+	// 船归位
+	self.ThirteenToTick()
+	self.SmallerThanThirteenToFail()
+
+	// 初始化
+	settle := self.settleInitialization()
+	// 计算对错
+	tick, fail := self.settleCountTickFail()
+	log.Println("a: ", settle)
+
+	// 保险
+	settle = self.settleInsurance(fail, settle)
+	log.Println("b: ", settle)
+	// tick fail结算
+	settle = self.settleTickFail(tick, "tick", settle)
+	log.Println("c: ", settle)
+
+	settle = self.settleTickFail(fail, "fail", settle)
+	log.Println("d: ", settle)
+
+	// tick 船上
+	settle = self.settleTickFailOnShip(tick, "tick", settle)
+	log.Println("e: ", settle)
+
+	settle = self.settleTickFailOnShip(fail, "fail", settle)
+	log.Println("f: ", settle)
+
+	self.settleSave(settle)
 }
 
 func (self *ManilaRoom) PostDrag() {
@@ -695,7 +813,7 @@ func (self *ManilaRoom) SetLastPlunderedShip(shipType int) {
 	self.lastPlunderedShip = shipType
 }
 
-func (self *ManilaRoom) PirateInvest(pirate string, shipPlundered int) {
+func (self *ManilaRoom) PirateInvest(pirate string, shipPlundered int, isPassenger bool) {
 	if shipPlundered != 0 {
 		var pirateSpot *ManilaSpot = nil
 		if self.mapp["1pirate"].GetTaken() == pirate {
@@ -711,7 +829,7 @@ func (self *ManilaRoom) PirateInvest(pirate string, shipPlundered int) {
 		}
 		if spot != nil {
 			spot.SetTaken(pirate)
-			spot.SetIsPassenger(false)
+			spot.SetIsPassenger(isPassenger)
 		}
 	}
 }
@@ -719,7 +837,7 @@ func (self *ManilaRoom) PirateInvest(pirate string, shipPlundered int) {
 func (self *ManilaRoom) PirateKill(pirate string, shipPlundered int) {
 	if shipPlundered != 0 {
 		if shipPlundered == self.lastPlunderedShip {
-			self.PirateInvest(pirate, shipPlundered)
+			self.PirateInvest(pirate, shipPlundered, false)
 		} else {
 			for i := 1; i < 5; i++ {
 				spotName := strconv.Itoa(i) + ColorString[shipPlundered]
