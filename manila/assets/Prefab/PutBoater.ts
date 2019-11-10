@@ -1,4 +1,5 @@
 import EventMng from "../Script/Fundamentals/Manager/EventMng";
+import { ColorString } from "../Script/Fundamentals/Imports"
 
 
 const { ccclass, property } = cc._decorator;
@@ -12,26 +13,23 @@ export default class PutBoater extends cc.Component {
     selectedLength = 0;
 
     pressSelect(event, num) {
-        const CoffeeColor = "1";
-        const SilkColor = "2";
-        const GinsengColor = "3";
-        const JadeColor = "4";
+
 
         let self = this;
         let originValue = self.selected[num];
         self.selected[num] = originValue === 0 ? 1 : 0;
         self.selectedLength = originValue === 0 ? self.selectedLength + 1 : self.selectedLength - 1;
-        let name = "";
-        switch (num) {
-            case SilkColor:
-                name = "SilkShip"; break;
-            case JadeColor:
-                name = "JadeShip"; break;
-            case CoffeeColor:
-                name = "CoffeeShip"; break;
-            case GinsengColor:
-                name = "GinsengShip"; break;
-        }
+        let name = ColorString[parseInt(num)] + "Ship";
+        // switch (parseInt(num)) {
+        //     case SilkColor:
+        //         name = "SilkShip"; break;
+        //     case JadeColor:
+        //         name = "JadeShip"; break;
+        //     case CoffeeColor:
+        //         name = "CoffeeShip"; break;
+        //     case GinsengColor:
+        //         name = "GinsengShip"; break;
+        // }
         let spriteNode = self.node.parent.getChildByName(name);
         spriteNode.opacity = spriteNode.opacity == 255 ? 127 : 255;
     }

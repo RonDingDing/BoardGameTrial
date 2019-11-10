@@ -9,12 +9,34 @@ export const SilkColor = 2;
 export const GinsengColor = 3;
 export const JadeColor = 4;
 
+
+export const OneTickSpot   = 14
+export const TwoTickSpot   = 15
+export const ThreeTickSpot = 16
+
+export const OneFailSpot   = 17
+export const TwoFailSpot   = 18
+export const ThreeFailSpot = 19
+
+export const ColorString = {
+    [CoffeeColor]: "Coffee",
+    [SilkColor]: "Silk",
+    [GinsengColor]: "Ginseng",
+    [JadeColor]: "Jade"
+};
+export const Colors = [CoffeeColor, SilkColor, GinsengColor, JadeColor];
+export const StringColor = {
+    "Coffee": CoffeeColor,
+    "Silk": SilkColor,
+    "Ginseng": GinsengColor,
+    "Jade": JadeColor
+};
 export const PhaseBidding = "Bidding"
 export const PhaseBuyStock = "BuyStock"
 export const PhasePutBoat = "PutBoat"
 export const PhaseDragBoat = "DragBoat"
 export const PhaseInvest = "Invest"
-export const PhasePirate = "Pirate"
+export const PhasePiratePlunder = "PiratePlunder"
 export const PhasePostDragBoat = "PostDragBoat"
 export const PhaseSettle = "Settle"
 
@@ -34,7 +56,8 @@ export const DragBoatMsg = "012";
 export const InvestMsg = "013";
 export const DiceMsg = "014";
 export const PirateMsg = "015";
-export const PostDragMsg= "016";
+export const DecideTickFailMsg = "016";
+export const PostDragMsg = "017";
 
 export const NorAlreadyInRoom = 1;
 export const NorNewEntered = 2;
@@ -118,7 +141,7 @@ export var roomdetailmsg = {
         ],
 
         "Mapp": [
-            // {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false}
+            // {"Name": "", "Taken": "", "Price": 0, "Award": 0, "Onboard": false, "IsPassenger": false}
         ],
         "PlayerName": [
             // ""
@@ -330,7 +353,7 @@ export var dicemsg = {
     },
     "Ans":
     {
-        
+
         "RoomNum": 0,
         "Dice": [
             0
@@ -350,14 +373,35 @@ export var piratemsg = {
         "Plunder": 0,
     },
     "Ans":
-    {        
+    {
         "RoomNum": 0,
+        "ShipPlundered": 0,
         "ShipVacant": [
             //0
         ],
         "CastTime": 0,
         "Pirate": "",
-        "RemindOrOperated": false
+        "RemindOrOperated": false,
+        "LastPlunderedShip": 0,
+    },
+    "Error": 0
+}
+
+export var decidetickfailmsg = {
+    "Code": DecideTickFailMsg,
+    "Req":
+    {
+        "Pirate": "",
+        "RoomNum": 0,
+        "ShipPlundered": 0,
+        "Tick": false
+    },
+    "Ans":
+    {
+        "Pirate": "",
+        "RoomNum": 0,
+        "RemindOrOperated": false,
+        "ShipPlundered": 0,
     },
     "Error": 0
 }

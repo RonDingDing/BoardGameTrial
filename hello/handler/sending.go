@@ -18,7 +18,7 @@ func SendMessage(messageType int, messageObj interface{}, connection *websocket.
 		return
 	}
 	err = connection.WriteMessage(messageType, []byte(messageReturn))
-	log.Printf("%-8s: %s %4s %s\n\n", "written", string(messageReturn), "to", connection.RemoteAddr())
+	// log.Printf("%-8s: %s %4s %s\n\n", "written", string(messageReturn), "to", connection.RemoteAddr())
 	if err != nil {
 		log.Print(err)
 		return
@@ -55,7 +55,11 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 		roomdetailmsg.Ans.Round = room.GetRound()
 		roomdetailmsg.Ans.HighestBidder = room.GetHighestBidder()
 		roomdetailmsg.Ans.HighestBidPrice = room.GetHighestBidPrice()
-		roomdetailmsg.Ans.CurrentPlayer = room.GetCurrentPlayer()
+		currentPlayer := room.GetCurrentPlayer()
+		if room.GetPhase() == manila.PhasePiratePlunder || room.GetPhase() == manila.PhaseDecideTickFail {
+			currentPlayer = room.GetTempCurrentPlayer()
+		}
+		roomdetailmsg.Ans.CurrentPlayer = currentPlayer
 		roomdetailmsg.Ans.Phase = room.GetPhase()
 		roomdetailmsg.Ans.StockPrice = room.GetStockPrice()
 		roomdetailmsg.Ans.CastTime = room.GetCastTime()
@@ -63,7 +67,7 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 
 		for k, v := range room.GetMap() {
 			mapSpot := pb3.MappS{Name: k, Taken: v.GetTaken(),
-				Price: v.GetPrice(), Award: v.GetAward(), Onboard: v.GetOnboard()}
+				Price: v.GetPrice(), Award: v.GetAward(), Onboard: v.GetOnboard(), IsPassenger: v.GetIsPassenger()}
 			roomdetailmsg.Ans.Mapp = append(roomdetailmsg.Ans.Mapp, mapSpot)
 		}
 
@@ -136,7 +140,7 @@ func RoomObjBroadcastMessage(messageType int, messageObj interface{}, roomObj in
 	case *manila.ManilaRoom:
 		for _, connection := range roomObj.GetAllConnections() {
 			err = connection.WriteMessage(messageType, messageReturn)
-			log.Printf("%-8s: %s %4s %s\n\n", "castroom", string(messageReturn), "to", connection.RemoteAddr())
+			// log.Printf("%-8s: %s %4s %s\n\n", "castroom", string(messageReturn), "to", connection.RemoteAddr())
 			if err != nil {
 				log.Print(err)
 				return

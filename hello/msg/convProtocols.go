@@ -5,22 +5,23 @@ package msg
 
 // 协议码
 const (
-	Errors         = "000" // 获取游戏版本信息
-	LoginMsg       = "001"
-	SignUpMsg      = "002"
-	EnterRoomMsg   = "003"
-	ReadyMsg       = "004"
-	RoomDetailMsg  = "005"
-	GameStartMsg   = "006"
-	BidMsg         = "007"
-	HandMsg        = "008"
-	BuyStockMsg    = "009"
-	ChangePhaseMsg = "010"
-	PutBoatMsg     = "011"
-	DragBoatMsg    = "012"
-	InvestMsg      = "013"
-	DiceMsg ="014"
-	PirateMsg = "015"
+	Errors            = "000" // 获取游戏版本信息
+	LoginMsg          = "001"
+	SignUpMsg         = "002"
+	EnterRoomMsg      = "003"
+	ReadyMsg          = "004"
+	RoomDetailMsg     = "005"
+	GameStartMsg      = "006"
+	BidMsg            = "007"
+	HandMsg           = "008"
+	BuyStockMsg       = "009"
+	ChangePhaseMsg    = "010"
+	PutBoatMsg        = "011"
+	DragBoatMsg       = "012"
+	InvestMsg         = "013"
+	DiceMsg           = "014"
+	PirateMsg         = "015"
+	DecideTickFailMsg = "016"
 
 	NorAlreadyInRoom      = 1
 	NorNewEntered         = 2
@@ -38,7 +39,7 @@ const (
 	ErrUserIsNotCaptain   = -11
 	ErrNotEnoughStock     = -12
 	ErrInvalidInvestPoint = -13
-	ErrInvestPointTaken = -14
+	ErrInvestPointTaken   = -14
 
 	LoungeNum = 0
 )

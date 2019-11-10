@@ -22,4 +22,5 @@ export namespace Global {
     export let ship = [];
     export let canInvest = false;
     export let castTime = 0;
+    export let lastPlunderedShip = 0;
 }

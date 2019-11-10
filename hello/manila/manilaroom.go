@@ -14,22 +14,25 @@ import (
 )
 
 type ManilaRoom struct {
-	room            *baseroom.Room
-	mapp            map[string]*ManilaSpot
-	ships           []int
-	silkdeck        []ManilaStock
-	coffeedeck      []ManilaStock
-	ginsengdeck     []ManilaStock
-	jadedeck        []ManilaStock
-	manilaplayers   map[string]*ManilaPlayer
-	round           int
-	highestBidder   string
-	highestBidPrice int
-	currentPlayer   string
-	phase           string
-	stockPrice      []int
-	casttime        int
-	tickFailSpot    map[int]string
+	room                   *baseroom.Room
+	mapp                   map[string]*ManilaSpot
+	ships                  []int
+	silkdeck               []ManilaStock
+	coffeedeck             []ManilaStock
+	ginsengdeck            []ManilaStock
+	jadedeck               []ManilaStock
+	manilaplayers          map[string]*ManilaPlayer
+	round                  int
+	highestBidder          string
+	highestBidPrice        int
+	currentPlayer          string
+	tempCurrentPlayer      string
+	phase                  string
+	stockPrice             []int
+	casttime               int
+	tickFailSpot           map[int]string
+	lastPlunderedShip      int
+	piratesOrDragsHasActed map[string]bool
 }
 
 func (self *ManilaRoom) GetTickFailSpot(spotName int) string {
@@ -156,6 +159,14 @@ func (self *ManilaRoom) SetCurrentPlayer(currentPlayer string) {
 	self.currentPlayer = currentPlayer
 }
 
+func (self *ManilaRoom) GetTempCurrentPlayer() string {
+	return self.tempCurrentPlayer
+}
+
+func (self *ManilaRoom) SetTempCurrentPlayer(tempCurrentPlayer string) {
+	self.tempCurrentPlayer = tempCurrentPlayer
+}
+
 func (self *ManilaRoom) GetHighestBidder() string {
 	return self.highestBidder
 }
@@ -221,7 +232,7 @@ func (self *ManilaRoom) New(roomNum int) *ManilaRoom {
 	self.room = new(baseroom.Room).New(roomNum, 1, 3, 5)
 	self.manilaplayers = make(map[string]*ManilaPlayer)
 	self.ResetMap()
-	self.ResetCastTime()
+
 	self.ResetDecks()
 	return self
 }
@@ -303,38 +314,40 @@ func (self *ManilaRoom) GetRoom() *baseroom.Room {
 
 func (self *ManilaRoom) ResetMap() {
 	mappingOrigin := map[string]*ManilaSpot{
-		"1tick": &ManilaSpot{"1tick", "", 4, 6, true},
-		"2tick": &ManilaSpot{"2tick", "", 3, 8, true},
-		"3tick": &ManilaSpot{"3tick", "", 2, 15, true},
+		"1tick": &ManilaSpot{"1tick", "", 4, 6, true, true},
+		"2tick": &ManilaSpot{"2tick", "", 3, 8, true, true},
+		"3tick": &ManilaSpot{"3tick", "", 2, 15, true, true},
 
-		"1fail": &ManilaSpot{"1fail", "", 4, 6, true},
-		"2fail": &ManilaSpot{"2fail", "", 3, 8, true},
-		"3fail": &ManilaSpot{"3fail", "", 2, 15, true},
+		"1fail": &ManilaSpot{"1fail", "", 4, 6, true, true},
+		"2fail": &ManilaSpot{"2fail", "", 3, 8, true, true},
+		"3fail": &ManilaSpot{"3fail", "", 2, 15, true, true},
 
-		"1pirate": &ManilaSpot{"1pirate", "", 5, 0, true},
-		"2pirate": &ManilaSpot{"2pirate", "", 5, 0, true},
+		"1pirate": &ManilaSpot{"1pirate", "", 5, 0, true, true},
+		"2pirate": &ManilaSpot{"2pirate", "", 5, 0, true, true},
 
-		"1drag": &ManilaSpot{"1drag", "", 2, 0, true},
-		"2drag": &ManilaSpot{"2drag", "", 5, 0, true},
+		"1drag": &ManilaSpot{"1drag", "", 2, 0, true, true},
+		"2drag": &ManilaSpot{"2drag", "", 5, 0, true, true},
 
-		"repair": &ManilaSpot{"repair", "", 0, 10, true},
+		"repair": &ManilaSpot{"repair", "", 0, 10, true, true},
 
-		"1silk": &ManilaSpot{"1silk", "", 3, 0, false},
-		"2silk": &ManilaSpot{"2silk", "", 4, 0, false},
-		"3silk": &ManilaSpot{"3silk", "", 5, 0, false},
+		"1silk": &ManilaSpot{"1silk", "", 3, 0, false, true},
+		"2silk": &ManilaSpot{"2silk", "", 4, 0, false, true},
+		"3silk": &ManilaSpot{"3silk", "", 5, 0, false, true},
 
-		"1jade": &ManilaSpot{"1jade", "", 3, 0, false},
-		"2jade": &ManilaSpot{"2jade", "", 4, 0, false},
-		"3jade": &ManilaSpot{"3jade", "", 5, 0, false},
-		"4jade": &ManilaSpot{"4jade", "", 5, 0, false},
+		"1jade": &ManilaSpot{"1jade", "", 3, 0, false, true},
+		"2jade": &ManilaSpot{"2jade", "", 4, 0, false, true},
+		"3jade": &ManilaSpot{"3jade", "", 5, 0, false, true},
+		"4jade": &ManilaSpot{"4jade", "", 5, 0, false, true},
 
-		"1ginseng": &ManilaSpot{"1ginseng", "", 1, 0, false},
-		"2ginseng": &ManilaSpot{"2ginseng", "", 2, 0, false},
-		"3ginseng": &ManilaSpot{"3ginseng", "", 3, 0, false},
+		"1ginseng": &ManilaSpot{"1ginseng", "", 1, 0, false, true},
+		"2ginseng": &ManilaSpot{"2ginseng", "", 2, 0, false, true},
+		"3ginseng": &ManilaSpot{"3ginseng", "", 3, 0, false, true},
 
-		"1coffee": &ManilaSpot{"1coffee", "", 2, 0, false},
-		"2coffee": &ManilaSpot{"2coffee", "", 3, 0, false},
-		"3coffee": &ManilaSpot{"3coffee", "", 4, 0, false},
+		"1coffee": &ManilaSpot{"1coffee", "", 2, 0, false, true},
+		"2coffee": &ManilaSpot{"2coffee", "", 3, 0, false, true},
+		"3coffee": &ManilaSpot{"3coffee", "", 4, 0, false, true},
+
+		"none": &ManilaSpot{"none", "", 0, 0, true, true},
 	}
 	self.mapp = mappingOrigin
 	self.ships = []int{-1, -1, -1, -1}
@@ -347,6 +360,15 @@ func (self *ManilaRoom) ResetMap() {
 		TwoFailSpot:   "",
 		ThreeFailSpot: "",
 	}
+	self.lastPlunderedShip = 0
+	self.piratesOrDragsHasActed = map[string]bool{
+		"1pirate": false,
+		"2pirate": false,
+
+		"1drag": false,
+		"2drag": false,
+	}
+	self.casttime = 0
 }
 
 func (self *ManilaRoom) GetMap() map[string]*ManilaSpot {
@@ -396,7 +418,13 @@ func (self *ManilaRoom) GetShip() []int {
 	return self.ships
 }
 
-func (self *ManilaRoom) HasBoatForPirate() bool {
+func (self *ManilaRoom) HasBoatForPirate(pirateName string) bool {
+	if self.mapp[pirateName].GetTaken() == "" {
+		return false
+	}
+	if self.GetPiratesOrDragsHasActed(pirateName) {
+		return false
+	}
 	hasBoat := false
 	for _, v := range self.ships {
 		if v == 13 {
@@ -409,7 +437,7 @@ func (self *ManilaRoom) HasBoatForPirate() bool {
 func (self *ManilaRoom) GetShipPirateVacant() []int {
 	vacant := []int{VacantInvalid, VacantInvalid, VacantInvalid, VacantInvalid}
 	for k, v := range self.ships {
-		if v != -1 || v == 13 {
+		if v == 13 {
 			vacant[k] = VacantNotVacant
 			shipName := ColorString[k+1]
 			for i := 1; i < 5; i++ {
@@ -424,6 +452,17 @@ func (self *ManilaRoom) GetShipPirateVacant() []int {
 		}
 	}
 	return vacant
+}
+
+func (self *ManilaRoom) GetPiratesOrDragsHasActed(pirateName string) bool {
+	if v, ok := self.piratesOrDragsHasActed[pirateName]; ok {
+		return v
+	}
+	return true
+}
+
+func (self *ManilaRoom) SetPiratesOrDragsHasActed(name string, acted bool) {
+	self.piratesOrDragsHasActed[name] = acted
 }
 
 func (self *ManilaRoom) ResetDecks() {
@@ -559,8 +598,37 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 			result[k] = rand.Intn(6) + 1
 		}
 	}
-	return []int{5, 5, 5, 0}, self.AddCastTime()
+	return []int{4, 3, 3, 0}, self.AddCastTime()
 	// return result, self.AddCastTime()
+}
+
+func (self *ManilaRoom) ThirteenShipFirst() int {
+	for k, v := range self.ships {
+		if v == 13 {
+			return k + 1
+		}
+	}
+	return 0
+}
+
+func (self *ManilaRoom) ThirteenToTick() {
+	for k, v := range self.ships {
+		shipName := ColorString[k+1]
+		if v == 13 {
+			anoafter := self.OccupyTick(shipName)
+			self.ships[k] = anoafter
+		}
+	}
+}
+
+func (self *ManilaRoom) SmallerThanThirteenToFail() {
+	for k, v := range self.ships {
+		shipName := ColorString[k+1]
+		if v < 13 {
+			anoafter := self.OccupyFail(shipName)
+			self.ships[k] = anoafter
+		}
+	}
 }
 
 func (self *ManilaRoom) OccupyTick(shipName string) int {
@@ -574,10 +642,33 @@ func (self *ManilaRoom) OccupyTick(shipName string) int {
 	return 0
 }
 
+func (self *ManilaRoom) OccupyFail(shipName string) int {
+	for i := 1; i < 4; i++ {
+		spotName := 16 + i
+		if self.GetTickFailSpot(spotName) == "" {
+			self.SetTickFailSpot(spotName, shipName)
+			return spotName
+		}
+	}
+	return 0
+}
+
+func (self *ManilaRoom) ShipToTick(shipType int) {
+	shipName := ColorString[shipType]
+	anoafter := self.OccupyTick(shipName)
+	self.ships[shipType-1] = anoafter
+}
+
+func (self *ManilaRoom) ShipToFail(shipType int) {
+	shipName := ColorString[shipType]
+	anoafter := self.OccupyFail(shipName)
+	self.ships[shipType-1] = anoafter
+}
+
 func (self *ManilaRoom) RunShip(dice []int) {
 	for k, num := range dice {
 		origin := self.ships[k]
-		if origin < 13 {
+		if origin <= 13 {
 			after := origin + num
 			anoafter := after
 			if after > 13 {
@@ -596,13 +687,88 @@ func (self *ManilaRoom) PostDrag() {
 	log.Println("Postdrag!")
 }
 
-func (self *ManilaRoom) ThirteenToTick() {
-	for k, v := range self.ships {
-		shipName := ColorString[k+1]
-		if v == 13 {
-			anoafter := self.OccupyTick(shipName)
-			self.ships[k] = anoafter
+func (self *ManilaRoom) GetLastPlunderedShip() int {
+	return self.lastPlunderedShip
+}
+
+func (self *ManilaRoom) SetLastPlunderedShip(shipType int) {
+	self.lastPlunderedShip = shipType
+}
+
+func (self *ManilaRoom) PirateInvest(pirate string, shipPlundered int) {
+	if shipPlundered != 0 {
+		var pirateSpot *ManilaSpot = nil
+		if self.mapp["1pirate"].GetTaken() == pirate {
+			pirateSpot = self.mapp["1pirate"]
+		} else if self.mapp["2pirate"].GetTaken() == pirate {
+			pirateSpot = self.mapp["2pirate"]
+		}
+
+		index := self.GetShipPirateVacant()[shipPlundered-1]
+		spot := self.mapp[strconv.Itoa(index)+ColorString[shipPlundered]]
+		if pirateSpot != nil {
+			pirateSpot.SetTaken("")
+		}
+		if spot != nil {
+			spot.SetTaken(pirate)
+			spot.SetIsPassenger(false)
 		}
 	}
+}
 
+func (self *ManilaRoom) PirateKill(pirate string, shipPlundered int) {
+	if shipPlundered != 0 {
+		if shipPlundered == self.lastPlunderedShip {
+			self.PirateInvest(pirate, shipPlundered)
+		} else {
+			for i := 1; i < 5; i++ {
+				spotName := strconv.Itoa(i) + ColorString[shipPlundered]
+				spot, ok := self.mapp[spotName]
+				if ok {
+					if i == 1 {
+						spot.SetTaken(pirate)
+						spot.SetIsPassenger(false)
+					} else {
+						spot.SetTaken("")
+					}
+				}
+			}
+			var pirateSpot *ManilaSpot = nil
+			if self.mapp["1pirate"].GetTaken() == pirate {
+				pirateSpot = self.mapp["1pirate"]
+			} else if self.mapp["2pirate"].GetTaken() == pirate {
+				pirateSpot = self.mapp["2pirate"]
+			}
+			if pirateSpot != nil {
+				pirateSpot.SetTaken("")
+			}
+		}
+	}
+}
+
+func (self *ManilaRoom) SecondPirateMoveToFirst(shipPlundered int) string {
+	onePirateSpot := self.mapp["1pirate"]
+	twoPirateSpot := self.mapp["2pirate"]
+	newPirate := twoPirateSpot.GetTaken()
+	onePirateSpot.SetTaken(newPirate)
+	twoPirateSpot.SetTaken("")
+	self.lastPlunderedShip = shipPlundered
+	return newPirate
+}
+
+func (self *ManilaRoom) GetPirateCaptainOnShip() (int, string, bool) {
+	for index, step := range self.ships {
+		if step == 13 {
+			shipColor := index + 1
+			if partName, mk := ColorString[shipColor]; mk {
+				pointName := "1" + partName
+				if point, ok := self.mapp[pointName]; ok {
+					if !point.GetIsPassenger() && point.GetTaken() != "" {
+						return shipColor, point.GetTaken(), true
+					}
+				}
+			}
+		}
+	}
+	return 0, "", false
 }

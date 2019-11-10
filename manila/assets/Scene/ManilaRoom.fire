@@ -99,13 +99,19 @@
       },
       {
         "__id__": 21
+      },
+      {
+        "__id__": 22
+      },
+      {
+        "__id__": 23
       }
     ],
     "_active": true,
     "_level": 1,
     "_components": [
       {
-        "__id__": 23
+        "__id__": 25
       }
     ],
     "_prefab": null,
@@ -294,7 +300,7 @@
       "__type__": "cc.Vec3",
       "x": 0,
       "y": 0,
-      "z": 90
+      "z": 89.99999999999999
     },
     "_skewX": 0,
     "_skewY": 0,
@@ -992,6 +998,114 @@
   },
   {
     "__type__": "cc.Node",
+    "_name": "InvestPassNode",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 2
+    },
+    "_children": [],
+    "_active": true,
+    "_level": 2,
+    "_components": [],
+    "_prefab": null,
+    "_opacity": 255,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 0,
+      "height": 0
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_position": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_scale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_eulerAngles": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_skewX": 0,
+    "_skewY": 0,
+    "_is3DNode": false,
+    "groupIndex": 0,
+    "_id": "cfuHJSPtpB5r0nGU+RoGpy"
+  },
+  {
+    "__type__": "cc.Node",
+    "_name": "DecideTickFailNode",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 2
+    },
+    "_children": [],
+    "_active": true,
+    "_level": 2,
+    "_components": [],
+    "_prefab": null,
+    "_opacity": 255,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 0,
+      "height": 0
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_position": {
+      "__type__": "cc.Vec3",
+      "x": -400,
+      "y": -640,
+      "z": 0
+    },
+    "_scale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_eulerAngles": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_skewX": 0,
+    "_skewY": 0,
+    "_is3DNode": false,
+    "groupIndex": 0,
+    "_id": "376JcGkw9Ge6bRPxBaB3kv"
+  },
+  {
+    "__type__": "cc.Node",
     "_name": "ManilaControl",
     "_objFlags": 0,
     "_parent": {
@@ -1002,11 +1116,11 @@
     "_level": 2,
     "_components": [
       {
-        "__id__": 22
+        "__id__": 24
       }
     ],
     "_prefab": {
-      "__id__": 24
+      "__id__": 26
     },
     "_opacity": 255,
     "_color": {
@@ -1055,16 +1169,16 @@
     "_name": "",
     "_objFlags": 0,
     "node": {
-      "__id__": 21
+      "__id__": 23
     },
     "_enabled": true,
     "popUp": {
       "__uuid__": "7362cf40-3ccd-47d7-8a49-a52e16c8717e"
     },
     "canvas": {
-      "__id__": 23
+      "__id__": 25
     },
-    "nameScript": {
+    "nameScriptPrefab": {
       "__uuid__": "e928d4f1-8934-4e64-ac3e-c539bc5cd2da"
     },
     "mapSprite": {
@@ -1124,6 +1238,18 @@
     "piratePrefab": {
       "__uuid__": "c5c78abc-4258-462a-a375-a368a7c19885"
     },
+    "investPassNode": {
+      "__id__": 21
+    },
+    "investPassPrefab": {
+      "__uuid__": "6edbea36-32db-4228-a4ab-fc3577111d77"
+    },
+    "decideTickFailNode": {
+      "__id__": 22
+    },
+    "decideTickFailPrefab": {
+      "__uuid__": "06309963-09f6-4695-8549-f54e8dbd21d1"
+    },
     "_id": "26tRbzzDhFo5iwLaPbsEnG"
   },
   {
@@ -1146,7 +1272,7 @@
   {
     "__type__": "cc.PrefabInfo",
     "root": {
-      "__id__": 21
+      "__id__": 23
     },
     "asset": {
       "__uuid__": "9f8df9b8-9423-4ae4-83e8-f0646e84e1a9"

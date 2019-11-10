@@ -17,26 +17,28 @@ const (
 	OriginalMoney      = 30
 	OriginalDeckNumber = 5
 
-	OneTickSpot = 14
-	TwoTickSpot = 15
+	OneTickSpot   = 14
+	TwoTickSpot   = 15
 	ThreeTickSpot = 16
 
-	OneFailSpot = 17
-	TwoFailSpot = 18
+	OneFailSpot   = 17
+	TwoFailSpot   = 18
 	ThreeFailSpot = 19
 
-	VacantInvalid = -1
+	VacantInvalid   = -1
 	VacantNotVacant = 0
-	VacnatVacant = 1
+	VacnatVacant    = 1
 
-	PhaseBidding      = "Bidding"
-	PhaseBuyStock     = "BuyStock"
-	PhasePutBoat      = "PutBoat"
-	PhaseDragBoat     = "DragBoat"
-	PhaseInvest       = "Invest"
-	PhaseCastDice     = "CastDice"
-	PhasePostDragBoat = "PostDragBoat"
-	PhaseSettle       = "Settle"
+	PhaseBidding        = "Bidding"
+	PhaseBuyStock       = "BuyStock"
+	PhasePutBoat        = "PutBoat"
+	PhaseDragBoat       = "DragBoat"
+	PhaseInvest         = "Invest"
+	PhaseCastDice       = "CastDice"
+	PhasePiratePlunder  = "PiratePlunder"
+	PhaseDecideTickFail = "DecideTickFail"
+	PhasePostDragBoat   = "PostDragBoat"
+	PhaseSettle         = "Settle"
 )
 
 var ColorString = map[int]string{
@@ -46,12 +48,20 @@ var ColorString = map[int]string{
 	JadeColor:    "jade",
 }
 
+var StringColor = map[string]int{
+	"coffee":  CoffeeColor,
+	"silk":    SilkColor,
+	"ginseng": GinsengColor,
+	"jade":    JadeColor,
+}
+
 type ManilaSpot struct {
-	name    string
-	taken   string
-	price   int
-	award   int
-	onboard bool
+	name        string
+	taken       string
+	price       int
+	award       int
+	onboard     bool
+	isPassenger bool
 }
 
 func (self *ManilaSpot) String() string {
@@ -60,6 +70,14 @@ func (self *ManilaSpot) String() string {
 
 func (self *ManilaSpot) GetTaken() string {
 	return self.taken
+}
+
+func (self *ManilaSpot) GetIsPassenger() bool {
+	return self.isPassenger
+}
+
+func (self *ManilaSpot) SetIsPassenger(isPassenger bool) {
+	self.isPassenger = isPassenger
 }
 
 func (self *ManilaSpot) GetName() string {

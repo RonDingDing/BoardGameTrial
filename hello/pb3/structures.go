@@ -187,11 +187,12 @@ type RoomDetailMsgReq struct {
 }
 
 type MappS struct {
-	Name    string
-	Taken   string
-	Price   int
-	Award   int
-	Onboard bool
+	Name        string
+	Taken       string
+	Price       int
+	Award       int
+	Onboard     bool
+	IsPassenger bool
 }
 
 type PlayersS struct {
@@ -660,11 +661,13 @@ type PirateMsgReq struct {
 }
 
 type PirateMsgAns struct {
-	RoomNum          int
-	ShipVacant       []int
-	CastTime         int
-	Pirate           string
-	RemindOrOperated bool
+	RoomNum           int
+	ShipVacant        []int
+	ShipPlundered     int
+	CastTime          int
+	Pirate            string
+	RemindOrOperated  bool
+	LastPlunderedShip int
 }
 
 type PirateMsg struct {
@@ -684,9 +687,11 @@ func (self *PirateMsgReq) New() *PirateMsgReq {
 func (self *PirateMsgAns) New() *PirateMsgAns {
 	self.RoomNum = 0
 	self.ShipVacant = make([]int, 0)
+	self.ShipPlundered = 0
 	self.CastTime = 0
 	self.Pirate = ""
 	self.RemindOrOperated = false
+	self.LastPlunderedShip = 0
 	return self
 }
 
@@ -694,6 +699,52 @@ func (self *PirateMsg) New() *PirateMsg {
 	self.Code = msg.PirateMsg
 	self.Req = new(PirateMsgReq).New()
 	self.Ans = new(PirateMsgAns).New()
+	self.Error = 0
+	return self
+}
+
+// DecideTickFailMsg
+type DecideTickFailMsgReq struct {
+	Pirate        string
+	RoomNum       int
+	ShipPlundered int
+	Tick          bool
+}
+
+type DecideTickFailMsgAns struct {
+	Pirate           string
+	RoomNum          int
+	RemindOrOperated bool
+	ShipPlundered    int
+}
+
+type DecideTickFailMsg struct {
+	Code  string
+	Req   *DecideTickFailMsgReq
+	Ans   *DecideTickFailMsgAns
+	Error int
+}
+
+func (self *DecideTickFailMsgReq) New() *DecideTickFailMsgReq {
+	self.Pirate = ""
+	self.RoomNum = 0
+	self.ShipPlundered = 0
+	self.Tick = false
+	return self
+}
+
+func (self *DecideTickFailMsgAns) New() *DecideTickFailMsgAns {
+	self.Pirate = ""
+	self.RoomNum = 0
+	self.RemindOrOperated = false
+	self.ShipPlundered = 0
+	return self
+}
+
+func (self *DecideTickFailMsg) New() *DecideTickFailMsg {
+	self.Code = msg.DecideTickFailMsg
+	self.Req = new(DecideTickFailMsgReq).New()
+	self.Ans = new(DecideTickFailMsgAns).New()
 	self.Error = 0
 	return self
 }

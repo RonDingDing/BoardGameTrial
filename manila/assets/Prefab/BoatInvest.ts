@@ -1,5 +1,6 @@
 import EventMng from "../Script/Fundamentals/Manager/EventMng";
 import { Global } from "../Script/Fundamentals/ManilaGlobal";
+import {ColorString} from  "../Script/Fundamentals/Imports"
 
 const { ccclass, property } = cc._decorator;
 
@@ -11,7 +12,8 @@ export default class BoatInvest extends cc.Component {
     investOnboat(event, customEventData) {
         let data = "";
         for (let j = 1; j < 5; j++) {
-            let key = "" + j + customEventData;
+            let key = "" + j + ColorString[parseInt(customEventData)].toLowerCase();
+            
             if (Global.mapp.hasOwnProperty(key) && Global.mapp[key].Taken === "") {
                 data = key;
                 break;

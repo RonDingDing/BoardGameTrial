@@ -66,7 +66,7 @@ export default class BasicControl extends cc.Component {
             case ErrNotEnoughStock:
                 self.playPopup("不够股票"); break
             case ErrInvalidInvestPoint:
-                self.playPopup("错误的投资点"); break
+                self.playPopup("无效的投资点"); break
             case ErrInvestPointTaken:
                 self.playPopup("投资点已被占据"); break
         }

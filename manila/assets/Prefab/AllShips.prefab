@@ -581,7 +581,7 @@
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
     "handler": "investOnboat",
-    "customEventData": "coffee"
+    "customEventData": "1"
   },
   {
     "__type__": "cc.Node",
@@ -1192,7 +1192,7 @@
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
     "handler": "investOnboat",
-    "customEventData": "silk"
+    "customEventData": "2"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1705,7 +1705,7 @@
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
     "handler": "investOnboat",
-    "customEventData": "ginseng"
+    "customEventData": "3"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -2326,7 +2326,7 @@
     "component": "",
     "_componentId": "08814Cf2VxEE5Inlye+PNze",
     "handler": "investOnboat",
-    "customEventData": "jade"
+    "customEventData": "4"
   },
   {
     "__type__": "cc.PrefabInfo",
