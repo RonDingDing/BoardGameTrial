@@ -1,0 +1,20 @@
+package handler
+
+import (
+	"hello/manila"
+	"hello/pb3"
+)
+
+func SetAnsAndSendPostDragMsg(dragger string, manilaRoom *manila.ManilaRoom, roomNum int, messageType int) {
+	RoomObjChangePhase(manilaRoom,  manila.PhasePostDrag)
+	postdragable := manilaRoom.PostDragable()
+	postdragmsg := new(pb3.PostDragMsg).New()
+	postdragmsg.Ans.Username = manilaRoom.GetMap()[dragger].GetTaken()
+	postdragmsg.Ans.RemindOrOperated = true
+	postdragmsg.Ans.RoomNum = roomNum
+	postdragmsg.Ans.Dragable = postdragable
+	postdragmsg.Ans.Dragger = dragger
+	postdragmsg.Ans.Ship = manilaRoom.GetShip()
+	postdragmsg.Ans.Phase = manilaRoom.GetPhase()
+	RoomObjBroadcastMessage(messageType, postdragmsg, manilaRoom)
+}

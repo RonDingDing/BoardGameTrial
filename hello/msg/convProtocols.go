@@ -22,6 +22,7 @@ const (
 	DiceMsg           = "014"
 	PirateMsg         = "015"
 	DecideTickFailMsg = "016"
+	PostDragMsg       = "017"
 
 	NorAlreadyInRoom      = 1
 	NorNewEntered         = 2

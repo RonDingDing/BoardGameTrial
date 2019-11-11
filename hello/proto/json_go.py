@@ -149,28 +149,38 @@ def make_new(content):
 
 
 if __name__ == '__main__':
-    DecideTickFailMsg = "016"
+    PostDragMsg = "017"
     false = False
     true = True
     obj = piratemsg = {
-        "Code": DecideTickFailMsg,
+        "Code": PostDragMsg,
         "Req":
         {
-            "Pirate": "",
+            "Username": "",
+            "Dragger": "",
             "RoomNum": 0,
-            "ShipPlundered": 0,
-            "Tick": false
+            "ShipDrag": [
+                0, 0, 0, 0
+            ],
+            "Phase": ""
         },
         "Ans":
         {
-            "Pirate": "",
+            "Username": "",
+            "Phase": "",
+            "Dragger": "",
             "RoomNum": 0,
             "RemindOrOperated": false,
-            "ShipPlundered": 0,
+            "Ship": [
+                  0, 0, 0, 0
+            ],
+            "Dragable": [
+                  0, 0, 0
+            ]
         },
         "Error": 0
     }
-    content = to_go(obj, 'DecideTickFailMsg')
+    content = to_go(obj, 'PostDragMsg')
 
     print(content)
     new_content = make_new(content)

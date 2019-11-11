@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg, PirateMsg, piratemsg, ColorString, Colors, DecideTickFailMsg, decidetickfailmsg, StringColor, ErrInvalidInvestPoint, OneTickSpot, ThreeTickSpot } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg, PirateMsg, piratemsg, ColorString, Colors, DecideTickFailMsg, decidetickfailmsg, StringColor, ErrInvalidInvestPoint, OneTickSpot, ThreeTickSpot, PostDragMsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
@@ -69,6 +69,12 @@ export default class ManilaControl extends BasicControl {
     @property(cc.Prefab)
     dragBoatPrefab: cc.Prefab = null
 
+    @property(cc.Node)
+    postDragNode: cc.Node = null
+
+    @property(cc.Prefab)
+    postDragPrefab: cc.Prefab = null
+
     @property(cc.Prefab)
     pawnPrefab: cc.Prefab = null
 
@@ -110,10 +116,12 @@ export default class ManilaControl extends BasicControl {
         EventMng.on(InvestMsg, self.onInvestMsg, self);
         EventMng.on(PirateMsg, self.onPirateMsg, self);
         EventMng.on(DecideTickFailMsg, self.onDecideTickFailMsg, self);
+        EventMng.on(PostDragMsg, self.onPostDragMsg, self);
         EventMng.on("Ready", self.sendReadyOrNot, self);
         EventMng.on("Bid", self.sendBid, self);
         EventMng.on("BuyStock", self.sendBuyStock, self);
         EventMng.on("PutBoat", self.sendPutBoat, self);
+        EventMng.on("PostDrag", self.sendPostDrag, self);
         EventMng.on("DragBoat", self.sendDragBoat, self);
         EventMng.on("InvestOnshore", self.sendInvest, self);
         EventMng.on("InvestOnboat", self.sendInvest, self);
@@ -256,7 +264,7 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    renderShipInvest(allShipNode: cc.Node, oneShipNode: cc.Node, shipColor: number, scriptName: string) {
+    funcrenderShipInvest(allShipNode: cc.Node, oneShipNode: cc.Node, shipColor: number, scriptName: string) {
         let self = this;
         let pawnChoices = allShipNode.getChildByName(scriptName).getComponent(scriptName).pawnPics;
         let shipName = ColorString[shipColor].toLowerCase();
@@ -309,7 +317,7 @@ export default class ManilaControl extends BasicControl {
                 }
 
                 // 展示船上投资
-                self.renderShipInvest(allShipInstance, oneShipNode, shipColor, "BoatInvest");
+                self.funcrenderShipInvest(allShipInstance, oneShipNode, shipColor, "BoatInvest");
                 // let pawnChoices = allShipNode.getChildByName("BoatInvest").getComponent("BoatInvest").pawnPics;
                 // let shipName = ColorString[shipType + 1].toLowerCase();
                 // for (let k = 1; k < 5; k++) {
@@ -588,39 +596,58 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
+    funcrenderdrag(message, mode: string) {
+        let self = this;
+        let pics, dragBoatInstance, draggerScript;
+        if (mode === "drag") {
+            self.dragBoatNode.active = true;
+            self.dragBoatNode.removeAllChildren();
+            dragBoatInstance = cc.instantiate(self.dragBoatPrefab);
+            self.dragBoatNode.addChild(dragBoatInstance);
+            draggerScript = dragBoatInstance.getChildByName("Dragger").getComponent("Dragger");
+            pics = draggerScript.shipPics;
+            draggerScript.phase = message.Ans.Phase;
+            draggerScript.dragable = message.Ans.Dragable;
+        } else {
+            self.postDragNode.active = true;
+            self.postDragNode.removeAllChildren();
+            dragBoatInstance = cc.instantiate(self.postDragPrefab);
+            self.postDragNode.addChild(dragBoatInstance);
+            draggerScript = dragBoatInstance.getChildByName("PostDragger").getComponent("PostDragger");
+            pics = draggerScript.shipPics;
+            draggerScript.phase = message.Ans.Phase;           
+            draggerScript.dragable = message.Ans.Dragable;
+
+            draggerScript.dragger = message.Ans.Dragger;
+        }
+
+        let dragable = message.Ans.Dragable;
+        if (dragable.length < 3) {
+            for (let i = 0; i < 3 - dragable.length; i++) {
+                dragable.push(0);
+            }
+        }
+        for (let i = 0; i < dragable.length; i++) {
+            let spriteNode = dragBoatInstance.getChildByName('Stock' + (i + 1));
+            let sprite = spriteNode.getComponent(cc.Sprite);
+            let dragShipType = dragable[i];
+            if (dragShipType === 0) {
+                dragBoatInstance.getChildByName('Stock' + (i + 1)).active = false;
+                dragBoatInstance.getChildByName('MinusStock' + (i + 1)).active = false;
+                dragBoatInstance.getChildByName('PlusStock' + (i + 1)).active = false;
+                dragBoatInstance.getChildByName('DragStock' + (i + 1)).active = false;
+            } else {
+                sprite.spriteFrame = pics[dragShipType - 1];
+            }
+        }
+
+    }
     onDragBoatMsg(message) {
         let self = this;
         if (message.Error < 0) {
             self.popUpError(message);
         } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
-            self.dragBoatNode.active = true;
-            self.dragBoatNode.removeAllChildren();
-            let dragBoatInstance = cc.instantiate(self.dragBoatPrefab);
-            self.dragBoatNode.addChild(dragBoatInstance);
-            let draggerScript = dragBoatInstance.getChildByName("Dragger").getComponent("Dragger");
-            let pics = draggerScript.shipPics;
-            draggerScript.phase = message.Ans.Phase;
-            draggerScript.dragable = message.Ans.Dragable;
-
-            let dragable = message.Ans.Dragable;
-            if (dragable.length < 3) {
-                for (let i = 0; i < 3 - dragable.length; i++) {
-                    dragable.push(0);
-                }
-            }
-            for (let i = 0; i < dragable.length; i++) {
-                let spriteNode = dragBoatInstance.getChildByName('Stock' + (i + 1));
-                let sprite = spriteNode.getComponent(cc.Sprite);
-                let dragShipType = dragable[i];
-                if (dragShipType === 0) {
-                    dragBoatInstance.getChildByName('Stock' + (i + 1)).active = false;
-                    dragBoatInstance.getChildByName('MinusStock' + (i + 1)).active = false;
-                    dragBoatInstance.getChildByName('PlusStock' + (i + 1)).active = false;
-                    dragBoatInstance.getChildByName('DragStock' + (i + 1)).active = false;
-                } else {
-                    sprite.spriteFrame = pics[dragShipType - 1];
-                }
-            }
+            self.funcrenderdrag(message, "drag");
         }
     }
 
@@ -697,7 +724,7 @@ export default class ManilaControl extends BasicControl {
             let investPoint = Global.mapp[invest];
             let shipPoint = invest.slice(1).toLowerCase();
             if (!investPoint) {
-                self.playPopup("无效的投资点4");
+                self.playPopup("无效的投资点");
                 return;
             } else if (investPoint.Taken && invest != "none") {
                 self.playPopup("投资点已被占据");
@@ -708,10 +735,9 @@ export default class ManilaControl extends BasicControl {
                 } else {
                     if (shipPoint == "coffee" || shipPoint == "silk" || shipPoint == "ginseng" || shipPoint == "jade") {
                         let color = StringColor[shipPoint[0].toUpperCase() + shipPoint.slice(1)];
-                        console.log(color);
                         let shipType = color - 1;
                         if (Global.ship[shipType] >= OneTickSpot && Global.ship[shipType] <= ThreeTickSpot) {
-                            self.playPopup("无效的投资点3");
+                            self.playPopup("无效的投资点");
                             return;
                         }
                     }
@@ -751,7 +777,7 @@ export default class ManilaControl extends BasicControl {
                     let vacant = message.Ans.ShipVacant[shipType];
                     pirateShip.active = vacant >= 0 ? true : false
                 }
-                self.renderShipInvest(allShipsNode, pirateShip, color, "Pirater");
+                self.funcrenderShipInvest(allShipsNode, pirateShip, color, "Pirater");
             }
             if (Global.castTime == 3) {
                 let passButtonNode = pirateInstance.getChildByName("PassButton");
@@ -791,7 +817,7 @@ export default class ManilaControl extends BasicControl {
                 let oneShipNode = decideTickFailInstance.getChildByName("Ship" + eachShipName);
                 if (ColorString[key] == shipName) {
                     oneShipNode.active = true;
-                    self.renderShipInvest(decideTickFailInstance, oneShipNode, shipPlundered, "DecideTickFailer")
+                    self.funcrenderShipInvest(decideTickFailInstance, oneShipNode, shipPlundered, "DecideTickFailer")
 
                 } else {
                     oneShipNode.active = false;
@@ -813,5 +839,18 @@ export default class ManilaControl extends BasicControl {
         console.log("发送决定靠岸", decidetickfailmsgobj);
         ManilaSocket.send(decidetickfailmsgobj);
         self.decideTickFailNode.active = false;
+    }
+
+    onPostDragMsg(message) {
+        let self = this;
+        if (message.Error < 0) {
+            self.popUpError(message);
+        } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
+            self.funcrenderdrag(message, "postdrag");
+        }
+    }
+
+    sendPostDrag (dragable: [number], sum: [number], ok: boolean) {
+        console.log(dragable, sum, ok);
     }
 }

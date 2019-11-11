@@ -32,7 +32,7 @@ const (
 	PhaseCastDice       = "CastDice"
 	PhasePiratePlunder  = "PiratePlunder"
 	PhaseDecideTickFail = "DecideTickFail"
-	PhasePostDragBoat   = "PostDragBoat"
+	PhasePostDrag       = "PostDrag"
 	PhaseSettle         = "Settle"
 )
 
@@ -55,6 +55,14 @@ var ColorVend = map[int]int{
 	SilkColor:    30,
 	GinsengColor: 18,
 	JadeColor:    36,
+}
+
+var StockPriceNext = map[int]int{
+	-1: 0,
+	0:  5,
+	5:  10,
+	10: 20,
+	20: 30,
 }
 
 type ManilaSpot struct {

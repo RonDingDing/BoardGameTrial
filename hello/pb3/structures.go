@@ -748,3 +748,58 @@ func (self *DecideTickFailMsg) New() *DecideTickFailMsg {
 	self.Error = 0
 	return self
 }
+
+// PostDragMsg
+
+type PostDragMsgReq struct {
+	Username string
+	Dragger  string
+	RoomNum  int
+	ShipDrag []int
+	Phase    string
+}
+
+type PostDragMsgAns struct {
+	Username         string
+	Phase            string
+	Dragger          string
+	RoomNum          int
+	RemindOrOperated bool
+	Ship             []int
+	Dragable         []int
+}
+
+type PostDragMsg struct {
+	Code  string
+	Req   *PostDragMsgReq
+	Ans   *PostDragMsgAns
+	Error int
+}
+
+func (self *PostDragMsgReq) New() *PostDragMsgReq {
+	self.Username = ""
+	self.Dragger = ""
+	self.RoomNum = 0
+	self.ShipDrag = make([]int, 0)
+	self.Phase = ""
+	return self
+}
+
+func (self *PostDragMsgAns) New() *PostDragMsgAns {
+	self.Username = ""
+	self.Phase = ""
+	self.Dragger = ""
+	self.RoomNum = 0
+	self.RemindOrOperated = false
+	self.Ship = make([]int, 0)
+	self.Dragable = make([]int, 0)
+	return self
+}
+
+func (self *PostDragMsg) New() *PostDragMsg {
+	self.Code = msg.PostDragMsg
+	self.Req = new(PostDragMsgReq).New()
+	self.Ans = new(PostDragMsgAns).New()
+	self.Error = 0
+	return self
+}

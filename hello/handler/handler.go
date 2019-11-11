@@ -430,14 +430,7 @@ func HandlePutBoatMsg(messageType int, message []byte, connection *websocket.Con
 		dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
 		dragboatmsg.Ans.Ship = manilaRoom.GetShip()
 
-		all := []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor}
-		dragable := []int{}
-		for _, v := range all {
-			if v != putboatmsg.Req.Except {
-				dragable = append(dragable, v)
-			}
-		}
-		dragboatmsg.Ans.Dragable = dragable
+		dragboatmsg.Ans.Dragable = manilaRoom.Dragable(putboatmsg.Req.Except)
 		RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
 	}
 }
@@ -593,9 +586,10 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 				piratemsg.Ans.RemindOrOperated = true
 				RoomObjBroadcastMessage(messageType, piratemsg, manilaRoom)
 			} else if casttime == 2 || casttime == 1 {
-				if manilaRoom.GetMap()["1drag"].GetTaken() != "" || manilaRoom.GetMap()["2drag"].GetTaken() != "" && casttime == 2 {
-					manilaRoom.PostDrag()
-					log.Println(3)
+				if manilaRoom.HasBoatForPostDrag("1drag") {
+					SetAnsAndSendPostDragMsg("1drag", manilaRoom, roomNum, messageType)
+				} else if manilaRoom.HasBoatForPostDrag("2drag") {
+					SetAnsAndSendPostDragMsg("2drag", manilaRoom, roomNum, messageType)
 				} else {
 					log.Println(4)
 					manilaRoom.ThirteenToTick()

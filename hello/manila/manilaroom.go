@@ -61,24 +61,24 @@ func (self *ManilaRoom) ResetCastTime() {
 	self.casttime = 0
 }
 
-func (self *ManilaRoom) GetOneStockPrice(typing int) int {
-	return self.stockPrice[typing-1]
+func (self *ManilaRoom) GetOneStockPrice(color int) int {
+	return self.stockPrice[color-1]
 }
 
 func (self *ManilaRoom) GetStockPrice() []int {
 	return self.stockPrice
 }
 
-func (self *ManilaRoom) GetBuyStockPrice(typing int) int {
-	price := self.stockPrice[typing-1]
+func (self *ManilaRoom) GetBuyStockPrice(color int) int {
+	price := self.stockPrice[color-1]
 	if price == 0 {
 		return 5
 	}
 	return price
 }
 
-func (self *ManilaRoom) SetStockPrice(typing int, price int) {
-	self.stockPrice[typing-1] = price
+func (self *ManilaRoom) SetStockPrice(color int, price int) {
+	self.stockPrice[color-1] = price
 }
 
 func (self *ManilaRoom) HasOtherBidder(username string) (bool, map[string]bool) {
@@ -313,7 +313,7 @@ func (self *ManilaRoom) GetRoom() *baseroom.Room {
 }
 
 func (self *ManilaRoom) ResetMap() {
-	mappingOrigin := map[string]*ManilaSpot{
+	self.mapp = map[string]*ManilaSpot{
 		"1tick": &ManilaSpot{"1tick", "", 4, 6, true, true},
 		"2tick": &ManilaSpot{"2tick", "", 3, 8, true, true},
 		"3tick": &ManilaSpot{"3tick", "", 2, 15, true, true},
@@ -349,7 +349,7 @@ func (self *ManilaRoom) ResetMap() {
 
 		"none": &ManilaSpot{"none", "", 0, 0, true, true},
 	}
-	self.mapp = mappingOrigin
+
 	self.ships = []int{-1, -1, -1, -1}
 	self.tickFailSpot = map[int]string{
 		OneTickSpot:   "",
@@ -369,6 +369,7 @@ func (self *ManilaRoom) ResetMap() {
 		"2drag": false,
 	}
 	self.casttime = 0
+	self.highestBidPrice = 0
 }
 
 func (self *ManilaRoom) GetMap() map[string]*ManilaSpot {
@@ -470,7 +471,7 @@ func (self *ManilaRoom) ResetDecks() {
 	self.coffeedeck = []ManilaStock{}
 	self.ginsengdeck = []ManilaStock{}
 	self.silkdeck = []ManilaStock{}
-	self.stockPrice = []int{0, 0, 0, 0}
+	self.stockPrice = []int{-1, -1, -1, -1}
 	for _, color := range []int{JadeColor, SilkColor, CoffeeColor, GinsengColor} {
 		card := new(ManilaStock).New(color)
 		for j := 0; j < OriginalDeckNumber; j++ {
@@ -496,8 +497,8 @@ func (self *ManilaRoom) SetPlayerName(names []string) {
 	self.room.SetPlayerName(names)
 }
 
-func (self *ManilaRoom) GetOneDeck(typing int) int {
-	switch typing {
+func (self *ManilaRoom) GetOneDeck(color int) int {
+	switch color {
 	case SilkColor:
 		return len(self.silkdeck)
 	case GinsengColor:
@@ -527,8 +528,8 @@ func (self *ManilaRoom) GetAllConnections() []*websocket.Conn {
 	return self.room.GetAllConnections()
 }
 
-func (self *ManilaRoom) TakeOneStock(typing int) (ManilaStock, error) {
-	switch typing {
+func (self *ManilaRoom) TakeOneStock(color int) (ManilaStock, error) {
+	switch color {
 	case SilkColor:
 		if self.GetOneDeck(SilkColor) > 0 {
 			silk := self.silkdeck[0]
@@ -768,6 +769,14 @@ func (self *ManilaRoom) settleSave(settle map[string]int) {
 	}
 }
 
+func (self *ManilaRoom) StockPriceRise(tick []string) {
+	for _, shipName := range tick {
+		color := StringColor[shipName]
+		eachStockPrice := self.GetOneStockPrice(color)
+		self.SetStockPrice(color, StockPriceNext[eachStockPrice])
+	}
+}
+
 func (self *ManilaRoom) SettleRound() {
 	log.Println("Settle!")
 
@@ -791,18 +800,55 @@ func (self *ManilaRoom) SettleRound() {
 	settle = self.settleTickFail(fail, "fail", settle)
 	log.Println("d: ", settle)
 
-	// tick 船上
+	// tick 船上结算
 	settle = self.settleTickFailOnShip(tick, "tick", settle)
 	log.Println("e: ", settle)
 
+	// 登船海盗结算
 	settle = self.settleTickFailOnShip(fail, "fail", settle)
 	log.Println("f: ", settle)
 
 	self.settleSave(settle)
+	self.StockPriceRise(tick)
 }
 
-func (self *ManilaRoom) PostDrag() {
-	log.Println("Postdrag!")
+func (self *ManilaRoom) Dragable(except int) []int {
+	dragable := make([]int, 0)
+	for v := range ColorString {
+		if v != except {
+			dragable = append(dragable, v)
+		}
+	}
+	return dragable
+}
+
+func (self *ManilaRoom) PostDragable() []int {
+	dragable := make([]int, 0)
+	for k, v := range self.ships {
+		if v < OneTickSpot {
+			dragable = append(dragable, k+1)
+		}
+	}
+	return dragable
+}
+
+func (self *ManilaRoom) HasBoatForPostDrag(postDragName string) bool {
+	if self.casttime != 2 {
+		return false
+	}
+	if self.mapp[postDragName].GetTaken() == "" {
+		return false
+	}
+	if self.GetPiratesOrDragsHasActed(postDragName) {
+		return false
+	}
+	hasBoat := false
+	for _, v := range self.ships {
+		if v < OneTickSpot {
+			return true
+		}
+	}
+	return hasBoat
 }
 
 func (self *ManilaRoom) GetLastPlunderedShip() int {

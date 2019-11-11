@@ -411,7 +411,7 @@ export var postdragmsg = {
     "Req":
     {
         "Username": "",
-        "DragSum": 0,
+        "Dragger": "",
         "RoomNum": 0,
         "ShipDrag": [
             // 0, 0, 0, 0
@@ -422,7 +422,7 @@ export var postdragmsg = {
     {
         "Username": "",
         "Phase": "",
-        "DragSum": 0,
+        "Dragger": "",
         "RoomNum": 0,
         "RemindOrOperated": false,
         "Ship": [
