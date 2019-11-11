@@ -6,7 +6,6 @@ const { ccclass, property } = cc._decorator;
 export default class PostDragger extends cc.Component {
     sum: [number, number, number] = [0, 0, 0]
     dragable: [number] = [0]
-    phase: string
     dragger: string
 
     @property([cc.SpriteFrame])
@@ -21,28 +20,38 @@ export default class PostDragger extends cc.Component {
         let label = dragStockNode.getComponent(cc.Label)
         let string = label.string;
         let dragNumber = parseInt(string);
-        let limit = self.dragger === "1drag"? 1: 2
-        
+        let limit = self.dragger === "1drag" ? 1 : 2
+
         if (operation === "+" && dragNumber + 1 <= limit) {
-            label.string = "" + (dragNumber + 1);
+            if (dragNumber + 1 > 0) {
+                label.string = "+" + (dragNumber + 1);
+            } else {
+                label.string = "" + (dragNumber + 1);
+            }
             self.sum[index - 1] = dragNumber + 1;
         } else if (operation === "-" && dragNumber - 1 >= -limit) {
-            label.string = "" + (dragNumber - 1);
+            if (dragNumber - 1 > 0) {
+                label.string = "+" + (dragNumber - 1);
+            } else {
+                label.string = "" + (dragNumber - 1);
+            }
             self.sum[index - 1] = dragNumber - 1;
         }
     }
 
     pressOK(event, data) {
         let self = this;
-        let limit = self.dragger === "1drag"? 1: 2;
+        let limit = self.dragger === "1drag" ? 1 : 2;
         let realSum = 0;
+
         for (let i = 0; i < self.sum.length; i++) {
-            realSum += self.sum[i] > 0? self.sum[i] : -self.sum[i];
+            realSum += self.sum[i] > 0 ? self.sum[i] : -self.sum[i];
+
         }
-        if (realSum === limit && self.phase === PhasePostDragBoat) {
+        if (realSum === limit) {
             EventMng.emit("PostDrag", self.dragable, self.sum, true);
             self.sum = [0, 0, 0];
-            self.phase = "";
+
         } else {
             EventMng.emit("PostDrag", self.dragable, self.sum, false);
         }

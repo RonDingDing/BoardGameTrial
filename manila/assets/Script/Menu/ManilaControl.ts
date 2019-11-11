@@ -3,6 +3,7 @@ import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
+import i18n = require("LanguageData");
 const { ccclass, property } = cc._decorator;
 
 function startsWith(str: string, prefix: string) {
@@ -416,7 +417,7 @@ export default class ManilaControl extends BasicControl {
 
             let bidButtons = bidInstance.getChildByName("BidButtons");
             let bidString = bidBackground.getChildByName("HighestBid").getComponent(cc.Label);
-            bidString.string = "Bid " + message.Ans.HighestBidPrice + " from " + message.Ans.HighestBidder;
+            bidString.string = i18n.t("Bid ") + message.Ans.HighestBidPrice + i18n.t(" from ") + message.Ans.HighestBidder;
             if (Global.playerUser === message.Ans.Username) {
                 bidButtons.active = true;
             } else {
@@ -520,8 +521,8 @@ export default class ManilaControl extends BasicControl {
                 return
             }
             if (Global.deck[stock - 1] === 0) {
-                self.playPopup("没有足够的股票可买")
-                return
+                self.playPopup(i18n.t("Not enough stocks to buy!"));
+                return;
             }
             buystockmsgobj.Req.Username = Global.playerUser;
             buystockmsgobj.Req.Stock = stock;
@@ -592,7 +593,7 @@ export default class ManilaControl extends BasicControl {
             ManilaSocket.send(putboatmsgobj);
             self.putBoatNode.active = false;
         } else {
-            self.playPopup("请选择三种货物");
+            self.playPopup("Please select 3 cargoes.");
         }
     }
 
@@ -606,7 +607,6 @@ export default class ManilaControl extends BasicControl {
             self.dragBoatNode.addChild(dragBoatInstance);
             draggerScript = dragBoatInstance.getChildByName("Dragger").getComponent("Dragger");
             pics = draggerScript.shipPics;
-            draggerScript.phase = message.Ans.Phase;
             draggerScript.dragable = message.Ans.Dragable;
         } else {
             self.postDragNode.active = true;
@@ -615,7 +615,6 @@ export default class ManilaControl extends BasicControl {
             self.postDragNode.addChild(dragBoatInstance);
             draggerScript = dragBoatInstance.getChildByName("PostDragger").getComponent("PostDragger");
             pics = draggerScript.shipPics;
-            draggerScript.phase = message.Ans.Phase;           
             draggerScript.dragable = message.Ans.Dragable;
 
             draggerScript.dragger = message.Ans.Dragger;
@@ -623,21 +622,28 @@ export default class ManilaControl extends BasicControl {
 
         let dragable = message.Ans.Dragable;
         if (dragable.length < 3) {
-            for (let i = 0; i < 3 - dragable.length; i++) {
+            for (let m = 0; m < 3 - dragable.length; m++) {
                 dragable.push(0);
             }
         }
         for (let i = 0; i < dragable.length; i++) {
-            let spriteNode = dragBoatInstance.getChildByName('Stock' + (i + 1));
-            let sprite = spriteNode.getComponent(cc.Sprite);
+
             let dragShipType = dragable[i];
             if (dragShipType === 0) {
+                dragBoatInstance.getChildByName('Origin' + (i + 1)).active = false;
                 dragBoatInstance.getChildByName('Stock' + (i + 1)).active = false;
                 dragBoatInstance.getChildByName('MinusStock' + (i + 1)).active = false;
                 dragBoatInstance.getChildByName('PlusStock' + (i + 1)).active = false;
                 dragBoatInstance.getChildByName('DragStock' + (i + 1)).active = false;
             } else {
+                let spriteNode = dragBoatInstance.getChildByName('Stock' + (i + 1));
+                let sprite = spriteNode.getComponent(cc.Sprite);
                 sprite.spriteFrame = pics[dragShipType - 1];
+                let step = Global.ship[dragable[i] -1];
+                let stringNode = dragBoatInstance.getChildByName('Origin' + (i + 1));
+                let stringlabel = stringNode.getComponent(cc.Label);
+                stringlabel.string = "" + step;
+           
             }
         }
 
@@ -693,7 +699,7 @@ export default class ManilaControl extends BasicControl {
             ManilaSocket.send(dragboatmsgobj);
             self.dragBoatNode.active = false;
         } else {
-            self.playPopup("三种船加起来应该是9步！");
+            self.playPopup(i18n.t("The sum of 3 moves must be 9!"));
         }
     }
 
@@ -724,10 +730,10 @@ export default class ManilaControl extends BasicControl {
             let investPoint = Global.mapp[invest];
             let shipPoint = invest.slice(1).toLowerCase();
             if (!investPoint) {
-                self.playPopup("无效的投资点");
+                self.playPopup(i18n.t("Invalid investment point!"));
                 return;
             } else if (investPoint.Taken && invest != "none") {
-                self.playPopup("投资点已被占据");
+                self.playPopup(i18n.t("Investment point is taken!"));
                 return;
             } else {
                 if (Global.money < investPoint.Price) {
@@ -737,7 +743,7 @@ export default class ManilaControl extends BasicControl {
                         let color = StringColor[shipPoint[0].toUpperCase() + shipPoint.slice(1)];
                         let shipType = color - 1;
                         if (Global.ship[shipType] >= OneTickSpot && Global.ship[shipType] <= ThreeTickSpot) {
-                            self.playPopup("无效的投资点");
+                            self.playPopup(i18n.t("Invalid investment point!"));
                             return;
                         }
                     }
@@ -836,13 +842,13 @@ export default class ManilaControl extends BasicControl {
         decidetickfailmsgobj.Req.RoomNum = Global.roomNum;
         decidetickfailmsgobj.Req.ShipPlundered = Global.lastPlunderedShip;
         decidetickfailmsgobj.Req.Tick = tickBoolean;
-        console.log("发送决定靠岸", decidetickfailmsgobj);
         ManilaSocket.send(decidetickfailmsgobj);
         self.decideTickFailNode.active = false;
     }
 
     onPostDragMsg(message) {
         let self = this;
+        console.log(message);
         if (message.Error < 0) {
             self.popUpError(message);
         } else if (message.Ans.RemindOrOperated && Global.playerUser === message.Ans.Username) {
@@ -850,7 +856,7 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    sendPostDrag (dragable: [number], sum: [number], ok: boolean) {
+    sendPostDrag(dragable: [number], sum: [number], ok: boolean) {
         console.log(dragable, sum, ok);
     }
 }

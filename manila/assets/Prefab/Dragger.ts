@@ -6,7 +6,6 @@ const { ccclass, property } = cc._decorator;
 export default class Dragger extends cc.Component {
     sum: [number, number, number] = [0, 0, 0]
     dragable: [number] = [0]
-    phase: string
 
     @property([cc.SpriteFrame])
     shipPics: [cc.SpriteFrame] = [new cc.SpriteFrame()]
@@ -36,10 +35,9 @@ export default class Dragger extends cc.Component {
         for (let i = 0; i < self.sum.length; i++) {
             realSum += self.sum[i];
         }
-        if (realSum === 9 && self.phase === PhaseDragBoat) {
+        if (realSum === 9 ) {
             EventMng.emit("DragBoat", self.dragable, self.sum, true);
             self.sum = [0, 0, 0];
-            self.phase = "";
         } else {
             EventMng.emit("DragBoat", self.dragable, self.sum, false);
         }

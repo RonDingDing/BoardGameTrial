@@ -551,6 +551,10 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 				manilaRoom.AddRound()
 			}
 
+		} else if dragger := manilaRoom.HasBoatPostDrag(); dragger != "" {
+			// 下一个阶段，小大领航员
+			SetAnsAndSendPostDragMsg(dragger, manilaRoom, roomNum, messageType)
+
 		} else {
 			// 下一个阶段，投掷骰子
 			RoomObjChangePhase(manilaRoom, manila.PhaseCastDice)
@@ -586,22 +590,18 @@ func HandleInvestMsg(messageType int, message []byte, connection *websocket.Conn
 				piratemsg.Ans.RemindOrOperated = true
 				RoomObjBroadcastMessage(messageType, piratemsg, manilaRoom)
 			} else if casttime == 2 || casttime == 1 {
-				if manilaRoom.HasBoatForPostDrag("1drag") {
-					SetAnsAndSendPostDragMsg("1drag", manilaRoom, roomNum, messageType)
-				} else if manilaRoom.HasBoatForPostDrag("2drag") {
-					SetAnsAndSendPostDragMsg("2drag", manilaRoom, roomNum, messageType)
-				} else {
-					log.Println(4)
-					manilaRoom.ThirteenToTick()
-					//  下一个阶段，投资
-					RoomObjChangePhase(manilaRoom, manila.PhaseInvest)
-					manilaRoom.AddRound()
-					investmsg := new(pb3.InvestMsg).New()
-					investmsg.Ans.Username = nextUser
-					investmsg.Ans.RemindOrOperated = true
-					investmsg.Ans.RoomNum = roomNum
-					RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
-				}
+
+				log.Println(4)
+				manilaRoom.ThirteenToTick()
+				//  下一个阶段，投资
+				RoomObjChangePhase(manilaRoom, manila.PhaseInvest)
+				manilaRoom.AddRound()
+				investmsg := new(pb3.InvestMsg).New()
+				investmsg.Ans.Username = nextUser
+				investmsg.Ans.RemindOrOperated = true
+				investmsg.Ans.RoomNum = roomNum
+				RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
+
 			} else if casttime == 3 {
 				// 结算
 				log.Println(5)

@@ -825,11 +825,20 @@ func (self *ManilaRoom) Dragable(except int) []int {
 func (self *ManilaRoom) PostDragable() []int {
 	dragable := make([]int, 0)
 	for k, v := range self.ships {
-		if v < OneTickSpot {
+		if v < OneTickSpot && v > 0 {
 			dragable = append(dragable, k+1)
 		}
 	}
 	return dragable
+}
+
+func (self *ManilaRoom) HasBoatPostDrag() string {
+	if self.HasBoatForPostDrag("1drag") {
+		return "1drag"
+	} else if self.HasBoatForPostDrag("2drag") {
+		return "2drag"
+	}
+	return ""
 }
 
 func (self *ManilaRoom) HasBoatForPostDrag(postDragName string) bool {

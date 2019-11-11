@@ -56,7 +56,8 @@ func HelperSetRoomObjPropertyRoomDetail(roomdetailmsg *pb3.RoomDetailMsg, roomOb
 		roomdetailmsg.Ans.HighestBidder = room.GetHighestBidder()
 		roomdetailmsg.Ans.HighestBidPrice = room.GetHighestBidPrice()
 		currentPlayer := room.GetCurrentPlayer()
-		if room.GetPhase() == manila.PhasePiratePlunder || room.GetPhase() == manila.PhaseDecideTickFail {
+		phase := room.GetPhase()
+		if phase == manila.PhasePiratePlunder || phase == manila.PhaseDecideTickFail || phase == manila.PhasePostDrag {
 			currentPlayer = room.GetTempCurrentPlayer()
 		}
 		roomdetailmsg.Ans.CurrentPlayer = currentPlayer

@@ -3,6 +3,7 @@ import { ManilaSocket, SocketEvents, SignUpMsg, signupmsg, ErrUserExit } from ".
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng"
 import BasicControl from "./BasicControl"
+import i18n = require("LanguageData");
 
 
 @ccclass
@@ -23,6 +24,7 @@ export default class SignupControl extends BasicControl {
     onLoad() {
         super.onLoad();
         var self = this;
+        i18n.init(Global.language);
         EventMng.on(SignUpMsg, self.onSignUpMsg, self);
     }
 
@@ -30,10 +32,10 @@ export default class SignupControl extends BasicControl {
     onSignUpMsg(message) {
         let self = this;
         if (message.Error == ErrUserExit) {
-            self.playPopup("用户名已存在！");
+            self.playPopup(i18n.t("User already exists!"));
         } else {
             let username = message.Ans.Username;
-            self.playPopup("用户名 " + username + " 创建成功！\n跳转登录页…");
+            self.playPopup(i18n.t("User ") + username + " created!\nSwitch to login page...");
             self.scheduleOnce(function () {
                 cc.director.loadScene("LoginMenu");
             }, 1);
@@ -49,7 +51,7 @@ export default class SignupControl extends BasicControl {
             signupmsgobj.Req.Mobile = self.mobileEditBox.string;
             ManilaSocket.send(signupmsgobj);
         } else {
-            self.playPopup("请填写所有信息！");
+            self.playPopup(i18n.t("Please fill in all information!"));
         }
     }
 
@@ -58,5 +60,5 @@ export default class SignupControl extends BasicControl {
     }
 
 
-   
+
 }

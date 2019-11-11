@@ -3,6 +3,7 @@ import { ManilaSocket, SocketEvents, loginmsg, LoginMsg, ErrUserNotExit, enterro
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
+import i18n = require("LanguageData");
 
 
 @ccclass
@@ -16,6 +17,7 @@ export default class LoginControl extends BasicControl {
     onLoad() {
         super.onLoad();
         var self = this;
+        i18n.init(Global.language);
         EventMng.on(LoginMsg, self.onLoginMsg, self);
         EventMng.on(EnterRoomMsg, self.onEnterRoomMsg, self);
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
@@ -31,7 +33,7 @@ export default class LoginControl extends BasicControl {
             let username = message.Ans.Username;
             let gold = message.Ans.Gold;
             let roomnum = message.Ans.RoomNum;
-            self.playPopup("用户" + username + "登录成功！");
+            self.playPopup(i18n.t("User ") + username + i18n.t(" logged in!"));
             Global.playerUser = username;
             Global.playerGold = gold;
             Global.online = true;
@@ -47,11 +49,11 @@ export default class LoginControl extends BasicControl {
         let loginmsgobj = JSON.parse(JSON.stringify(loginmsg));
 
         if (!self.usernameEditBox.string) {
-            self.playPopup("用户名不能为空");
+            self.playPopup(i18n.t("Invalid username!"));
         } else if (!self.passwordEditBox.string) {
-            self.playPopup("密码不能为空");
+            self.playPopup(i18n.t("Invalid password!"));
         } else if (Global.playerUser) {
-            self.playPopup("已经登录，用户名为" + Global.playerUser);
+            self.playPopup(i18n.t("Logged in! Username is ")  + Global.playerUser);
         } else {
             loginmsgobj.Req.Username = self.usernameEditBox.string;
             loginmsgobj.Req.Password = self.passwordEditBox.string;
@@ -90,5 +92,5 @@ export default class LoginControl extends BasicControl {
         } else {
             self.messageToGlobal(message);
         }
-    }   
+    }
 }

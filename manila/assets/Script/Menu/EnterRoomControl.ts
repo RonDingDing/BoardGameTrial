@@ -4,6 +4,7 @@ import {
 import { Global } from "../Fundamentals/ManilaGlobal"
 import EventMng from "../Fundamentals/Manager/EventMng";
 import BasicControl from "./BasicControl"
+import i18n = require("LanguageData");
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -16,6 +17,7 @@ export default class EnterRoomControl extends BasicControl {
     onLoad() {
         super.onLoad();
         var self = this;
+        i18n.init(Global.language);
         EventMng.on(EnterRoomMsg, self.onEnterRoomMsg, self);
         EventMng.on(RoomDetailMsg, self.onRoomDetailMsg, self);
     }
@@ -30,7 +32,7 @@ export default class EnterRoomControl extends BasicControl {
         }
         let roomnum = parseInt(self.roomNumEditBox.string);
         if (isNaN(roomnum)) {
-            self.playPopup("请输入大于0的整数！");
+            self.playPopup(i18n.t("Please enter an integer greater than 0!"));
             self.roomNumEditBox.string = "";
             return;
         }

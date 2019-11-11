@@ -4,6 +4,7 @@ import {
     SocketEvents, ErrNoHandler, ErrUserExit, ErrUserNotExit, ErrCannotEnterRoom, ErrNoSuchPlayer, ErrCannotExitRoom, ErrGameStarted, ErrUserNotInRoom, ErrFailedEntering, ErrUserNotCaptain, ErrNotEnoughStock, ErrInvalidInvestPoint, ErrInvestPointTaken
 } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
+import i18n = require("LanguageData");
 
 @ccclass
 export default class BasicControl extends cc.Component {
@@ -17,6 +18,7 @@ export default class BasicControl extends cc.Component {
 
     onLoad() {
         var self = this;
+        i18n.init(Global.language);
         EventMng.on(SocketEvents.SOCKET_OPEN, self.onSocketOpen, self);
         EventMng.on(SocketEvents.SOCKET_CLOSE, self.onSocketClose, self);
     }
@@ -44,36 +46,35 @@ export default class BasicControl extends cc.Component {
         let self = this;
         switch (message.Error) {
             case ErrNoHandler:
-                self.playPopup("没有对应的Code"); break
+                self.playPopup(i18n.t("No respective code!")); break
             case ErrUserExit:
-                self.playPopup("用户已存在"); break
+                self.playPopup(i18n.t("User already exists!")); break
             case ErrUserNotExit:
-                self.playPopup("用户不存在"); break
+                self.playPopup(i18n.t("User does not exist!")); break
             case ErrCannotEnterRoom:
-                self.playPopup("不能进入房间"); break
+                self.playPopup(i18n.t("You cannot enter the room!")); break
             case ErrFailedEntering:
-                self.playPopup("不能进入房间！"); break
+                self.playPopup(i18n.t("You cannot enter the room!")); break
             case ErrNoSuchPlayer:
-                self.playPopup("没有此用户"); break
+                self.playPopup(i18n.t("No such user!")); break
             case ErrCannotExitRoom:
-                self.playPopup("无法退出房间"); break
+                self.playPopup(i18n.t("Cannot quit the room!")); break
             case ErrGameStarted:
-                self.playPopup("游戏已经开始"); break
+                self.playPopup(i18n.t("Game has started!")); break
             case ErrUserNotInRoom:
-                self.playPopup("用户不在房间"); break
+                self.playPopup(i18n.t("User is not in room!")); break
             case ErrUserNotCaptain:
-                self.playPopup("用户不是船长"); break
+                self.playPopup(i18n.t("Player is not captain!")); break
             case ErrNotEnoughStock:
-                self.playPopup("不够股票"); break
+                self.playPopup(i18n.t("Not enough stocks to buy!")); break
             case ErrInvalidInvestPoint:
-                self.playPopup("无效的投资点"); break
+                self.playPopup(i18n.t("Invalid investment point!")); break
             case ErrInvestPointTaken:
-                self.playPopup("投资点已被占据"); break
+                self.playPopup(i18n.t("Investment point is taken!")); break
         }
     }
 
     messageToGlobal(message) {
-        console.log("before: ", Global);
         if (message.Error >= 0 && message.Ans.RoomNum !== 0) {
             let mapList = message.Ans.Mapp || [];
             let playerList = message.Ans.Players || [];
@@ -101,7 +102,6 @@ export default class BasicControl extends cc.Component {
             Global.ship = message.Ans.Ship;
             Global.castTime = message.Ans.CastTime;
         }
-        console.log("after: ", Global);
     }
 
     onSocketOpen() {
