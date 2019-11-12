@@ -48,6 +48,8 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 		go handler.HandlePirateMsg(messageType, message, connection, code.Code, ormManager)
 	case msg.DecideTickFailMsg:
 		go handler.HandleDecideTickFailMsg(messageType, message, connection, code.Code, ormManager)
+	case msg.PostDragMsg:
+		go handler.HandlePostDragMsg(messageType, message, connection, code.Code, ormManager)
 	default:
 		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
 	}

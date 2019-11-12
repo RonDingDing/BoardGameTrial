@@ -23,5 +23,5 @@ export namespace Global {
     export let canInvest = false;
     export let castTime = 0;
     export let lastPlunderedShip = 0;
-    export let language = "zh"
+    export let language = "en";
 }

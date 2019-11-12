@@ -599,8 +599,8 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 			result[k] = rand.Intn(6) + 1
 		}
 	}
-	// return []int{4, 3, 3, 0}, self.AddCastTime()
-	return result, self.AddCastTime()
+	return []int{5, 3, 2, 0}, self.AddCastTime()
+	// return result, self.AddCastTime()
 }
 
 func (self *ManilaRoom) ThirteenShipFirst() int {
@@ -814,7 +814,7 @@ func (self *ManilaRoom) SettleRound() {
 
 func (self *ManilaRoom) Dragable(except int) []int {
 	dragable := make([]int, 0)
-	for v := range ColorString {
+	for _, v := range Colors {
 		if v != except {
 			dragable = append(dragable, v)
 		}
@@ -829,6 +829,7 @@ func (self *ManilaRoom) PostDragable() []int {
 			dragable = append(dragable, k+1)
 		}
 	}
+	log.Println(dragable)
 	return dragable
 }
 
@@ -853,7 +854,7 @@ func (self *ManilaRoom) HasBoatForPostDrag(postDragName string) bool {
 	}
 	hasBoat := false
 	for _, v := range self.ships {
-		if v < OneTickSpot {
+		if v < OneTickSpot && v > 0 {
 			return true
 		}
 	}
@@ -944,4 +945,13 @@ func (self *ManilaRoom) GetPirateCaptainOnShip() (int, string, bool) {
 		}
 	}
 	return 0, "", false
+}
+
+func (self *ManilaRoom) ShipDrag(shipDrag []int) {
+	for k, v := range shipDrag {
+		step := self.GetShip()[k]
+		if step >= 0 {
+			self.SetMapOnboard(k+1, v+step)
+		}
+	}
 }

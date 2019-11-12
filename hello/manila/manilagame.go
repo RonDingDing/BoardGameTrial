@@ -43,6 +43,8 @@ var ColorString = map[int]string{
 	JadeColor:    "jade",
 }
 
+var Colors = []int{CoffeeColor, SilkColor, GinsengColor, JadeColor}
+
 var StringColor = map[string]int{
 	"coffee":  CoffeeColor,
 	"silk":    SilkColor,

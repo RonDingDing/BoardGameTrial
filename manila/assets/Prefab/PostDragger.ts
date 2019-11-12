@@ -49,11 +49,11 @@ export default class PostDragger extends cc.Component {
 
         }
         if (realSum === limit) {
-            EventMng.emit("PostDrag", self.dragable, self.sum, true);
+            EventMng.emit("PostDrag", self.dragable, self.sum, self.dragger, true);
             self.sum = [0, 0, 0];
 
         } else {
-            EventMng.emit("PostDrag", self.dragable, self.sum, false);
+            EventMng.emit("PostDrag", self.dragable, self.sum, self.dragger, false);
         }
 
     }

@@ -1,4 +1,4 @@
-import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg, PirateMsg, piratemsg, ColorString, Colors, DecideTickFailMsg, decidetickfailmsg, StringColor, ErrInvalidInvestPoint, OneTickSpot, ThreeTickSpot, PostDragMsg } from "../Fundamentals/Imports"
+import { SilkColor, JadeColor, CoffeeColor, GinsengColor, ManilaSocket, RoomDetailMsg, readymsg, GameStartMsg, BidMsg, bidmsg, HandMsg, BuyStockMsg, buystockmsg, ChangePhaseMsg, PutBoatMsg, putboatmsg, DragBoatMsg, roomdetailmsg, PhaseDragBoat, dragboatmsg, InvestMsg, investmsg, PirateMsg, piratemsg, ColorString, Colors, DecideTickFailMsg, decidetickfailmsg, StringColor, ErrInvalidInvestPoint, OneTickSpot, ThreeTickSpot, PostDragMsg, postdragmsg } from "../Fundamentals/Imports"
 import { Global } from "../Fundamentals/ManilaGlobal"
 import { MapCoor } from "../Fundamentals/ManilaMapCoordinate"
 import EventMng from "../Fundamentals/Manager/EventMng";
@@ -616,16 +616,19 @@ export default class ManilaControl extends BasicControl {
             draggerScript = dragBoatInstance.getChildByName("PostDragger").getComponent("PostDragger");
             pics = draggerScript.shipPics;
             draggerScript.dragable = message.Ans.Dragable;
+            console.log("draggerScript.dragable: ", draggerScript.dragable);
 
             draggerScript.dragger = message.Ans.Dragger;
         }
 
         let dragable = message.Ans.Dragable;
+        let length = dragable.length;
         if (dragable.length < 3) {
-            for (let m = 0; m < 3 - dragable.length; m++) {
+            for (let m = 0; m < 3 - length; m++) {
                 dragable.push(0);
             }
         }
+        console.log("dragable:", dragable);
         for (let i = 0; i < dragable.length; i++) {
 
             let dragShipType = dragable[i];
@@ -639,11 +642,11 @@ export default class ManilaControl extends BasicControl {
                 let spriteNode = dragBoatInstance.getChildByName('Stock' + (i + 1));
                 let sprite = spriteNode.getComponent(cc.Sprite);
                 sprite.spriteFrame = pics[dragShipType - 1];
-                let step = Global.ship[dragable[i] -1];
+                let step = Global.ship[dragable[i] - 1];
                 let stringNode = dragBoatInstance.getChildByName('Origin' + (i + 1));
                 let stringlabel = stringNode.getComponent(cc.Label);
                 stringlabel.string = "" + step;
-           
+
             }
         }
 
@@ -856,7 +859,29 @@ export default class ManilaControl extends BasicControl {
         }
     }
 
-    sendPostDrag(dragable: [number], sum: [number], ok: boolean) {
-        console.log(dragable, sum, ok);
+    sendPostDrag(dragable: [number], sum: [number], dragger: string, ok: boolean) {
+        console.log(dragable, sum, dragger, ok);
+
+        let self = this;
+        if (ok) {
+            let shipDrag = [0, 0, 0, 0];
+            for (let i = 0; i < dragable.length; i++) {
+                shipDrag[dragable[i] - 1] = sum[i];
+            }
+            let postdragmsgobj = JSON.parse(JSON.stringify(postdragmsg));
+            postdragmsgobj.Req.Username = Global.playerUser;
+            postdragmsgobj.Req.RoomNum = Global.roomNum;
+            postdragmsgobj.Req.Phase = Global.phase;
+            postdragmsgobj.Req.ShipDrag = shipDrag;
+            postdragmsgobj.Req.Dragger = dragger;
+            ManilaSocket.send(postdragmsgobj);
+            self.postDragNode.active = false;
+            console.log(postdragmsgobj);
+        } else if (dragger == "1drag") {
+            self.playPopup(i18n.t("The sum of absolute value of\n 3 moves must be 1!"));
+        } else if (dragger == "2drag") {
+            self.playPopup(i18n.t("The sum of absolute value of\n 3 moves must be 2!"));
+        }
+
     }
 }

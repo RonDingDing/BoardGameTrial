@@ -32,7 +32,7 @@ export default class EnterRoomControl extends BasicControl {
         }
         let roomnum = parseInt(self.roomNumEditBox.string);
         if (isNaN(roomnum)) {
-            self.playPopup(i18n.t("Please enter an integer greater than 0!"));
+            self.playPopup(i18n.t("Please enter an integer\ngreater than 0!"));
             self.roomNumEditBox.string = "";
             return;
         }

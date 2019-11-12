@@ -24,23 +24,24 @@ const (
 	DecideTickFailMsg = "016"
 	PostDragMsg       = "017"
 
-	NorAlreadyInRoom      = 1
-	NorNewEntered         = 2
-	ErrNormal             = 0
-	ErrNoHandler          = -1
-	ErrUserExit           = -2
-	ErrUserNotExit        = -3
-	ErrCannotEnterRoom    = -4
-	ErrNoSuchPlayer       = -5
-	ErrCannotExitRoom     = -6
-	ErrGameStarted        = -7
-	ErrUserIsNotInRoom    = -8
-	ErrFailedEntering     = -9
-	ErrNotEnoughGameMoney = -10
-	ErrUserIsNotCaptain   = -11
-	ErrNotEnoughStock     = -12
-	ErrInvalidInvestPoint = -13
-	ErrInvestPointTaken   = -14
+	NorAlreadyInRoom            = 1
+	NorNewEntered               = 2
+	ErrNormal                   = 0
+	ErrNoHandler                = -1
+	ErrUserExit                 = -2
+	ErrUserNotExit              = -3
+	ErrCannotEnterRoom          = -4
+	ErrNoSuchPlayer             = -5
+	ErrCannotExitRoom           = -6
+	ErrGameStarted              = -7
+	ErrUserIsNotInRoom          = -8
+	ErrFailedEntering           = -9
+	ErrNotEnoughGameMoney       = -10
+	ErrUserIsNotCaptain         = -11
+	ErrNotEnoughStock           = -12
+	ErrInvalidInvestPoint       = -13
+	ErrInvestPointTaken         = -14
+	ErrUserIsNotSupposedDragger = -15
 
 	LoungeNum = 0
 )

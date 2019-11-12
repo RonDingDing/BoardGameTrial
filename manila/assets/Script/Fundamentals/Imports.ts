@@ -1,6 +1,6 @@
 import { SocketDelegate, SocketEvent } from "./Network/SocketDelegate"
-// export const address = "ws://echo.websocket.org/";
-export const address = "ws://localhost:8080/";
+// export const address = "ws://5be1c0d5.cpolar.io";
+export const address = "ws://localhost:8080";
 export var SocketEvents = SocketEvent;
 export var ManilaSocket = new SocketDelegate(address);
 
@@ -9,14 +9,13 @@ export const SilkColor = 2;
 export const GinsengColor = 3;
 export const JadeColor = 4;
 
+export const OneTickSpot   = 14;
+export const TwoTickSpot   = 15;
+export const ThreeTickSpot = 16;
 
-export const OneTickSpot   = 14
-export const TwoTickSpot   = 15
-export const ThreeTickSpot = 16
-
-export const OneFailSpot   = 17
-export const TwoFailSpot   = 18
-export const ThreeFailSpot = 19
+export const OneFailSpot   = 17;
+export const TwoFailSpot   = 18;
+export const ThreeFailSpot = 19;
 
 export const ColorString = {
     [CoffeeColor]: "Coffee",

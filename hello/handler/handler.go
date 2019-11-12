@@ -452,13 +452,7 @@ func HandleDragBoatMsg(messageType int, message []byte, connection *websocket.Co
 		SendMessage(messageType, dragboatmsg, connection)
 	} else {
 		shipDrag := dragboatmsg.Req.ShipDrag
-		for k, v := range shipDrag {
-			step := manilaRoom.GetShip()[k]
-			if step >= 0 {
-				manilaRoom.SetMapOnboard(k+1, v+step)
-			}
-		}
-		dragboatmsg.Ans.Username = username
+		manilaRoom.ShipDrag(shipDrag)
 		dragboatmsg.Ans.RemindOrOperated = false
 		dragboatmsg.Ans.RoomNum = roomNum
 		dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
@@ -782,4 +776,83 @@ func HandleDecideTickFailMsg(messageType int, message []byte, connection *websoc
 		}
 	}
 	RoomObjTellRoomDetail(manilaRoom, nil)
+}
+
+func HandlePostDragMsg(messageType int, message []byte, connection *websocket.Conn, code string, ormManager orm.Ormer) {
+	postdragmsg := new(pb3.PostDragMsg).New()
+	err := json.Unmarshal(message, &postdragmsg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	username := postdragmsg.Req.Username
+	manilaRoom, _, roomNum := global.FindUserInManila(username)
+	dragger := postdragmsg.Req.Dragger
+	hasPoint, ok := manilaRoom.GetMap()[dragger]
+	if manilaRoom == nil {
+		postdragmsg.Error = msg.ErrUserIsNotInRoom
+		SendMessage(messageType, postdragmsg, connection)
+	} else if ok && username != hasPoint.GetTaken() {
+		postdragmsg.Error = msg.ErrUserIsNotSupposedDragger
+		SendMessage(messageType, postdragmsg, connection)
+	} else {
+		shipDrag := postdragmsg.Req.ShipDrag
+
+		manilaRoom.ShipDrag(shipDrag)
+		manilaRoom.SetPiratesOrDragsHasActed(dragger, true)
+		postdragmsg.Ans.Username = username
+		postdragmsg.Ans.RemindOrOperated = false
+		postdragmsg.Ans.RoomNum = roomNum
+		postdragmsg.Ans.Phase = manilaRoom.GetPhase()
+		postdragmsg.Ans.Ship = manilaRoom.GetShip()
+		RoomObjBroadcastMessage(messageType, postdragmsg, manilaRoom)
+
+		// 广播房间目前信息
+		RoomObjTellRoomDetail(manilaRoom, nil)
+
+		if dragger2 := manilaRoom.HasBoatPostDrag(); dragger2 != "" {
+			log.Println(20)
+			SetAnsAndSendPostDragMsg(dragger2, manilaRoom, roomNum, messageType)
+		} else {
+			log.Println(21)
+			RoomObjChangePhase(manilaRoom, manila.PhaseCastDice)
+			dice, casttime := manilaRoom.CastDice()
+			manilaRoom.SetPiratesOrDragsHasActed("1pirate", false)
+			manilaRoom.SetPiratesOrDragsHasActed("2pirate", false)
+			manilaRoom.SetLastPlunderedShip(0)
+
+			// 广播骰子信息
+			dicemsg := new(pb3.DiceMsg).New()
+			dicemsg.Ans.RoomNum = roomNum
+			dicemsg.Ans.Dice = dice
+			dicemsg.Ans.CastTime = casttime
+			RoomObjBroadcastMessage(messageType, dicemsg, manilaRoom)
+
+			// 跑船
+			manilaRoom.RunShip(dice)
+			// 广播房间目前信息
+			RoomObjTellRoomDetail(manilaRoom, nil)
+			if manilaRoom.HasBoatForPirate("1pirate") {
+				log.Println(22)
+
+				// 第一个海盗来袭
+				RoomObjChangePhase(manilaRoom, manila.PhasePiratePlunder)
+				pirate := manilaRoom.GetMap()["1pirate"].GetTaken()
+				manilaRoom.SetTempCurrentPlayer(pirate)
+				piratemsg := new(pb3.PirateMsg).New()
+				piratemsg.Ans.RoomNum = roomNum
+				piratemsg.Ans.CastTime = manilaRoom.GetCastTime()
+				piratemsg.Ans.Pirate = pirate
+				piratemsg.Ans.ShipVacant = manilaRoom.GetShipPirateVacant()
+				piratemsg.Ans.LastPlunderedShip = manilaRoom.GetLastPlunderedShip()
+				piratemsg.Ans.RemindOrOperated = true
+				RoomObjBroadcastMessage(messageType, piratemsg, manilaRoom)
+			} else if casttime == 3 {
+				// 结算
+				log.Println(5)
+				RoomObjChangePhase(manilaRoom, manila.PhaseSettle)
+				manilaRoom.SettleRound()
+			}
+		}
+	}
 }

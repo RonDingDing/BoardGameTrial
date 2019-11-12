@@ -46,5 +46,7 @@ window.i18n.languages['en'] = {
     " created!\nSwitch to login page...": " created!\nSwitch to login page...",
     "Please fill in all information!": "Please fill in all information!",
     "Not connected to server!": "Not connected to server!",
-    "Please enter an integer greater than 0!":"Please enter an integer greater than 0!"
+    "Please enter an integer\ngreater than 0!":"Please enter an integer\ngreater than 0!",
+    "The sum of absolute value of\n 3 moves must be 1!": "The sum of absolute value of\n 3 moves must be 1!",
+    "The sum of absolute value of\n 3 moves must be 2!": "The sum of absolute value of\n 3 moves must be 2!"
 };
