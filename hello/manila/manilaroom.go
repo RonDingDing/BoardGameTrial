@@ -435,6 +435,15 @@ func (self *ManilaRoom) HasBoatForPirate(pirateName string) bool {
 	return hasBoat
 }
 
+func (self *ManilaRoom) HasBoatPirate() string {
+	if self.HasBoatForPirate("1pirate") {
+		return "1pirate"
+	} else if self.HasBoatForPirate("2pirate") {
+		return "2pirate"
+	}
+	return ""
+}
+
 func (self *ManilaRoom) GetShipPirateVacant() []int {
 	vacant := []int{VacantInvalid, VacantInvalid, VacantInvalid, VacantInvalid}
 	for k, v := range self.ships {
@@ -599,7 +608,7 @@ func (self *ManilaRoom) CastDice() ([]int, int) {
 			result[k] = rand.Intn(6) + 1
 		}
 	}
-	return []int{5, 3, 2, 0}, self.AddCastTime()
+	return []int{3, 3, 1, 0}, self.AddCastTime()
 	// return result, self.AddCastTime()
 }
 

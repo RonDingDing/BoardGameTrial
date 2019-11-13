@@ -27,31 +27,31 @@ func Dispatch(messageType int, message []byte, connection *websocket.Conn, ormMa
 	switch code.Code {
 
 	case msg.LoginMsg:
-		go handler.HandleLoginMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleLoginMsg(message, connection, ormManager)
 	case msg.SignUpMsg:
-		go handler.HandleSignUpMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleSignUpMsg(message, connection, ormManager)
 	case msg.EnterRoomMsg:
-		go handler.HandleEnterRoomMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleEnterRoomMsg(message, connection, ormManager)
 	case msg.ReadyMsg:
-		go handler.HandleReadyMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleReadyMsg(message, connection, ormManager)
 	case msg.BidMsg:
-		go handler.HandleBidMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleBidMsg(message, connection, ormManager)
 	case msg.BuyStockMsg:
-		go handler.HandleBuyStockMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleBuyStockMsg(message, connection, ormManager)
 	case msg.PutBoatMsg:
-		go handler.HandlePutBoatMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandlePutBoatMsg(message, connection, ormManager)
 	case msg.DragBoatMsg:
-		go handler.HandleDragBoatMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleDragBoatMsg(message, connection, ormManager)
 	case msg.InvestMsg:
-		go handler.HandleInvestMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleInvestMsg(message, connection, ormManager)
 	case msg.PirateMsg:
-		go handler.HandlePirateMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandlePirateMsg(message, connection, ormManager)
 	case msg.DecideTickFailMsg:
-		go handler.HandleDecideTickFailMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleDecideTickFailMsg(message, connection, ormManager)
 	case msg.PostDragMsg:
-		go handler.HandlePostDragMsg(messageType, message, connection, code.Code, ormManager)
+		go handler.HandlePostDragMsg(message, connection, ormManager)
 	default:
-		go handler.HandleErrors(messageType, message, connection, code.Code, ormManager)
+		go handler.HandleErrors(message, connection, code.Code, ormManager)
 	}
 
 }
