@@ -312,14 +312,16 @@ func HandleBidMsg(message []byte, connection *websocket.Conn, ormManager orm.Orm
 			captainPrice := manilaRoom.GetHighestBidPrice()
 			captainObj.AddMoney(-captainPrice)
 			manilaRoom.SetCurrentPlayer(captain)
-			buystockmsg := new(pb3.BuyStockMsg).New()
-			buystockmsg.Ans.Username = captain
-			buystockmsg.Ans.RoomNum = roomNum
-			buystockmsg.Ans.Bought = 0
-			buystockmsg.Ans.RemindOrOperated = true
-			buystockmsg.Ans.Deck = manilaRoom.GetDecks()
 
-			RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
+			SetAnsAndBroadcastBuyStockMsg(captain, roomNum, true, 0, nil, manilaRoom)
+			// buystockmsg := new(pb3.BuyStockMsg).New()
+			// buystockmsg.Ans.Username = captain
+			// buystockmsg.Ans.RoomNum = roomNum
+			// buystockmsg.Ans.Bought = 0
+			// buystockmsg.Ans.RemindOrOperated = true
+			// buystockmsg.Ans.Deck = manilaRoom.GetDecks()
+			// RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
+
 			RoomObjChangePhase(manilaRoom, manila.PhaseBuyStock)
 
 			// 广播房间目前信息
@@ -371,25 +373,27 @@ func HandleBuyStockMsg(message []byte, connection *websocket.Conn, ormManager or
 			}
 			stockBuyer.AddHand(stockCard)
 		}
+		SetAnsAndBroadcastBuyStockMsg(username, roomNum, false, stockType, buystockmsg, manilaRoom)
+		// buystockmsg.Ans.Bought = stockType
+		// buystockmsg.Ans.Username = username
+		// buystockmsg.Ans.RoomNum = roomNum
+		// buystockmsg.Ans.RemindOrOperated = false
+		// buystockmsg.Ans.Deck = manilaRoom.GetDecks()
+		// RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
 
-		buystockmsg.Ans.Bought = stockType
-		buystockmsg.Ans.Username = username
-		buystockmsg.Ans.RoomNum = roomNum
-		buystockmsg.Ans.RemindOrOperated = false
-		buystockmsg.Ans.Deck = manilaRoom.GetDecks()
-
-		RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
 		RoomObjChangePhase(manilaRoom, manila.PhasePutBoat)
 
 		// 广播房间目前信息
 		RoomObjTellRoomDetail(manilaRoom, nil)
 
 		// 告诉船长，要放船了
-		putboatmsg := new(pb3.PutBoatMsg).New()
-		putboatmsg.Ans.Username = username
-		putboatmsg.Ans.RemindOrOperated = true
-		putboatmsg.Ans.RoomNum = roomNum
-		RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+		SetAnsAndBroadcastPutBoatMsg(username, roomNum, true, 0, nil, manilaRoom)
+
+		// putboatmsg := new(pb3.PutBoatMsg).New()
+		// putboatmsg.Ans.Username = username
+		// putboatmsg.Ans.RemindOrOperated = true
+		// putboatmsg.Ans.RoomNum = roomNum
+		// RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
 	}
 }
 
@@ -410,16 +414,20 @@ func HandlePutBoatMsg(message []byte, connection *websocket.Conn, ormManager orm
 		putboatmsg.Error = msg.ErrUserIsNotCaptain
 		SendMessage(messageType, putboatmsg, connection)
 	} else {
-		for _, cargoType := range []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor} {
-			if cargoType != putboatmsg.Req.Except {
-				manilaRoom.SetMapOnboard(cargoType, 0)
-			}
-		}
-		putboatmsg.Ans.Username = username
-		putboatmsg.Ans.RemindOrOperated = false
-		putboatmsg.Ans.RoomNum = roomNum
-		putboatmsg.Ans.Except = putboatmsg.Req.Except
-		RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+		// for _, cargoType := range []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor} {
+		// 	if cargoType != putboatmsg.Req.Except {
+		// 		manilaRoom.SetMapOnboard(cargoType, 0)
+		// 	}
+		// }
+		manilaRoom.ShipExcept(putboatmsg.Req.Except)
+
+		SetAnsAndBroadcastPutBoatMsg(username, roomNum, false, putboatmsg.Req.Except, putboatmsg, manilaRoom)
+		// putboatmsg.Ans.Username = username
+		// putboatmsg.Ans.RemindOrOperated = false
+		// putboatmsg.Ans.RoomNum = roomNum
+		// putboatmsg.Ans.Except = putboatmsg.Req.Except
+		// RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+
 		RoomObjChangePhase(manilaRoom, manila.PhaseDragBoat)
 
 		// 广播房间目前信息
@@ -431,15 +439,16 @@ func HandlePutBoatMsg(message []byte, connection *websocket.Conn, ormManager orm
 		RoomObjTellHand(manilaRoom)
 
 		// 告诉船长，要拉船了
-		dragboatmsg := new(pb3.DragBoatMsg).New()
-		dragboatmsg.Ans.Username = username
-		dragboatmsg.Ans.RemindOrOperated = true
-		dragboatmsg.Ans.RoomNum = roomNum
-		dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
-		dragboatmsg.Ans.Ship = manilaRoom.GetShip()
+		SetAnsAndBroadcastDragBoatMsg(username, roomNum, true, manilaRoom.Dragable(putboatmsg.Req.Except), nil, manilaRoom)
+		// dragboatmsg := new(pb3.DragBoatMsg).New()
+		// dragboatmsg.Ans.Username = username
+		// dragboatmsg.Ans.RemindOrOperated = true
+		// dragboatmsg.Ans.RoomNum = roomNum
+		// dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
+		// dragboatmsg.Ans.Ship = manilaRoom.GetShip()
 
-		dragboatmsg.Ans.Dragable = manilaRoom.Dragable(putboatmsg.Req.Except)
-		RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
+		// dragboatmsg.Ans.Dragable = manilaRoom.Dragable(putboatmsg.Req.Except)
+		// RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
 	}
 }
 
@@ -462,11 +471,13 @@ func HandleDragBoatMsg(message []byte, connection *websocket.Conn, ormManager or
 	} else {
 		shipDrag := dragboatmsg.Req.ShipDrag
 		manilaRoom.ShipDrag(shipDrag)
-		dragboatmsg.Ans.RemindOrOperated = false
-		dragboatmsg.Ans.RoomNum = roomNum
-		dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
-		dragboatmsg.Ans.Ship = manilaRoom.GetShip()
-		RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
+
+		SetAnsAndBroadcastDragBoatMsg(username, roomNum, false, []int{}, dragboatmsg, manilaRoom)
+		// dragboatmsg.Ans.RemindOrOperated = false
+		// dragboatmsg.Ans.RoomNum = roomNum
+		// dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
+		// dragboatmsg.Ans.Ship = manilaRoom.GetShip()
+		// RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
 		RoomObjChangePhase(manilaRoom, manila.PhaseInvest)
 
 		// 广播房间目前信息

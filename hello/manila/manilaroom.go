@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"hello/baseroom"
+	"hello/manila"
 	"hello/msg"
 	"log"
 	"math/rand"
@@ -961,6 +962,14 @@ func (self *ManilaRoom) ShipDrag(shipDrag []int) {
 		step := self.GetShip()[k]
 		if step >= 0 {
 			self.SetMapOnboard(k+1, v+step)
+		}
+	}
+}
+
+func (self *ManilaRoom) ShipExcept(except int) {
+	for _, cargoType := range []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor} {
+		if cargoType != except {
+			manilaRoom.SetMapOnboard(cargoType, 0)
 		}
 	}
 }

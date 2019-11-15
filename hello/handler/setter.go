@@ -76,3 +76,40 @@ func SetAnsAndBroadcastInvestMsg(username string, roomNum int, remind bool, inve
 	investmsg.Ans.Invest = invest
 	RoomObjBroadcastMessage(messageType, investmsg, manilaRoom)
 }
+
+func SetAnsAndBroadcastDragBoatMsg(username string, roomNum int, remind bool, dragable []int, dragboatmsg *pb3.DragBoatMsg, manilaRoom *manila.ManilaRoom) {
+	if dragboatmsg == nil {
+		dragboatmsg = new(pb3.DragBoatMsg).New()
+	}
+	messageType := websocket.TextMessage
+	dragboatmsg.Ans.Username = username
+	dragboatmsg.Ans.RemindOrOperated = remind
+	dragboatmsg.Ans.RoomNum = roomNum
+	dragboatmsg.Ans.Phase = manilaRoom.GetPhase()
+	dragboatmsg.Ans.Ship = manilaRoom.GetShip()
+	dragboatmsg.Ans.Dragable = dragable
+	RoomObjBroadcastMessage(messageType, dragboatmsg, manilaRoom)
+}
+
+func SetAnsAndBroadcastPutBoatMsg(username string, roomNum int, remind bool, except int, putboatmsg *pb3.PutBoatMsg, manilaRoom *manila.ManilaRoom) {
+	if putboatmsg == nil {
+		dragboatmsg = new(pb3.DragBoatMsg).New()
+	}
+	putboatmsg.Ans.Username = username
+	putboatmsg.Ans.RemindOrOperated = remind
+	putboatmsg.Ans.RoomNum = roomNum
+	putboatmsg.Ans.Except = except
+	RoomObjBroadcastMessage(messageType, putboatmsg, manilaRoom)
+}
+
+func SetAnsAndBroadcastBuyStockMsg(username string, roomNum int, remind bool, bought int, buystockmsg *pb3.BuyStockMsg, manilaRoom *manila.ManilaRoom) {
+	if buystockmsg == nil {
+		buystockmsg = new(pb3.BuyStockMsg).New()
+	}
+	buystockmsg.Ans.Bought = bought
+	buystockmsg.Ans.Username = username
+	buystockmsg.Ans.RoomNum = roomNum
+	buystockmsg.Ans.RemindOrOperated = remind
+	buystockmsg.Ans.Deck = manilaRoom.GetDecks()
+	RoomObjBroadcastMessage(messageType, buystockmsg, manilaRoom)
+}
