@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"hello/baseroom"
-	"hello/manila"
 	"hello/msg"
 	"log"
 	"math/rand"
@@ -40,7 +39,7 @@ func (self *ManilaRoom) GetTickFailSpot(spotName int) string {
 	if v, ok := self.tickFailSpot[spotName]; ok {
 		return v
 	}
-	return "!"
+	return ""
 }
 
 func (self *ManilaRoom) SetTickFailSpot(spotName int, shipName string) {
@@ -966,10 +965,10 @@ func (self *ManilaRoom) ShipDrag(shipDrag []int) {
 	}
 }
 
-func (self *ManilaRoom) ShipExcept(except int) {
-	for _, cargoType := range []int{manila.CoffeeColor, manila.SilkColor, manila.GinsengColor, manila.JadeColor} {
+func (self *ManilaRoom)  Except(except int){
+	for _, cargoType := range Colors{
 		if cargoType != except {
-			manilaRoom.SetMapOnboard(cargoType, 0)
+			self.SetMapOnboard(cargoType, 0)
 		}
 	}
 }
