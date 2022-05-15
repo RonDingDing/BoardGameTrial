@@ -1,0 +1,35 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Card.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Data.gd" type="Script" id=2]
+[ext_resource path="res://TestScene.gd" type="Script" id=3]
+
+[node name="TestScene" type="Node2D"]
+script = ExtResource( 3 )
+
+[node name="Data" type="Node" parent="."]
+script = ExtResource( 2 )
+
+[node name="Button" type="Button" parent="."]
+margin_left = 168.0
+margin_top = 252.0
+margin_right = 348.0
+margin_bottom = 518.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Button2" type="Button" parent="."]
+margin_left = 1082.0
+margin_top = 255.0
+margin_right = 1262.0
+margin_bottom = 521.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Card" parent="." instance=ExtResource( 1 )]
+position = Vector2( 724, 420 )
+
+[connection signal="pressed" from="Button" to="." method="on_pressed"]
+[connection signal="pressed" from="Button2" to="." method="on_pressed2"]

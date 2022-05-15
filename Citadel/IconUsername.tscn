@@ -1,0 +1,78 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://Fonts/xolonium-regular.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://images/Player8.png" type="Texture" id=2]
+[ext_resource path="res://images/Player2.png" type="Texture" id=3]
+[ext_resource path="res://images/Player3.png" type="Texture" id=4]
+[ext_resource path="res://images/Player6.png" type="Texture" id=5]
+[ext_resource path="res://images/Player4.png" type="Texture" id=6]
+[ext_resource path="res://images/Player1.png" type="Texture" id=7]
+[ext_resource path="res://images/Player7.png" type="Texture" id=8]
+[ext_resource path="res://images/Player5.png" type="Texture" id=9]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 3 ) ],
+"loop": true,
+"name": "Player1",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 9 ) ],
+"loop": true,
+"name": "Player4",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 5 ) ],
+"loop": true,
+"name": "Player5",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 8 ) ],
+"loop": true,
+"name": "Player6",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 7 ) ],
+"loop": true,
+"name": "Player0",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 4 ) ],
+"loop": true,
+"name": "Player2",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 2 ) ],
+"loop": true,
+"name": "Player7",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 6 ) ],
+"loop": true,
+"name": "Player3",
+"speed": 5.0
+} ]
+
+[sub_resource type="DynamicFont" id=2]
+font_data = ExtResource( 1 )
+
+[node name="IconUsername" type="Node2D"]
+
+[node name="Icon" type="AnimatedSprite" parent="."]
+position = Vector2( -60, -42 )
+scale = Vector2( 0.2, 0.2 )
+frames = SubResource( 1 )
+animation = "Player7"
+
+[node name="Username" type="Label" parent="."]
+margin_left = -23.0
+margin_top = -51.0
+margin_right = 53.0
+margin_bottom = -31.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 2 )
+text = "Unknown"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}

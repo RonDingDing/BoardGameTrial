@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://images/Cardback.png" type="Texture" id=2]
+
+[node name="Deck" type="Node2D"]
+position = Vector2( 1330, 145 )
+
+[node name="DeckCard" type="Sprite" parent="."]
+scale = Vector2( 0.175, 0.175 )
+texture = ExtResource( 2 )
+
+[node name="DeckCard2" type="Sprite" parent="."]
+position = Vector2( 10, 0 )
+scale = Vector2( 0.175, 0.175 )
+texture = ExtResource( 2 )
+
+[node name="DeckCard3" type="Sprite" parent="."]
+position = Vector2( 20, 0 )
+scale = Vector2( 0.175, 0.175 )
+texture = ExtResource( 2 )
+
+[node name="DeckCard4" type="Sprite" parent="."]
+position = Vector2( 30, 0 )
+scale = Vector2( 0.175, 0.175 )
+texture = ExtResource( 2 )

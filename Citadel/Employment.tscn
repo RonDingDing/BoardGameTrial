@@ -1,0 +1,55 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://CharacterCard.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Employment.gd" type="Script" id=2]
+
+[node name="Employment" type="Node2D"]
+position = Vector2( 720, 530 )
+script = ExtResource( 2 )
+
+[node name="Characters" type="Node2D" parent="."]
+
+[node name="CharacterCard1" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard2" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard3" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard4" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard5" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard6" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard7" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard8" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )
+
+[node name="CharacterCard9" parent="Characters" instance=ExtResource( 1 )]
+visible = false
+position = Vector2( -99999, -99999 )
+scale = Vector2( 0.2, 0.2 )

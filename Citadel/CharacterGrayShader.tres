@@ -1,0 +1,16 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type canvas_item;
+render_mode unshaded;
+uniform bool turn_gray = false;
+
+void fragment() {
+	if (turn_gray){
+		COLOR = texture(TEXTURE, UV);
+		float lumi = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
+		COLOR.rgb = vec3(lumi);
+	} else {
+		COLOR = texture(TEXTURE, UV);
+	}
+}"

@@ -1,0 +1,233 @@
+[gd_scene load_steps=35 format=2]
+
+[ext_resource path="res://images/Character/MarshalCard.png" type="Texture" id=1]
+[ext_resource path="res://images/Character/AssassinCard.png" type="Texture" id=2]
+[ext_resource path="res://images/Character/ArtistCard.png" type="Texture" id=3]
+[ext_resource path="res://images/Character/DiplomatCard.png" type="Texture" id=4]
+[ext_resource path="res://images/Character/NavigatorCard.png" type="Texture" id=5]
+[ext_resource path="res://images/Character/MagicianCard.png" type="Texture" id=6]
+[ext_resource path="res://images/Character/KingCard.png" type="Texture" id=7]
+[ext_resource path="res://images/Character/EmperorCard.png" type="Texture" id=8]
+[ext_resource path="res://images/Character/QueenCard.png" type="Texture" id=9]
+[ext_resource path="res://images/Character/MerchantCard.png" type="Texture" id=10]
+[ext_resource path="res://images/Character/BishopCard.png" type="Texture" id=11]
+[ext_resource path="res://images/Character/MagistrateCard.png" type="Texture" id=12]
+[ext_resource path="res://images/Character/PatricianCard.png" type="Texture" id=13]
+[ext_resource path="res://images/Character/CardinalCard.png" type="Texture" id=14]
+[ext_resource path="res://images/Character/BlackmailerCard.png" type="Texture" id=15]
+[ext_resource path="res://images/Character/AbbotCard.png" type="Texture" id=16]
+[ext_resource path="res://images/Character/AlchemistCard.png" type="Texture" id=17]
+[ext_resource path="res://images/Character/ArchitectCard.png" type="Texture" id=18]
+[ext_resource path="res://images/Character/SeerCard.png" type="Texture" id=19]
+[ext_resource path="res://images/Character/SpyCard.png" type="Texture" id=20]
+[ext_resource path="res://images/Character/TraderCard.png" type="Texture" id=21]
+[ext_resource path="res://images/Character/WarlordCard.png" type="Texture" id=22]
+[ext_resource path="res://images/Character/ThiefCard.png" type="Texture" id=23]
+[ext_resource path="res://images/Character/WitchCard.png" type="Texture" id=24]
+[ext_resource path="res://images/Character/WizardCard.png" type="Texture" id=25]
+[ext_resource path="res://images/Character/ScholarCard.png" type="Texture" id=26]
+[ext_resource path="res://images/Character/TaxCollectorCard.png" type="Texture" id=27]
+[ext_resource path="res://CharacterCard.gd" type="Script" id=28]
+[ext_resource path="res://Fonts/SiweiBlack.ttf" type="DynamicFontData" id=29]
+[ext_resource path="res://images/Character/UnchosenCard.png" type="Texture" id=30]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 18 ) ],
+"loop": true,
+"name": "Architect",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 21 ) ],
+"loop": true,
+"name": "Trader",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 16 ) ],
+"loop": true,
+"name": "Abbot",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 1 ) ],
+"loop": true,
+"name": "Marshal",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 12 ) ],
+"loop": true,
+"name": "Magistrate",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 6 ) ],
+"loop": true,
+"name": "Magician",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 27 ) ],
+"loop": true,
+"name": "Tax Collector",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 19 ) ],
+"loop": true,
+"name": "Seer",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 2 ) ],
+"loop": true,
+"name": "Assassin",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 30 ) ],
+"loop": true,
+"name": "Unchosen",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 7 ) ],
+"loop": true,
+"name": "King",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 24 ) ],
+"loop": true,
+"name": "Witch",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 3 ) ],
+"loop": true,
+"name": "Artist",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 14 ) ],
+"loop": true,
+"name": "Cardinal",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 23 ) ],
+"loop": true,
+"name": "Thief",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 10 ) ],
+"loop": true,
+"name": "Merchant",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 26 ) ],
+"loop": true,
+"name": "Scholar",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 20 ) ],
+"loop": true,
+"name": "Spy",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 11 ) ],
+"loop": true,
+"name": "Bishop",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 15 ) ],
+"loop": true,
+"name": "Blackmailer",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 25 ) ],
+"loop": true,
+"name": "Wizard",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 8 ) ],
+"loop": true,
+"name": "Emperor",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 5 ) ],
+"loop": true,
+"name": "Navigator",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 4 ) ],
+"loop": true,
+"name": "Diplomat",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 22 ) ],
+"loop": true,
+"name": "Warlord",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 9 ) ],
+"loop": true,
+"name": "Queen",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 17 ) ],
+"loop": true,
+"name": "Alchemist",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 13 ) ],
+"loop": true,
+"name": "Patrician",
+"speed": 5.0
+} ]
+
+[sub_resource type="DynamicFont" id=3]
+size = 60
+font_data = ExtResource( 29 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 35
+font_data = ExtResource( 29 )
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 409, 707.5 )
+
+[node name="CharacterCard" type="Area2D"]
+script = ExtResource( 28 )
+
+[node name="Face" type="AnimatedSprite" parent="."]
+frames = SubResource( 1 )
+animation = "Unchosen"
+
+[node name="Name" type="Label" parent="Face"]
+margin_left = -181.0
+margin_top = -660.0
+margin_right = 274.0
+margin_bottom = -599.0
+rect_pivot_offset = Vector2( -2198, -134 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 3 )
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Description" type="Label" parent="Face"]
+margin_left = -301.0
+margin_top = 420.0
+margin_right = 307.0
+margin_bottom = 660.0
+rect_pivot_offset = Vector2( -2198, -134 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 2 )
+align = 3
+autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Back" type="AnimatedSprite" parent="."]
+frames = SubResource( 1 )
+animation = "Unchosen"
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+position = Vector2( 0, -0.5 )
+shape = SubResource( 4 )
+
+[connection signal="input_event" from="." to="." method="on_input_event"]
+[connection signal="mouse_entered" from="." to="." method="on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="on_mouse_exited"]

@@ -1,0 +1,67 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://images/ButtonScript.png" type="Texture" id=1]
+[ext_resource path="res://ButtonScript.gd" type="Script" id=2]
+[ext_resource path="res://Fonts/SiweiBlack.ttf" type="DynamicFontData" id=3]
+
+[sub_resource type="DynamicFont" id=1]
+size = 20
+outline_size = 1
+outline_color = Color( 0, 0, 0, 1 )
+font_data = ExtResource( 3 )
+
+[node name="ButtonScript" type="Node2D"]
+script = ExtResource( 2 )
+
+[node name="NeedCard" type="TextureButton" parent="."]
+margin_left = 900.0
+margin_top = 530.0
+margin_right = 1620.0
+margin_bottom = 1038.0
+rect_scale = Vector2( 0.15, 0.15 )
+texture_normal = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NeedGold" type="TextureButton" parent="."]
+margin_left = 400.0
+margin_top = 530.0
+margin_right = 1120.0
+margin_bottom = 1038.0
+rect_scale = Vector2( 0.15, 0.15 )
+texture_normal = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NeedGoldLabel" type="Label" parent="."]
+margin_left = 426.0
+margin_top = 558.0
+margin_right = 626.0
+margin_bottom = 600.0
+custom_colors/font_color = Color( 1, 1, 0, 1 )
+custom_fonts/font = SubResource( 1 )
+text = "NOTE_NEED_GOLD"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NeedCardLabel" type="Label" parent="."]
+margin_left = 925.0
+margin_top = 558.0
+margin_right = 1125.0
+margin_bottom = 600.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_fonts/font = SubResource( 1 )
+text = "NOTE_NEED_CARD"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="mouse_entered" from="NeedCard" to="." method="on_need_card_mouse_entered"]
+[connection signal="mouse_exited" from="NeedCard" to="." method="on_need_card_mouse_exited"]
+[connection signal="pressed" from="NeedCard" to="." method="on_need_card_pressed"]
+[connection signal="mouse_entered" from="NeedGold" to="." method="on_need_gold_mouse_entered"]
+[connection signal="mouse_exited" from="NeedGold" to="." method="on_need_gold_mouse_exited"]
+[connection signal="pressed" from="NeedGold" to="." method="on_need_gold_pressed"]
