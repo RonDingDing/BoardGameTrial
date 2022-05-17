@@ -47,7 +47,7 @@ signal hand_over(player_name)
 signal uncover
 #warning-ignore:unused_signal
 signal sgin_char_focused(char_name)
-signal sgin_char_unfocused
+signal sgin_char_unfocused(char_name)
 #warning-ignore:unused_signal
 signal sgin_char_selected(char_num)
 #warning-ignore:unused_signal
@@ -79,7 +79,7 @@ signal sgin_char_not_ready(chara)
 #warning-ignore:unused_signal
 signal phase(phase_string)
 #warning-ignore:unused_signal
-signal sgin_play
+signal sgin_start_turn
 #warning-ignore:unused_signal
 signal sgin_resource_need(what)
 #warning-ignore:unused_signal

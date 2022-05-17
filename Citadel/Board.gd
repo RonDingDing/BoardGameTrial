@@ -161,7 +161,7 @@ func phase(phase_string: int) -> void:
 			mask_character_selection()
 
 		Phase.PLAY:
-			mask_play()
+			mask_turn()
 
 		Phase.RESOURCE:
 			resource()
@@ -170,12 +170,11 @@ func phase(phase_string: int) -> void:
 func resource():
 	Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
 	$ButtonScript.show()
-	yield(Signal, "sgin_resource_need")
-	$ButtonScript.hide()
+	
 
 
-func mask_play() -> void:
-	Signal.emit_signal("phase", "PHASE_PLAY")
+func mask_turn() -> void:
+	Signal.emit_signal("phase", "PHASE_TURN_START")
 	set_process(false)
 	hide()
 
@@ -317,12 +316,12 @@ func on_sgin_char_focused(char_name: String) -> void:
 	$AnyCardEnlarge.on_sgin_char_focused(char_name)
 
 
-func on_sgin_card_unfocused() -> void:
-	$AnyCardEnlarge.on_sgin_card_unfocused()
+func on_sgin_card_unfocused(card_name: String) -> void:
+	$AnyCardEnlarge.on_sgin_card_unfocused(card_name)
 
 
-func on_sgin_char_unfocused() -> void:
-	$AnyCardEnlarge.on_sgin_char_unfocused()
+func on_sgin_char_unfocused(char_name: String) -> void:
+	$AnyCardEnlarge.on_sgin_char_unfocused(char_name)
 
 
 func handle_last_player_who_select(i: int) -> void:
@@ -348,7 +347,7 @@ func on_sgin_character_selection() -> void:
 			yield(Signal, "uncover")
 			set_process(true)
 			show()
-	Signal.emit_signal("sgin_play")
+	Signal.emit_signal("sgin_start_turn")
 
 
 func select_obj_by_employee(employee_name: String):
@@ -392,8 +391,8 @@ func make_params(player_obj: Node, employee_name: String) -> Params:
 	return params
 
 
-func on_sgin_play() -> void:
-	mask_play()
+func on_start_turn() -> void:
+	mask_turn()
 	yield(Signal, "uncover")
 	set_process(true)
 	show()
@@ -417,9 +416,10 @@ func on_sgin_play() -> void:
 		show()
 
 		phase(Phase.RESOURCE)
+		yield(Signal, "sgin_resource_need")
+		$ButtonScript.hide()
 
 		yield(Signal, "sgin_end_turn")
-	# 	# $ButtonScript.show()
 
 
 func on_sgin_selected_char_once_finished(char_name: String) -> void:
@@ -449,11 +449,12 @@ func gain_card() -> void:
 	$AnyCardEnlarge.selectable_cards(to_select)
 	for _i in range(card_to_click):
 		var sig = yield(Signal, "sgin_card_selected")
-		to_select.erase(sig.card_name)
+		to_select.erase(sig[0]) #.card_name
 
 	$Deck.extend(to_select)
 
 
 func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 	$Player.on_sgout_player_draw(Data.get_card_info(card_name), from_pos, true)
+	$Player.enable_enlarge()
 	$AnyCardEnlarge.reset_cards()

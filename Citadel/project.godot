@@ -27,6 +27,7 @@ window/stretch/aspect="keep"
 window=false
 environment=false
 handheld=false
+"use over"=false
 
 [locale]
 
@@ -42,3 +43,4 @@ quality/driver/driver_name="GLES2"
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
 environment/default_clear_color=Color( 0.133333, 0.854902, 0.839216, 1 )
+quality/dynamic_fonts/use_oversampling=false

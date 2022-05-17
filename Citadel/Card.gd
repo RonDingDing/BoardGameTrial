@@ -69,15 +69,15 @@ func set_face_up(face_is_up: bool) -> void:
  
 func on_mouse_entered() -> void:
 	if face_up and mode == Mode.ENLARGE:
-		TimerGlobal.set_wait_time(0.01)
-		TimerGlobal.start()
-		yield(TimerGlobal, "timeout")
+		# TimerGlobal.set_wait_time(0.05)
+		# TimerGlobal.start()
+		# yield(TimerGlobal, "timeout")
 		Signal.emit_signal("sgin_card_focused", card_name)
 
 
 func on_mouse_exited() -> void:
 	if face_up and mode == Mode.ENLARGE:
-		Signal.emit_signal("sgin_card_unfocused")
+		Signal.emit_signal("sgin_card_unfocused", card_name)
 
 
 func get_card_info() -> Dictionary:

@@ -11,4 +11,4 @@ func on_mouse_entered():
 
 func on_mouse_exited():
 	if employee != "Unchosen" and (not hide_employee):
-		Signal.emit_signal("sgin_char_unfocused")
+		Signal.emit_signal("sgin_char_unfocused", employee)

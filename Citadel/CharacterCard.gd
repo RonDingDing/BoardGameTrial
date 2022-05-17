@@ -55,14 +55,16 @@ func set_face_up(face_is_up: bool) -> void:
 
 func on_mouse_entered() -> void:
 	if face_up and enlargeable:
-		TimerGlobal.set_wait_time(0.01)
-		TimerGlobal.start()		
+		# TimerGlobal.set_wait_time(0.05)
+		# TimerGlobal.start()		
+		# yield(TimerGlobal, "timeout")
+
 		Signal.emit_signal("sgin_char_focused", char_name)
 
 
 func on_mouse_exited() -> void:
 	if face_up and enlargeable:
-		Signal.emit_signal("sgin_char_unfocused")
+		Signal.emit_signal("sgin_char_unfocused", char_name)
 
 
 func on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:

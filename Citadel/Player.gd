@@ -35,7 +35,7 @@ func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, face_is_up: 
 	)
 	Signal.emit_signal("sgin_player_draw_not_ready", incoming_card)
 	var positions = get_hand_positions_with_new_card()
-	var animation_time = 0.2
+	var animation_time = 0.1
 
 	var action_list = [
 		[
@@ -78,7 +78,6 @@ func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, face_is_up: 
 				animation_time / 2,
 			]
 		)
-	print(action_list)
 	TweenMove.animate(action_list)
 	var hands_obj = $HandScript.get_children()
 
@@ -142,6 +141,9 @@ func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
 	incoming_gold.queue_free()
 	Signal.emit_signal("sgin_player_gold_ready")
 
+func enable_enlarge() -> void:
+	for a in $HandScript.get_children():
+		a.set_mode(a.Mode.ENLARGE)
 
 func on_player_info(data: Dictionary) -> void:
 	player_num = data.get("player_num", -1)
@@ -169,8 +171,7 @@ func on_player_info(data: Dictionary) -> void:
 		n.queue_free()
 	for c in data.get("hands", []):
 		on_sgout_player_draw(c, deck_position, true)
-	for a in $HandScript.get_children():
-		a.set_mode(a.Mode.ENLARGE)
+	enable_enlarge()
 	for b in data.get("built", []):
 		on_sgout_player_built(b, deck_position)
 
