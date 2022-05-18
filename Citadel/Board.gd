@@ -9,7 +9,7 @@ onready var lang = "zh_CN"
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var started = false
-enum Phase { CHARACTER_SELECTION, RESOURCE, PLAY, END, GAME_OVER }
+enum Phase { CHARACTER_SELECTION, RESOURCE, TURN, END, GAME_OVER }
 enum Need { GOLD, CARD }
 
 
@@ -160,7 +160,7 @@ func phase(phase_string: int) -> void:
 		Phase.CHARACTER_SELECTION:
 			mask_character_selection()
 
-		Phase.PLAY:
+		Phase.TURN:
 			mask_turn()
 
 		Phase.RESOURCE:
@@ -170,7 +170,6 @@ func phase(phase_string: int) -> void:
 func resource():
 	Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
 	$ButtonScript.show()
-	
 
 
 func mask_turn() -> void:
@@ -357,7 +356,7 @@ func select_obj_by_employee(employee_name: String):
 			return obj
 
 
-func is_disabled(employee_name: String) -> bool:
+func is_disabled(_employee_name: String) -> bool:
 	return false
 
 
@@ -419,6 +418,9 @@ func on_start_turn() -> void:
 		yield(Signal, "sgin_resource_need")
 		$ButtonScript.hide()
 
+		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
+		$Player.enable_play()
+
 		yield(Signal, "sgin_end_turn")
 
 
@@ -449,7 +451,7 @@ func gain_card() -> void:
 	$AnyCardEnlarge.selectable_cards(to_select)
 	for _i in range(card_to_click):
 		var sig = yield(Signal, "sgin_card_selected")
-		to_select.erase(sig[0]) #.card_name
+		to_select.erase(sig[0])  #.card_name
 
 	$Deck.extend(to_select)
 
@@ -458,3 +460,8 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 	$Player.on_sgout_player_draw(Data.get_card_info(card_name), from_pos, true)
 	$Player.enable_enlarge()
 	$AnyCardEnlarge.reset_cards()
+
+
+func on_sgin_card_played(card_name: String) -> void:
+	print('!!!')
+	$Player.on_sgin_card_played(Data.get_card_info(card_name))

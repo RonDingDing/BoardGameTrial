@@ -13,6 +13,7 @@ onready var username = "Unknown"
 onready var employee = "Unchosen"
 onready var has_crown = false
 onready var hide_employee = true
+onready var played_this_turn = []
 
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
@@ -141,9 +142,13 @@ func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
 	incoming_gold.queue_free()
 	Signal.emit_signal("sgin_player_gold_ready")
 
+
 func enable_enlarge() -> void:
 	for a in $HandScript.get_children():
 		a.set_mode(a.Mode.ENLARGE)
+	for a in $BuiltScript.get_children():
+		a.set_mode(a.Mode.ENLARGE)
+
 
 func on_player_info(data: Dictionary) -> void:
 	player_num = data.get("player_num", -1)
@@ -176,7 +181,7 @@ func on_player_info(data: Dictionary) -> void:
 		on_sgout_player_built(b, deck_position)
 
 
-func on_sgout_player_built(card_info: Dictionary, from_pos: Vector2) -> void:
+func on_sgout_player_built(_card_info: Dictionary, _from_pos: Vector2) -> void:
 	pass
 
 
@@ -212,3 +217,40 @@ func show_employee() -> void:
 
 func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
+
+
+func enable_play() -> void:
+	for a in $HandScript.get_children():
+		a.set_mode(a.Mode.PLAY)
+
+
+func has_enough_money(price: int) -> bool:
+	var enough_money = (gold >= price)
+	return enough_money
+
+
+func has_not_played(card_name: String) -> bool:
+	var not_played = (not card_name in played_this_turn)
+	return not_played
+
+
+func on_sgin_card_played(card_info: Dictionary) -> void:
+	var card_name = card_info["card_name"]
+	var _suceeded = false
+	var enough_money = has_enough_money(card_info["star"])
+	var not_played = has_not_played(card_name)
+	if not(enough_money and not_played):
+		return
+	_suceeded = true
+	played_this_turn.append(card_name)
+	var card_obj
+	for c in $HandScript.get_children():
+		if c.card_name == card_name:
+			card_obj = c
+			break
+	if card_obj == null:
+		return
+		
+			
+	print("xxx",$HandScript.find_node(card_name))
+		 

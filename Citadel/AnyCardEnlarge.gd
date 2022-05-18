@@ -20,7 +20,6 @@ func set_mode(modes: int) -> void:
 
 func on_sgin_card_focused(card_name: String) -> void:
 	enlarging = card_name
-	print("focused:", card_name, " ", enlarging)
 	$CharacterCard.hide()
 	if mode == Mode.ENLARGE:
 		enlarging = card_name
@@ -37,14 +36,12 @@ func on_sgin_card_focused(card_name: String) -> void:
 
 
 func on_sgin_card_unfocused(card_name: String) -> void:
-	print("unfocused:", card_name, " ", enlarging)
 	if mode == Mode.ENLARGE and enlarging == card_name:
 		$Card0.hide()
 
 
 func on_sgin_char_focused(char_name: String) -> void:
 	enlarging = char_name
-	print("focused: ", char_name, " ", enlarging)
 	$Card0.hide()
 	if mode == Mode.ENLARGE:
 		var char_info = Data.get_char_info(char_name)
@@ -60,7 +57,6 @@ func on_sgin_char_focused(char_name: String) -> void:
 
 
 func on_sgin_char_unfocused(char_name: String) -> void:
-	print("unfocused: ", char_name, " ", enlarging)
 	if mode == Mode.ENLARGE and enlarging == char_name:
 		$CharacterCard.hide()
 

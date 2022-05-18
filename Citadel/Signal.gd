@@ -95,6 +95,10 @@ signal sgin_card_selected(card_name, from_pos)
 # #warning-ignore:unused_signal
 # signal sgin_selected_card_all_finished
 
+#warning-ignore:unused_signal
+signal sgin_card_played(card_name)
+
+
 func on_sgin_draw_gold(player_obj: Node, from_pos: Vector2) -> void:
 	player_obj.on_sgout_player_obj_gold(from_pos)
 
@@ -113,7 +117,7 @@ func on_sgin_char_ready(chara: Node) -> void:
 	chara.set_enlargeable(true)
 
 
-func on_sgin_player_draw_ready(card: Node) -> void:
+func on_sgin_player_draw_ready(_card: Node) -> void:
 	pass
 	# card.set_enlargeable(true)
 

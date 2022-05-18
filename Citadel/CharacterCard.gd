@@ -67,7 +67,7 @@ func on_mouse_exited() -> void:
 		Signal.emit_signal("sgin_char_unfocused", char_name)
 
 
-func on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
 	if event.is_pressed() and event is InputEventMouseButton and event.doubleclick:
 		Signal.emit_signal("sgin_char_selected", char_num)
