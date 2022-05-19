@@ -101,4 +101,4 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 			Mode.SELECT:
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)
 			Mode.PLAY:
-				Signal.emit_signal("sgin_card_played", card_name)
+				Signal.emit_signal("sgin_card_played", card_name, global_position)

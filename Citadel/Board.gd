@@ -417,7 +417,10 @@ func on_start_turn() -> void:
 		phase(Phase.RESOURCE)
 		yield(Signal, "sgin_resource_need")
 		$ButtonScript.hide()
-
+		yield(Signal, "sgin_resource_end")
+		
+		
+		
 		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 		$Player.enable_play()
 
@@ -440,7 +443,8 @@ func gain_gold() -> void:
 	var gold_to_gain = 2
 	for _i in range(gold_to_gain):
 		$Bank.draw_gold(0, $Bank.position)
-
+		yield(Signal, "sgin_player_gold_ready")
+	Signal.emit_signal("sgin_resource_end")
 
 func gain_card() -> void:
 	var card_to_gain = 2
@@ -452,16 +456,14 @@ func gain_card() -> void:
 	for _i in range(card_to_click):
 		var sig = yield(Signal, "sgin_card_selected")
 		to_select.erase(sig[0])  #.card_name
-
+		
 	$Deck.extend(to_select)
-
+	Signal.emit_signal("sgin_resource_end")
 
 func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 	$Player.on_sgout_player_draw(Data.get_card_info(card_name), from_pos, true)
-	$Player.enable_enlarge()
 	$AnyCardEnlarge.reset_cards()
+	
 
-
-func on_sgin_card_played(card_name: String) -> void:
-	print('!!!')
-	$Player.on_sgin_card_played(Data.get_card_info(card_name))
+func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
+	$Player.on_sgin_card_played(Data.get_card_info(card_name), from_pos)

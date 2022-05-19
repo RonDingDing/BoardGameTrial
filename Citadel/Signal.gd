@@ -40,6 +40,8 @@ signal sgin_opponent_gold_ready
 #warning-ignore:unused_signal
 signal sgin_player_gold_ready
 #warning-ignore:unused_signal
+signal sgin_player_pay_ready
+#warning-ignore:unused_signal
 signal sgin_ready_game
 #warning-ignore:unused_signal
 signal hand_over(player_name)
@@ -83,6 +85,8 @@ signal sgin_start_turn
 #warning-ignore:unused_signal
 signal sgin_resource_need(what)
 #warning-ignore:unused_signal
+signal sgin_resource_end
+#warning-ignore:unused_signal
 signal sgin_char_entered
 #warning-ignore:unused_signal
 signal sgin_end_turn
@@ -96,7 +100,7 @@ signal sgin_card_selected(card_name, from_pos)
 # signal sgin_selected_card_all_finished
 
 #warning-ignore:unused_signal
-signal sgin_card_played(card_name)
+signal sgin_card_played(card_name, from_pos)
 
 
 func on_sgin_draw_gold(player_obj: Node, from_pos: Vector2) -> void:

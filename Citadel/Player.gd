@@ -17,6 +17,7 @@ onready var played_this_turn = []
 
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
+onready var center = get_viewport_rect().size / 2
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -80,8 +81,14 @@ func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, face_is_up: 
 			]
 		)
 	TweenMove.animate(action_list)
-	var hands_obj = $HandScript.get_children()
 
+	rearrange($HandScript, positions)
+	yield(TweenMove, "tween_all_completed")
+	Signal.emit_signal("sgin_player_draw_ready", incoming_card)
+
+
+func rearrange(node: Node, positions: Array) -> void:
+	var hands_obj = node.get_children()
 	for index in range(hands_obj.size()):
 		var each_card = hands_obj[index]
 		TweenMove.animate(
@@ -90,19 +97,17 @@ func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, face_is_up: 
 					each_card,
 					"global_position",
 					each_card.global_position,
-					positions[index] + $HandScript.global_position,
+					positions[index] + node.global_position,
 				]
 			]
 		)
-	yield(TweenMove, "tween_all_completed")
-	Signal.emit_signal("sgin_player_draw_ready", incoming_card)
 
 
-func get_hand_positions_with_new_card() -> Array:
+func get_positions_with_new_card(obj: Node) -> Array:
 	var positions = []
 	var start = -200
 	var end = 200
-	var hands_obj = $HandScript.get_children()
+	var hands_obj = obj.get_children()
 	var hand_num = hands_obj.size()
 
 	if hand_num <= 4:
@@ -114,10 +119,24 @@ func get_hand_positions_with_new_card() -> Array:
 	return positions
 
 
-func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
+func get_hand_positions_with_new_card() -> Array:
+	return get_positions_with_new_card($HandScript)
+
+
+func get_built_positions_with_new_card() -> Array:
+	return get_positions_with_new_card($BuiltScript)
+
+
+func gold_transfer(
+	from_pos: Vector2,
+	to_pos: Vector2,
+	start_scale: Vector2,
+	end_scale: Vector2,
+	callback_signal: String,
+	add_num: int
+) -> void:
 	var incoming_gold = Gold.instance()
-	var my_card_back_pos = $GoldImg.global_position
-	incoming_gold.to_coin(Vector2(1, 1), Vector2(-9999999, -9999999))
+	incoming_gold.to_coin(start_scale, from_pos)
 	add_child(incoming_gold)
 	TweenMove.animate(
 		[
@@ -125,27 +144,59 @@ func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
 				incoming_gold,
 				"global_position",
 				from_pos,
-				my_card_back_pos,
+				to_pos,
 			],
 			[
 				incoming_gold,
 				"scale",
-				Vector2(1, 1),
-				Vector2(2, 2),
+				start_scale,
+				end_scale,
 			],
 		]
 	)
+	TweenMove.start()
 	yield(TweenMove, "tween_all_completed")
-	gold += 1
+	gold += add_num
 	$MoneyNum.text = str(gold)
 	remove_child(incoming_gold)
 	incoming_gold.queue_free()
-	Signal.emit_signal("sgin_player_gold_ready")
+	Signal.emit_signal(callback_signal)
+
+
+func on_sgout_player_obj_pay(to_pos: Vector2) -> void:
+	gold_transfer(
+		$GoldImg.global_position, to_pos, Vector2(2, 2), Vector2(1, 1), "sgin_player_pay_ready", -1
+	)
+
+
+func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
+	gold_transfer(
+		from_pos,
+		$GoldImg.global_position,
+		Vector2(1, 1),
+		Vector2(2, 2),
+		"sgin_player_gold_ready",
+		1
+	)
+
+
+func disable_enlarge() -> void:
+	for a in $HandScript.get_children():
+		a.set_mode(a.Mode.STATIC)
+	for a in $BuiltScript.get_children():
+		a.set_mode(a.Mode.STATIC)
 
 
 func enable_enlarge() -> void:
 	for a in $HandScript.get_children():
 		a.set_mode(a.Mode.ENLARGE)
+	for a in $BuiltScript.get_children():
+		a.set_mode(a.Mode.ENLARGE)
+
+
+func enable_enlarge_play() -> void:
+	for a in $HandScript.get_children():
+		a.set_mode(a.Mode.PLAY)
 	for a in $BuiltScript.get_children():
 		a.set_mode(a.Mode.ENLARGE)
 
@@ -225,32 +276,71 @@ func enable_play() -> void:
 
 
 func has_enough_money(price: int) -> bool:
-	var enough_money = (gold >= price)
+	var enough_money = gold >= price
 	return enough_money
 
 
 func has_not_played(card_name: String) -> bool:
-	var not_played = (not card_name in played_this_turn)
+	var not_played = not card_name in played_this_turn
 	return not_played
 
+func has_ever_played()-> bool:
+	return played_this_turn.size() < 1
 
-func on_sgin_card_played(card_info: Dictionary) -> void:
+func on_sgin_card_played(card_info: Dictionary, from_pos: Vector2) -> void:
 	var card_name = card_info["card_name"]
 	var _suceeded = false
-	var enough_money = has_enough_money(card_info["star"])
+	var price = card_info["star"]
+	var enough_money = has_enough_money(price)
 	var not_played = has_not_played(card_name)
-	if not(enough_money and not_played):
+	var not_ever_played = has_ever_played()
+	if not (enough_money and not_played and not_ever_played):
 		return
 	_suceeded = true
 	played_this_turn.append(card_name)
 	var card_obj
 	for c in $HandScript.get_children():
-		if c.card_name == card_name:
+		if c.card_name == card_name and c.global_position == from_pos:
 			card_obj = c
 			break
+
 	if card_obj == null:
 		return
-		
-			
-	print("xxx",$HandScript.find_node(card_name))
-		 
+
+	for _i in range(price):
+		on_sgout_player_obj_pay(bank_position)
+		yield(Signal, "sgin_player_pay_ready")
+	
+	hands.erase(card_name)
+	built.append(card_name)
+	$HandScript.remove_child(card_obj)
+	$BuiltScript.add_child(card_obj)
+	card_obj.on_mouse_exited()
+	var z_index = card_obj.z_index
+	card_obj.z_index = 4096
+	var original_scale = card_obj.scale
+	disable_enlarge()
+	TweenMove.animate(
+		[
+			[card_obj, "global_position", from_pos, center],
+			[card_obj, "scale", original_scale, Vector2(1, 1)],
+		]
+	)
+	yield(TweenMove, "tween_all_completed")
+	TweenMove.animate(
+		[
+			[
+				card_obj,
+				"global_position",
+				center,
+				$BuiltScript.global_position + get_built_positions_with_new_card()[-1]
+			],
+			[card_obj, "scale", Vector2(1, 1), original_scale],
+		]
+	)
+	yield(TweenMove, "tween_all_completed")
+	card_obj.z_index = z_index
+	enable_enlarge_play()
+	rearrange($HandScript, get_hand_positions_with_new_card())
+	rearrange($BuiltScript, get_built_positions_with_new_card())
+	yield(TweenMove, "tween_all_completed")

@@ -4,7 +4,7 @@ onready var mode = Mode.ENLARGE
 onready var TweenMove = get_node("/root/Main/Tween")
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
-onready var middle = get_viewport_rect().size / 2
+onready var center = get_viewport_rect().size / 2
 onready var enlarging = ""
 
 func _ready():
@@ -29,7 +29,7 @@ func on_sgin_card_focused(card_name: String) -> void:
 			card_name,
 			card_info["up_offset"],
 			Vector2(0.6, 0.6),
-			middle,
+			center,
 			true,
 			true
 		)
@@ -51,7 +51,7 @@ func on_sgin_char_focused(char_name: String) -> void:
 			char_info["char_num"],
 			char_info["char_up_offset"],
 			Vector2(0.5, 0.5),
-			middle,
+			center,
 			true
 		)
 
@@ -64,7 +64,7 @@ func on_sgin_char_unfocused(char_name: String) -> void:
 func char_enter(card_info: Dictionary, scaling: Vector2, global_pos: Vector2) -> void:
 	set_mode(Mode.STATIC)
 	var move_pos
-	if global_pos == middle:
+	if global_pos == center:
 		move_pos = $CharacterCard.global_position
 	else:
 		move_pos = global_pos
@@ -74,7 +74,7 @@ func char_enter(card_info: Dictionary, scaling: Vector2, global_pos: Vector2) ->
 		card_info["char_num"],
 		card_info["char_up_offset"],
 		Vector2(0.5, 0.5),
-		middle,
+		center,
 		true
 	)
 	TweenMove.animate(
@@ -101,7 +101,7 @@ func char_enter(card_info: Dictionary, scaling: Vector2, global_pos: Vector2) ->
 
 func reset_characters() -> void:
 	set_mode(Mode.ENLARGE)
-	$CharacterCard.set_global_position(middle)
+	$CharacterCard.set_global_position(center)
 	$CharacterCard.set_scale(Vector2(0.5, 0.5))
 	$CharacterCard.hide()
 
@@ -110,14 +110,14 @@ func reset_cards() -> void:
 	set_mode(Mode.ENLARGE)
 	for i in range(3):
 		var card = get_node(str("Card", i))
-		card.set_global_position(middle)
+		card.set_global_position(center)
 		card.set_scale(Vector2(0.5, 0.5))
 		card.hide()
 
 
 func selectable_cards(cards: Array) -> void:
 	set_mode(Mode.SELECT)
-	var poss = [middle, middle, middle]
+	var poss = [center, center, center]
 	if cards.size() == 1:
 		$Card0.show()
 		$Card1.hide()

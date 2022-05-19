@@ -27,16 +27,6 @@ animations = [ {
 "name": "Player5",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 14 ) ],
-"loop": true,
-"name": "Player2",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 15 ) ],
-"loop": true,
-"name": "Player1",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 13 ) ],
 "loop": true,
 "name": "Player7",
@@ -47,9 +37,14 @@ animations = [ {
 "name": "Player3",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 9 ) ],
+"frames": [ ExtResource( 15 ) ],
 "loop": true,
-"name": "Player6",
+"name": "Player1",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 14 ) ],
+"loop": true,
+"name": "Player2",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 12 ) ],
@@ -60,6 +55,11 @@ animations = [ {
 "frames": [ ExtResource( 8 ) ],
 "loop": true,
 "name": "Player0",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 9 ) ],
+"loop": true,
+"name": "Player6",
 "speed": 5.0
 } ]
 
