@@ -133,7 +133,7 @@ func wait_select() -> void:
 	wait(State.SELECTING, 1)
 
 
-func move_char_to(mode: int, char_num) -> void:
+func move_char_to(mode: int, char_num: int) -> void:
 	var list
 	var emite
 	var fini
@@ -156,8 +156,7 @@ func move_char_to(mode: int, char_num) -> void:
 	if available.has(char_num):
 		available.erase(char_num)
 		var char_card = get_node(str("Characters/CharacterCard", char_num))
-		var char_info = char_card.get_char_info()
-		Signal.emit_signal(emite, char_info)
+		Signal.emit_signal(emite, char_card.char_name, char_card.global_position)
 		yield(Signal, fini)
 
 

@@ -4,6 +4,7 @@ const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
+onready var Data = get_node("/root/Main/Data")
 
 onready var hands = []
 onready var built = []
@@ -29,7 +30,8 @@ func set_deck_position(pos: Vector2) -> void:
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
 
-func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, _face_is_up: bool) -> void:
+func on_sgout_player_draw(card_name: String, from_pos: Vector2, _face_is_up: bool) -> void:
+	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
@@ -52,7 +54,7 @@ func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, _face_is_up:
 		]
 	)
 	yield(TweenMove, "tween_all_completed")
-	hands.append(card_info)
+	hands.append(card_name)
 	var hand_num = hands.size()
 	$HandsInfo/HandNum.text = str(hand_num)
 	remove_child(incoming_card)

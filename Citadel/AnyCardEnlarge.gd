@@ -61,7 +61,8 @@ func on_sgin_char_unfocused(char_name: String) -> void:
 		$CharacterCard.hide()
 
 
-func char_enter(card_info: Dictionary, scaling: Vector2, global_pos: Vector2) -> void:
+func char_enter(char_name: String, scaling: Vector2, global_pos: Vector2) -> void:
+	var char_info = Data.get_char_info(char_name)
 	set_mode(Mode.STATIC)
 	var move_pos
 	if global_pos == center:
@@ -70,9 +71,9 @@ func char_enter(card_info: Dictionary, scaling: Vector2, global_pos: Vector2) ->
 		move_pos = global_pos
 	$CharacterCard.show()
 	$CharacterCard.init_char(
-		card_info["char_name"],
-		card_info["char_num"],
-		card_info["char_up_offset"],
+		char_name,
+		char_info["char_num"],
+		char_info["char_up_offset"],
 		Vector2(0.5, 0.5),
 		center,
 		true

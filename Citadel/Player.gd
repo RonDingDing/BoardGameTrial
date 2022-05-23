@@ -4,6 +4,7 @@ const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
+onready var Data = get_node("/root/Main/Data")
 
 onready var hands = []
 onready var built = []
@@ -27,16 +28,31 @@ func set_bank_position(pos: Vector2) -> void:
 func set_deck_position(pos: Vector2) -> void:
 	deck_position = pos
 
+func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_is_up: bool) -> void:
+	var list
+	var node
+	var not_ready_signal
+	var ready_signal
+	if mode == "hands":
+		list = hands
+		node = $HandScript
+		not_ready_signal = "sgin_player_draw_not_ready"
+		ready_signal = "sgin_player_draw_ready"
+	else:
+		list = built
+		node = $BuiltScript
+		not_ready_signal = "sgin_player_built_not_ready"
+		ready_signal = "sgin_player_built_ready"
 
-func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, face_is_up: bool) -> void:
+	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
-	hands.append(card_info)
-	$HandScript.add_child(incoming_card)
+	list.append(card_name)
+	node.add_child(incoming_card)
 	incoming_card.init_card(
-		card_info["card_name"], card_info["up_offset"], Vector2(0.175, 0.175), from_pos, true, false
+		card_name, card_info["up_offset"], Vector2(0.175, 0.175), from_pos, true, false
 	)
-	Signal.emit_signal("sgin_player_draw_not_ready", incoming_card)
-	var positions = get_hand_positions_with_new_card()
+	Signal.emit_signal(not_ready_signal, incoming_card)
+	var positions = get_positions_with_new_card(node)   
 	var animation_time = 0.1
 
 	var action_list = [
@@ -82,9 +98,71 @@ func on_sgout_player_draw(card_info: Dictionary, from_pos: Vector2, face_is_up: 
 		)
 	TweenMove.animate(action_list)
 
-	rearrange($HandScript, positions)
+	rearrange(node, positions)
 	yield(TweenMove, "tween_all_completed")
-	Signal.emit_signal("sgin_player_draw_ready", incoming_card)
+	Signal.emit_signal(ready_signal, incoming_card)
+
+
+
+func on_sgout_player_draw(card_name: String, from_pos: Vector2, face_is_up: bool) -> void:
+	player_draw_built("hands", card_name, from_pos, face_is_up)
+	# var card_info = Data.get_card_info(card_name)
+	# var incoming_card = Card.instance()
+	# hands.append(card_name)
+	# $HandScript.add_child(incoming_card)
+	# incoming_card.init_card(
+	# 	card_name, card_info["up_offset"], Vector2(0.175, 0.175), from_pos, true, false
+	# )
+	# Signal.emit_signal("sgin_player_draw_not_ready", incoming_card)
+	# var positions = get_hand_positions_with_new_card()
+	# var animation_time = 0.1
+
+	# var action_list = [
+	# 	[
+	# 		incoming_card,
+	# 		"global_position",
+	# 		from_pos,
+	# 		positions[-1] + $HandScript.global_position,
+	# 	],
+	# 	[
+	# 		incoming_card.get_node("Back"),
+	# 		"visible",
+	# 		true,
+	# 		not face_is_up,
+	# 	],
+	# 	[
+	# 		incoming_card.get_node("Face"),
+	# 		"visible",
+	# 		false,
+	# 		face_is_up,
+	# 	]
+	# ]
+	# if face_is_up:
+	# 	action_list.insert(
+	# 		1,
+	# 		[
+	# 			incoming_card,
+	# 			"scale:y",
+	# 			incoming_card.scale.y,
+	# 			0.01,
+	# 			animation_time / 2,
+	# 		]
+	# 	)
+	# 	action_list.insert(
+	# 		2,
+	# 		[
+	# 			incoming_card,
+	# 			"scale:y",
+	# 			0.01,
+	# 			incoming_card.scale.y,
+	# 			animation_time / 2,
+	# 		]
+	# 	)
+	# TweenMove.animate(action_list)
+
+	# rearrange($HandScript, positions)
+	# yield(TweenMove, "tween_all_completed")
+	# Signal.emit_signal("sgin_player_draw_ready", incoming_card)
 
 
 func rearrange(node: Node, positions: Array) -> void:
@@ -233,8 +311,8 @@ func on_player_info(data: Dictionary) -> void:
 		on_sgout_player_built(b, deck_position)
 
 
-func on_sgout_player_built(_card_info: Dictionary, _from_pos: Vector2) -> void:
-	pass
+func on_sgout_player_built(card_name: String, from_pos: Vector2) -> void:
+	player_draw_built("built", card_name, from_pos, true)
 
 
 func get_my_player_info() -> Dictionary:
@@ -288,8 +366,8 @@ func has_not_played(card_name: String) -> bool:
 func has_ever_played()-> bool:
 	return played_this_turn.size() < 1
 
-func on_sgin_card_played(card_info: Dictionary, from_pos: Vector2) -> void:
-	var card_name = card_info["card_name"]
+func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
+	var card_info = Data.get_card_info(card_name)
 	var _suceeded = false
 	var price = card_info["star"]
 	var enough_money = has_enough_money(price)

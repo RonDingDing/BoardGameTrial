@@ -74,8 +74,7 @@ func on_sgin_gold(relative_to_me: int, from_pos: Vector2) -> void:
 
 func on_sgin_draw_card(relative_to_me: int, card_name: String, from_pos: Vector2, face_is_up: bool) -> void:
 	var player_obj = select_obj_by_num(relative_to_me)
-	var card_info = Data.get_card_info(card_name)
-	Signal.emit_signal("sgin_player_obj_draw_card", player_obj, card_info, from_pos, face_is_up)
+	Signal.emit_signal("sgin_player_obj_draw_card", player_obj, card_name, from_pos, face_is_up)
 
 
 func first_player() -> int:
@@ -138,7 +137,7 @@ func reseat(relative_to_me: int) -> void:
 		var s = f.get("hands", [])
 		var p = []
 		for m in s:
-			p.append(m["card_name"])
+			p.append(m)
 		e.append(p)
 
 	var reseated_info = get_reseat_info(info_array, relative_to_me)
@@ -185,6 +184,10 @@ func on_sgin_ready_game() -> void:
 	var relative_to_me = first_player()
 	var player_obj = select_obj_by_num(relative_to_me)
 	player_obj.set_crown(true)
+	character_selection(relative_to_me)
+
+
+func character_selection(relative_to_me: int) -> void:
 	phase(Phase.CHARACTER_SELECTION)
 	yield(Signal, "uncover")
 	show()
@@ -290,16 +293,16 @@ func on_sgin_char_selected(char_num: int) -> void:
 	$Employment.on_char_clicked(char_num)
 
 
-func on_sgin_move_char_to_discarded(char_info: Dictionary) -> void:
-	$DiscardedHidden.move_char_to_discarded(char_info)
+func on_sgin_move_char_to_discarded(char_name: String, from_pos: Vector2) -> void:
+	$DiscardedHidden.move_char_to_discarded(char_name, from_pos)
 
 
-func on_sgin_move_char_to_hidden(char_info: Dictionary) -> void:
-	$DiscardedHidden.move_char_to_hidden(char_info)
+func on_sgin_move_char_to_hidden(char_name: String, from_pos: Vector2) -> void:
+	$DiscardedHidden.move_char_to_hidden(char_name, from_pos)
 
 
-func on_sgin_move_char_to_selected(char_info: Dictionary) -> void:
-	$DiscardedHidden.move_char_to_selected(char_info)
+func on_sgin_move_char_to_selected(char_name: String, from_pos) -> void:
+	$DiscardedHidden.move_char_to_selected(char_name, from_pos)
 
 
 func on_sgin_card_focused(card_name: String) -> void:
@@ -392,10 +395,9 @@ func on_start_turn() -> void:
 	for num in range(1, $Employment.full_num):
 		# 播放动画，显示大牌，然后移动到相应的雇佣区去
 		var employee_name = $Employment.available_characters[num]
-		var char_info = Data.get_char_info(employee_name)
 		var player_obj = select_obj_by_employee(employee_name)
 		var param = make_params(player_obj, employee_name)
-		$AnyCardEnlarge.char_enter(char_info, param.scaling, param.employ_global_pos)
+		$AnyCardEnlarge.char_enter(employee_name, param.scaling, param.employ_global_pos)
 		if player_obj != null:
 			yield(Signal, "sgin_char_entered")
 			player_obj.show_employee()
@@ -419,14 +421,24 @@ func on_start_turn() -> void:
 		yield(Signal, "sgin_end_turn")
 		$ButtonScript.hide_end_turn()
 		$Player.after_end_turn()
-		print($Player.username, " ", $Player.gold, " ", $Player.hands.size(), " ", $Player.built.size())
+		for n in range(opponent_length + 1):
+			var player_objs = select_obj_by_num(n)
+			print(
+				player_objs.username,
+				" ",
+				player_objs.hands,
+				" ",
+				player_objs.built,
+				" ",
+				player_objs.employee
+			)
+		print()
 
 	Signal.emit_signal("sgin_one_round_finished")
-	 
+
 
 func on_sgin_selected_char_once_finished(char_name: String) -> void:
 	$Player.set_employee(char_name)
-	print($Player.username, " ", char_name)
 
 
 func on_sgin_resource_need(what: int) -> void:
@@ -461,13 +473,12 @@ func gain_card() -> void:
 
 
 func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
-	$Player.on_sgout_player_draw(Data.get_card_info(card_name), from_pos, true)
+	$Player.on_sgout_player_draw(card_name, from_pos, true)
 	$AnyCardEnlarge.reset_cards()
 
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
-	$Player.on_sgin_card_played(Data.get_card_info(card_name), from_pos)
-
+	$Player.on_sgin_card_played(card_name, from_pos)
 
 
 func is_game_over() -> bool:
@@ -478,11 +489,30 @@ func is_game_over() -> bool:
 			game_over = true
 	return game_over
 
-func on_sgin_one_round_finished() -> void:			
+
+func find_crown_player() -> int:
+	for i in range(opponent_length + 1):
+		var player_obj = select_obj_by_num(i)
+		if player_obj.employee in ["King", "Emperor", "Patrician"]:
+			return i
+	return 0
+
+
+func on_sgin_one_round_finished() -> void:
 	if not is_game_over():
 		$Employment.reset_available()
-		var crown_player  
+		character_reset()
+		var crown_player_relative_to_me = find_crown_player()
+		character_selection(crown_player_relative_to_me)
 	else:
-		pass
-			
-	
+		game_over()
+
+
+func character_reset() -> void:
+	for i in range(opponent_length + 1):
+		var player_obj = select_obj_by_num(i)
+		player_obj.set_employee("Unchosen")
+
+
+func game_over():
+	pass

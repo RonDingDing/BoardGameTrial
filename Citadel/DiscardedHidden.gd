@@ -2,6 +2,7 @@ extends Node2D
 onready var CharacterCard = preload("res://CharacterCard.tscn")
 onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
+onready var Data = get_node("/root/Main/Data")
 enum State { IDLE, DISCARDING, HIDING, SELECTING }
 var char_pos = Vector2(0, 0)
 
@@ -25,19 +26,19 @@ func get_discarded_position() -> Vector2:
 	return local_pos + global_position
 
 
-func move_char_to_hidden(card_info: Dictionary) -> void:
-	move_char_to(State.HIDING, card_info)
+func move_char_to_hidden(char_name: String,  from_pos: Vector2) -> void:
+	move_char_to(State.HIDING, char_name,  from_pos)
 
 
-func move_char_to_discarded(card_info: Dictionary) -> void:
-	move_char_to(State.DISCARDING, card_info)
+func move_char_to_discarded(char_name: String,  from_pos: Vector2) -> void:
+	move_char_to(State.DISCARDING, char_name,  from_pos)
 
 
-func move_char_to_selected(card_info: Dictionary) -> void:
-	move_char_to(State.SELECTING, card_info)
+func move_char_to_selected(char_name: String, from_pos: Vector2) -> void:
+	move_char_to(State.SELECTING, char_name,  from_pos)
 
 
-func move_char_to(mode: int, card_info: Dictionary) -> void:
+func move_char_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 	var init_face_up
 	var face_visible_org
 	var face_visible_aft
@@ -73,15 +74,14 @@ func move_char_to(mode: int, card_info: Dictionary) -> void:
 		emite = "sgin_selected_char_once_finished"
 		to_pos = char_pos
 		sub_node = $Selected
-
-	var from_pos = card_info["position"]
-	var animation_name = card_info["char_name"]
-	var number = card_info["char_num"]
-	var up_offset = card_info["char_up_offset"]
+	var char_info = Data.get_char_info(char_name)
+	var animation_name = char_name
+	var number = char_info["char_num"]
+	var up_offset = char_info["char_up_offset"]
 	var incoming_char = CharacterCard.instance()
 	Signal.emit_signal("sgin_char_not_ready", incoming_char)
 	sub_node.add_child(incoming_char)
-	sub_node.store.append(card_info)
+	sub_node.store.append(char_info)
 	incoming_char.init_char(
 		animation_name, number, up_offset, Vector2(0.13, 0.13), from_pos, init_face_up
 	)
@@ -117,6 +117,6 @@ func move_char_to(mode: int, card_info: Dictionary) -> void:
 	yield(TweenMove, "tween_all_completed")
 	if mode == State.SELECTING:
 		sub_node.remove_child(incoming_char)
-		sub_node.store.erase(card_info)
-	Signal.emit_signal(emite, card_info["char_name"])
+		sub_node.store.erase(char_name)
+	Signal.emit_signal(emite, char_name)
 	Signal.emit_signal("sgin_char_ready", incoming_char)

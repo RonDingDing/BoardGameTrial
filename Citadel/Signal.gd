@@ -5,17 +5,21 @@ signal sgin_start_game(all_player_length)
 #warning-ignore:unused_signal
 signal sgin_draw_card(player_num, card_name, from_pos, face_is_up)
 #warning-ignore:unused_signal
-signal sgin_player_obj_draw_card(player_obj, card_info, from_pos, face_is_up)
+signal sgin_player_obj_draw_card(player_obj, card_name, from_pos, face_is_up)
 #warning-ignore:unused_signal
-signal sgin_player_obj_built_card(player_obj, card_info, from_pos)
+signal sgin_player_obj_built_card(player_obj, card_name, from_pos)
 #warning-ignore:unused_signal
-#signal sgout_player_draw(card_info, from_pos)
+#signal sgout_player_draw(card_name, from_pos)
 #warning-ignore:unused_signal
 signal player_info(data)
 #warning-ignore:unused_signal
 signal sgin_player_draw_ready(card)
 #warning-ignore:unused_signal
 signal sgin_player_draw_not_ready(card)
+#warning-ignore:unused_signal
+signal sgin_player_built_not_ready(card)
+#warning-ignore:unused_signal
+signal sgin_player_built_ready(card)
 #warning-ignore:unused_signal
 signal sgin_opponent_draw_ready(card)
 #warning-ignore:unused_signal
@@ -55,11 +59,11 @@ signal sgin_char_selected(char_num)
 #warning-ignore:unused_signal
 signal sgin_set_reminder(text)
 #warning-ignore:unused_signal
-signal sgin_move_char_to_discarded(char_info)
+signal sgin_move_char_to_discarded(char_name, from_pos)
 #warning-ignore:unused_signal
-signal sgin_move_char_to_hidden(char_info)
+signal sgin_move_char_to_hidden(char_name, from_pos)
 #warning-ignore:unused_signal
-signal sgin_move_char_to_selected(char_info)
+signal sgin_move_char_to_selected(char_name, from_pos)
 #warning-ignore:unused_signal
 signal sgin_discarded_once_finished(char_name)
 #warning-ignore:unused_signal
@@ -109,9 +113,9 @@ func on_sgin_draw_gold(player_obj: Node, from_pos: Vector2) -> void:
 
 
 func on_sgin_player_obj_draw_card(
-	player_obj: Node, card_info: Dictionary, from_pos: Vector2, face_is_up: bool
+	player_obj: Node, card_name: String, from_pos: Vector2, face_is_up: bool
 ) -> void:
-	player_obj.on_sgout_player_draw(card_info, from_pos, face_is_up)
+	player_obj.on_sgout_player_draw(card_name, from_pos, face_is_up)
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:
