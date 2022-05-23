@@ -47,6 +47,7 @@ script = ExtResource( 2 )
 [connection signal="sgin_move_char_to_discarded" from="Signal" to="Game/Board" method="on_sgin_move_char_to_discarded"]
 [connection signal="sgin_move_char_to_hidden" from="Signal" to="Game/Board" method="on_sgin_move_char_to_hidden"]
 [connection signal="sgin_move_char_to_selected" from="Signal" to="Game/Board" method="on_sgin_move_char_to_selected"]
+[connection signal="sgin_one_round_finished" from="Signal" to="Game/Board" method="on_sgin_one_round_finished"]
 [connection signal="sgin_player_draw_not_ready" from="Signal" to="Signal" method="on_sgin_player_draw_not_ready"]
 [connection signal="sgin_player_draw_ready" from="Signal" to="Signal" method="on_sgin_player_draw_ready"]
 [connection signal="sgin_player_obj_draw_card" from="Signal" to="Signal" method="on_sgin_player_obj_draw_card"]

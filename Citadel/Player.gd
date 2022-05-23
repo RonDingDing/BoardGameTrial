@@ -112,7 +112,7 @@ func get_positions_with_new_card(obj: Node) -> Array:
 
 	if hand_num <= 4:
 		for i in range(hand_num):
-			positions.append(Vector2(start + 120 * i, 0))
+			positions.append(Vector2(start + 132 * i, 0))
 	else:
 		for i in range(hand_num):
 			positions.append(Vector2(start + (end - start) / (hand_num - 1) * i, 0))
@@ -211,7 +211,8 @@ func on_player_info(data: Dictionary) -> void:
 	else:
 		username_shown = username
 	$Username.text = username_shown
-	$MoneyNum.text = str(data.get("money", 0))
+	gold = data.get("money", 0)
+	$MoneyNum.text = str(gold)
 	set_employee(data.get("employee", employee))
 	set_hide_employee(data.get("hide_employee", hide_employee))
 	has_crown = data.get("has_crown", has_crown)
@@ -344,3 +345,10 @@ func on_sgin_card_played(card_info: Dictionary, from_pos: Vector2) -> void:
 	rearrange($HandScript, get_hand_positions_with_new_card())
 	rearrange($BuiltScript, get_built_positions_with_new_card())
 	yield(TweenMove, "tween_all_completed")
+
+
+func after_end_turn() -> void:
+	played_this_turn = []
+	
+func can_end_game() -> bool:
+	return built.size() >= 7

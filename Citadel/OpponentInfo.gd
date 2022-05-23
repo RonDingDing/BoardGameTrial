@@ -101,7 +101,8 @@ func on_player_info(data: Dictionary) -> void:
 	else:
 		username_shown = username
 	$IconUsername/Username.text = username_shown
-	$MoneyIcon/MoneyNum.text = str(data.get("money", 0))
+	gold = data.get("money", 0)
+	$MoneyIcon/MoneyNum.text = str(gold)
 	hands = data.get("hands", hands)
 	$HandsInfo/HandNum.text = str(data.get("hand_num", hands.size()))
 	set_employee(data.get("employee", employee))
@@ -145,3 +146,7 @@ func show_employee() -> void:
 	hide_employee = false
 	$Employee.hide_employee = false
 	$Employee/Pic.set_animation(employee)
+
+
+func can_end_game() -> bool:
+	return built.size() >= 7

@@ -22,8 +22,8 @@ enum State { IDLE, DISCARDING, HIDING, SELECTING }
 onready var state = State.IDLE
 onready var discarded_hidden_position = Vector2(-9999, -9999)
 
-#func _ready():
-#	set_global_position(Vector2(720, 540))
+func reset_available() -> void:
+	available = available_characters.keys()
 
 
 func add_employee(char_num: int) -> void:
@@ -106,7 +106,7 @@ func wait(mode: int, remove: int) -> void:
 		note = "NOTE_SELECT"
 		once = "sgin_selected_char_once_finished"
 		alls = "sgin_selected_char_all_finished"
-
+		
 	for _i in range(remove):
 		show()
 		if mode == State.SELECTING:

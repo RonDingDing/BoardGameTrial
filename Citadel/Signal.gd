@@ -101,7 +101,8 @@ signal sgin_card_selected(card_name, from_pos)
 
 #warning-ignore:unused_signal
 signal sgin_card_played(card_name, from_pos)
-
+#warning-ignore:unused_signal
+signal sgin_one_round_finished
 
 func on_sgin_draw_gold(player_obj: Node, from_pos: Vector2) -> void:
 	player_obj.on_sgout_player_obj_gold(from_pos)

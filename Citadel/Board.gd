@@ -151,7 +151,6 @@ func hand_over_control(relative_to_me: int) -> void:
 	first_person_num = player_obj.player_num
 	Signal.emit_signal("hand_over", player_name)
 	reseat(relative_to_me)
-	set_process(false)
 	hide()
 
 
@@ -169,18 +168,16 @@ func phase(phase_string: int) -> void:
 
 func resource():
 	Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
-	$ButtonScript.show()
+	$ButtonScript.show_resource()
 
 
 func mask_turn() -> void:
 	Signal.emit_signal("phase", "PHASE_TURN_START")
-	set_process(false)
 	hide()
 
 
 func mask_character_selection() -> void:
 	Signal.emit_signal("phase", "PHASE_CHARACTER_SELECTION")
-	set_process(false)
 	hide()
 
 
@@ -190,11 +187,9 @@ func on_sgin_ready_game() -> void:
 	player_obj.set_crown(true)
 	phase(Phase.CHARACTER_SELECTION)
 	yield(Signal, "uncover")
-	set_process(true)
 	show()
 	hand_over_control(relative_to_me)
 	yield(Signal, "uncover")
-	set_process(true)
 	show()
 	var remove_data = character_phase_remove()
 	$Employment.wait_discard(remove_data[0])
@@ -333,6 +328,7 @@ func handle_last_player_who_select(i: int) -> void:
 		var char_info = hidden_has_char.pop_back()
 		$Employment.add_employee(char_info["char_num"])
 		$DiscardedHidden/Hidden.remove_child(hidden_char_obj)
+		hidden_char_obj.queue_free()
 
 
 func on_sgin_character_selection() -> void:
@@ -344,7 +340,6 @@ func on_sgin_character_selection() -> void:
 		if i < opponent_length:
 			hand_over_control(1)
 			yield(Signal, "uncover")
-			set_process(true)
 			show()
 	Signal.emit_signal("sgin_start_turn")
 
@@ -393,7 +388,6 @@ func make_params(player_obj: Node, employee_name: String) -> Params:
 func on_start_turn() -> void:
 	mask_turn()
 	yield(Signal, "uncover")
-	set_process(true)
 	show()
 	for num in range(1, $Employment.full_num):
 		# 播放动画，显示大牌，然后移动到相应的雇佣区去
@@ -411,24 +405,28 @@ func on_start_turn() -> void:
 		var relative_to_me = cal_relative_to_me(player_obj.player_num)
 		hand_over_control(relative_to_me)
 		yield(Signal, "uncover")
-		set_process(true)
 		show()
 
 		phase(Phase.RESOURCE)
 		yield(Signal, "sgin_resource_need")
-		$ButtonScript.hide()
+		$ButtonScript.hide_resource()
 		yield(Signal, "sgin_resource_end")
-		
-		
-		
+
 		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 		$Player.enable_play()
 
+		$ButtonScript.show_end_turn()
 		yield(Signal, "sgin_end_turn")
+		$ButtonScript.hide_end_turn()
+		$Player.after_end_turn()
+		print($Player.username, " ", $Player.gold, " ", $Player.hands.size(), " ", $Player.built.size())
 
+	Signal.emit_signal("sgin_one_round_finished")
+	 
 
 func on_sgin_selected_char_once_finished(char_name: String) -> void:
 	$Player.set_employee(char_name)
+	print($Player.username, " ", char_name)
 
 
 func on_sgin_resource_need(what: int) -> void:
@@ -446,6 +444,7 @@ func gain_gold() -> void:
 		yield(Signal, "sgin_player_gold_ready")
 	Signal.emit_signal("sgin_resource_end")
 
+
 func gain_card() -> void:
 	var card_to_gain = 2
 	var card_to_click = 1
@@ -456,14 +455,34 @@ func gain_card() -> void:
 	for _i in range(card_to_click):
 		var sig = yield(Signal, "sgin_card_selected")
 		to_select.erase(sig[0])  #.card_name
-		
+
 	$Deck.extend(to_select)
 	Signal.emit_signal("sgin_resource_end")
+
 
 func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 	$Player.on_sgout_player_draw(Data.get_card_info(card_name), from_pos, true)
 	$AnyCardEnlarge.reset_cards()
-	
+
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	$Player.on_sgin_card_played(Data.get_card_info(card_name), from_pos)
+
+
+
+func is_game_over() -> bool:
+	var game_over = false
+	for p in range(opponent_length + 1):
+		var player_obj = select_obj_by_num(p)
+		if player_obj.can_end_game():
+			game_over = true
+	return game_over
+
+func on_sgin_one_round_finished() -> void:			
+	if not is_game_over():
+		$Employment.reset_available()
+		var crown_player  
+	else:
+		pass
+			
+	
