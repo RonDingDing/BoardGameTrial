@@ -30,8 +30,8 @@ func set_deck_position(pos: Vector2) -> void:
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
 
-func on_sgout_player_draw(card_name: String, from_pos: Vector2, _face_is_up: bool) -> void:
-	var card_info = Data.get_card_info(card_name)
+func draw(card_name: String, _face_is_up: bool, from_pos: Vector2) -> void:
+#	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position

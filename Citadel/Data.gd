@@ -231,3 +231,5 @@ func get_char_info(char_name: String) -> Dictionary:
 		"char_num": char_data[char_name],
 		"char_up_offset": get_up_offset_char(char_name),
 	}
+
+

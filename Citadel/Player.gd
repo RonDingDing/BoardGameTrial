@@ -104,7 +104,7 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 
 
 
-func on_sgout_player_draw(card_name: String, from_pos: Vector2, face_is_up: bool) -> void:
+func draw(card_name: String, face_is_up: bool, from_pos: Vector2) -> void:
 	player_draw_built("hands", card_name, from_pos, face_is_up)
 	# var card_info = Data.get_card_info(card_name)
 	# var incoming_card = Card.instance()
@@ -305,7 +305,7 @@ func on_player_info(data: Dictionary) -> void:
 		$BuiltScript.remove_child(n)
 		n.queue_free()
 	for c in data.get("hands", []):
-		on_sgout_player_draw(c, deck_position, true)
+		draw(c, true, deck_position)
 	enable_enlarge()
 	for b in data.get("built", []):
 		on_sgout_player_built(b, deck_position)

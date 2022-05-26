@@ -91,21 +91,21 @@ func extend(card_names: Array) -> void:
 	deck.append_array(card_names)
 
 
-func draw_card(relative_to_me: int, pos: Vector2, face_is_up: bool):
-	var card_name = deck.pop_front()
-	Signal.emit_signal("sgin_draw_card", relative_to_me, card_name, pos, face_is_up)
-
-
-func on_sgin_start_game(all_player_length):
-	# 洗牌
-	shuffle()
-
-	# 每个玩家派4张牌
-	for _i in range(4):
-		for relative_to_me in range(all_player_length):
-			draw_card(relative_to_me, position, false)
-			if relative_to_me == 0:
-				yield(Signal, "sgin_player_draw_ready")
-			else:
-				yield(Signal, "sgin_opponent_draw_ready")
-	Signal.emit_signal("sgin_card_dealt", all_player_length)
+#func draw_card(relative_to_me: int, pos: Vector2, face_is_up: bool):
+#	var card_name = deck.pop_front()
+#	Signal.emit_signal("sgin_draw_card", relative_to_me, card_name, pos, face_is_up)
+#
+#
+#func on_sgin_start_game(all_player_length):
+#	# 洗牌
+#	shuffle()
+#
+#	# 每个玩家派4张牌
+#	for _i in range(4):
+#		for relative_to_me in range(all_player_length):
+#			draw_card(relative_to_me, position, false)
+#			if relative_to_me == 0:
+#				yield(Signal, "sgin_player_draw_ready")
+#			else:
+#				yield(Signal, "sgin_opponent_draw_ready")
+#	Signal.emit_signal("sgin_card_dealt", all_player_length)

@@ -47,9 +47,9 @@ func show_player() -> void:
 		var node = get_node(str("Opponent", i + 1))
 		node.position = $OpponentPath2D/PathFollow2D.position
 
-
-func start_game() -> void:
-	Signal.emit_signal("sgin_start_game", opponent_length + 1)
+#
+#func start_game() -> void:
+#	Signal.emit_signal("sgin_start_game", opponent_length + 1)
 
 
 func cal_seat_num(relative_to_me: int) -> int:
@@ -72,9 +72,32 @@ func on_sgin_gold(relative_to_me: int, from_pos: Vector2) -> void:
 	Signal.emit_signal("sgin_draw_gold", player_obj, from_pos)
 
 
-func on_sgin_draw_card(relative_to_me: int, card_name: String, from_pos: Vector2, face_is_up: bool) -> void:
+func on_sgin_draw_card(relative_to_me: int, face_is_up: bool, from_pos: Vector2=deck_position):
+	if from_pos == null:
+		from_pos = deck_position	
+	var card_name = $Deck.pop()
 	var player_obj = select_obj_by_num(relative_to_me)
-	Signal.emit_signal("sgin_player_obj_draw_card", player_obj, card_name, from_pos, face_is_up)
+	player_obj.draw(card_name, face_is_up, from_pos)
+
+
+func start_game():
+	var all_player_length = opponent_length + 1
+	# 洗牌
+	$Deck.shuffle()
+
+	# 每个玩家派4张牌
+	for _i in range(4):
+		for relative_to_me in range(all_player_length):
+			on_sgin_draw_card(relative_to_me, false)
+			if relative_to_me == 0:
+				yield(Signal, "sgin_player_draw_ready")
+			else:
+				yield(Signal, "sgin_opponent_draw_ready")
+	Signal.emit_signal("sgin_card_dealt", all_player_length)
+
+
+
+
 
 
 func first_player() -> int:
@@ -473,7 +496,7 @@ func gain_card() -> void:
 
 
 func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
-	$Player.on_sgout_player_draw(card_name, from_pos, true)
+	$Player.draw(card_name, true, from_pos)
 	$AnyCardEnlarge.reset_cards()
 
 
@@ -493,16 +516,17 @@ func is_game_over() -> bool:
 func find_crown_player() -> int:
 	for i in range(opponent_length + 1):
 		var player_obj = select_obj_by_num(i)
-		if player_obj.employee in ["King", "Emperor", "Patrician"]:
+		if player_obj.has_crown:
 			return i
 	return 0
 
 
 func on_sgin_one_round_finished() -> void:
 	if not is_game_over():
+		print($Player.username)
+		var crown_player_relative_to_me = find_crown_player()
 		$Employment.reset_available()
 		character_reset()
-		var crown_player_relative_to_me = find_crown_player()
 		character_selection(crown_player_relative_to_me)
 	else:
 		game_over()

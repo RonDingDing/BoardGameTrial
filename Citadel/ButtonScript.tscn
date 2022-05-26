@@ -37,9 +37,9 @@ __meta__ = {
 }
 
 [node name="NeedCard" type="TextureButton" parent="."]
-margin_left = 900.0
+margin_left = 933.0
 margin_top = 530.0
-margin_right = 1620.0
+margin_right = 1653.0
 margin_bottom = 1038.0
 rect_scale = Vector2( 0.15, 0.15 )
 texture_normal = ExtResource( 1 )
@@ -48,9 +48,9 @@ __meta__ = {
 }
 
 [node name="NeedCardLabel" type="Label" parent="."]
-margin_left = 925.0
+margin_left = 958.0
 margin_top = 558.0
-margin_right = 1125.0
+margin_right = 1158.0
 margin_bottom = 600.0
 custom_colors/font_color = Color( 1, 1, 1, 1 )
 custom_fonts/font = SubResource( 1 )
