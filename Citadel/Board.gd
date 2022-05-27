@@ -8,6 +8,7 @@ onready var discarded_hidden_position = $DiscardedHidden.position
 onready var lang = "zh_CN"
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
+onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var started = false
 enum Phase { CHARACTER_SELECTION, RESOURCE, TURN, END, GAME_OVER }
 enum Need { GOLD, CARD }
@@ -67,9 +68,11 @@ func select_obj_by_num(relative_to_me: int) -> Node:
 		return get_node(str("Opponent", relative_to_me))
 
 
-func on_sgin_gold(relative_to_me: int, from_pos: Vector2) -> void:
+func on_sgin_gold(relative_to_me: int, from_pos: Vector2=bank_position) -> void:
+	if from_pos == null:
+		from_pos = bank_position
 	var player_obj = select_obj_by_num(relative_to_me)
-	Signal.emit_signal("sgin_draw_gold", player_obj, from_pos)
+	player_obj.on_draw_gold(from_pos)
 
 
 func on_sgin_draw_card(relative_to_me: int, face_is_up: bool, from_pos: Vector2=deck_position):
@@ -77,24 +80,48 @@ func on_sgin_draw_card(relative_to_me: int, face_is_up: bool, from_pos: Vector2=
 		from_pos = deck_position	
 	var card_name = $Deck.pop()
 	var player_obj = select_obj_by_num(relative_to_me)
-	player_obj.draw(card_name, face_is_up, from_pos)
+	player_obj.draw(card_name, face_is_up, from_pos, 1)
 
 
 func start_game():
-	var all_player_length = opponent_length + 1
 	# 洗牌
 	$Deck.shuffle()
+	deal_cards()
 
+
+func deal_cards():
+	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
 	for _i in range(4):
 		for relative_to_me in range(all_player_length):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()		
+			yield(TimerGlobal, "timeout")
 			on_sgin_draw_card(relative_to_me, false)
+	for _i in range(4):
+		for relative_to_me in range(all_player_length):
 			if relative_to_me == 0:
 				yield(Signal, "sgin_player_draw_ready")
 			else:
 				yield(Signal, "sgin_opponent_draw_ready")
 	Signal.emit_signal("sgin_card_dealt", all_player_length)
-
+	
+	
+func on_sgin_card_dealt(all_player_length: int) -> void:
+	# 每人发2个金币
+	for _i in range(2):
+		for relative_to_me in range(all_player_length):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()		
+			yield(TimerGlobal, "timeout")
+			on_sgin_gold(relative_to_me, bank_position)
+	for _i in range(2):
+		for relative_to_me in range(all_player_length):
+			if relative_to_me == 0:
+				yield(Signal, "sgin_player_gold_ready")
+			else:
+				yield(Signal, "sgin_opponent_gold_ready")
+	Signal.emit_signal("sgin_ready_game")
 
 
 
@@ -475,7 +502,7 @@ func on_sgin_resource_need(what: int) -> void:
 func gain_gold() -> void:
 	var gold_to_gain = 2
 	for _i in range(gold_to_gain):
-		$Bank.draw_gold(0, $Bank.position)
+		on_sgin_gold(0, bank_position)
 		yield(Signal, "sgin_player_gold_ready")
 	Signal.emit_signal("sgin_resource_end")
 
@@ -496,7 +523,7 @@ func gain_card() -> void:
 
 
 func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
-	$Player.draw(card_name, true, from_pos)
+	$Player.draw(card_name, true, from_pos, 1)
 	$AnyCardEnlarge.reset_cards()
 
 
@@ -523,7 +550,6 @@ func find_crown_player() -> int:
 
 func on_sgin_one_round_finished() -> void:
 	if not is_game_over():
-		print($Player.username)
 		var crown_player_relative_to_me = find_crown_player()
 		$Employment.reset_available()
 		character_reset()

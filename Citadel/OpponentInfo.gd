@@ -30,7 +30,7 @@ func set_deck_position(pos: Vector2) -> void:
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
 
-func draw(card_name: String, _face_is_up: bool, from_pos: Vector2) -> void:
+func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_time:float) -> void:
 #	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
@@ -44,30 +44,32 @@ func draw(card_name: String, _face_is_up: bool, from_pos: Vector2) -> void:
 				"global_position",
 				from_pos,
 				my_card_back_pos,
+				animation_time
 			],
 			[
 				incoming_card,
 				"scale",
 				Vector2(0.175, 0.175),
 				Vector2(0.03, 0.03),
+				animation_time
 			]
 		]
 	)
-	yield(TweenMove, "tween_all_completed")
 	hands.append(card_name)
 	var hand_num = hands.size()
 	$HandsInfo/HandNum.text = str(hand_num)
+	yield(TweenMove, "tween_all_completed")
 	remove_child(incoming_card)
 	incoming_card.queue_free()
 	Signal.emit_signal("sgin_opponent_draw_ready", incoming_card)
 
 
-func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
+func on_draw_gold(from_pos: Vector2) -> void:
 	var incoming_gold = Gold.instance()
 	var my_card_back_pos = Vector2(
 		$MoneyIcon.global_position.x - 61, $MoneyIcon.global_position.y - 4
 	)
-	incoming_gold.to_coin(Vector2(1, 1), Vector2(-9999999, -9999999))
+	incoming_gold.to_coin(Vector2(1, 1), from_pos)
 	add_child(incoming_gold)
 	TweenMove.animate(
 		[
@@ -85,9 +87,9 @@ func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
 			],
 		]
 	)
-	yield(TweenMove, "tween_all_completed")
 	gold += 1
 	$MoneyIcon/MoneyNum.text = str(gold)
+	yield(TweenMove, "tween_all_completed")
 	remove_child(incoming_gold)
 	incoming_gold.queue_free()
 	Signal.emit_signal("sgin_opponent_gold_ready")

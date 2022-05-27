@@ -1,6 +1,6 @@
 extends Tween
 
-onready var animation_time = 0.1
+onready var animation_time = 1
 
 
 func animate(action_list: Array) -> void:

@@ -28,7 +28,7 @@ func set_bank_position(pos: Vector2) -> void:
 func set_deck_position(pos: Vector2) -> void:
 	deck_position = pos
 
-func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_is_up: bool) -> void:
+func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_is_up: bool, animation_time: float) -> void:
 	var list
 	var node
 	var not_ready_signal
@@ -53,26 +53,27 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 	)
 	Signal.emit_signal(not_ready_signal, incoming_card)
 	var positions = get_positions_with_new_card(node)   
-	var animation_time = 0.1
-
 	var action_list = [
 		[
 			incoming_card,
 			"global_position",
 			from_pos,
 			positions[-1] + $HandScript.global_position,
+			animation_time
 		],
 		[
 			incoming_card.get_node("Back"),
 			"visible",
 			true,
 			not face_is_up,
+			animation_time
 		],
 		[
 			incoming_card.get_node("Face"),
 			"visible",
 			false,
 			face_is_up,
+			animation_time
 		]
 	]
 	if face_is_up:
@@ -98,74 +99,17 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 		)
 	TweenMove.animate(action_list)
 
-	rearrange(node, positions)
+	rearrange(node, positions, animation_time + 0.01)
 	yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal(ready_signal, incoming_card)
 
 
 
-func draw(card_name: String, face_is_up: bool, from_pos: Vector2) -> void:
-	player_draw_built("hands", card_name, from_pos, face_is_up)
-	# var card_info = Data.get_card_info(card_name)
-	# var incoming_card = Card.instance()
-	# hands.append(card_name)
-	# $HandScript.add_child(incoming_card)
-	# incoming_card.init_card(
-	# 	card_name, card_info["up_offset"], Vector2(0.175, 0.175), from_pos, true, false
-	# )
-	# Signal.emit_signal("sgin_player_draw_not_ready", incoming_card)
-	# var positions = get_hand_positions_with_new_card()
-	# var animation_time = 0.1
+func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float) -> void:
+	player_draw_built("hands", card_name, from_pos, face_is_up, animation_time)
+	 
 
-	# var action_list = [
-	# 	[
-	# 		incoming_card,
-	# 		"global_position",
-	# 		from_pos,
-	# 		positions[-1] + $HandScript.global_position,
-	# 	],
-	# 	[
-	# 		incoming_card.get_node("Back"),
-	# 		"visible",
-	# 		true,
-	# 		not face_is_up,
-	# 	],
-	# 	[
-	# 		incoming_card.get_node("Face"),
-	# 		"visible",
-	# 		false,
-	# 		face_is_up,
-	# 	]
-	# ]
-	# if face_is_up:
-	# 	action_list.insert(
-	# 		1,
-	# 		[
-	# 			incoming_card,
-	# 			"scale:y",
-	# 			incoming_card.scale.y,
-	# 			0.01,
-	# 			animation_time / 2,
-	# 		]
-	# 	)
-	# 	action_list.insert(
-	# 		2,
-	# 		[
-	# 			incoming_card,
-	# 			"scale:y",
-	# 			0.01,
-	# 			incoming_card.scale.y,
-	# 			animation_time / 2,
-	# 		]
-	# 	)
-	# TweenMove.animate(action_list)
-
-	# rearrange($HandScript, positions)
-	# yield(TweenMove, "tween_all_completed")
-	# Signal.emit_signal("sgin_player_draw_ready", incoming_card)
-
-
-func rearrange(node: Node, positions: Array) -> void:
+func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 	var hands_obj = node.get_children()
 	for index in range(hands_obj.size()):
 		var each_card = hands_obj[index]
@@ -176,6 +120,7 @@ func rearrange(node: Node, positions: Array) -> void:
 					"global_position",
 					each_card.global_position,
 					positions[index] + node.global_position,
+					animation_time
 				]
 			]
 		)
@@ -233,9 +178,9 @@ func gold_transfer(
 		]
 	)
 	TweenMove.start()
-	yield(TweenMove, "tween_all_completed")
 	gold += add_num
 	$MoneyNum.text = str(gold)
+	yield(TweenMove, "tween_all_completed")
 	remove_child(incoming_gold)
 	incoming_gold.queue_free()
 	Signal.emit_signal(callback_signal)
@@ -247,7 +192,7 @@ func on_sgout_player_obj_pay(to_pos: Vector2) -> void:
 	)
 
 
-func on_sgout_player_obj_gold(from_pos: Vector2) -> void:
+func on_draw_gold(from_pos: Vector2) -> void:
 	gold_transfer(
 		from_pos,
 		$GoldImg.global_position,
@@ -305,14 +250,14 @@ func on_player_info(data: Dictionary) -> void:
 		$BuiltScript.remove_child(n)
 		n.queue_free()
 	for c in data.get("hands", []):
-		draw(c, true, deck_position)
+		draw(c, true, deck_position, 0)
 	enable_enlarge()
 	for b in data.get("built", []):
-		on_sgout_player_built(b, deck_position)
+		build(b, deck_position, 0)
 
 
-func on_sgout_player_built(card_name: String, from_pos: Vector2) -> void:
-	player_draw_built("built", card_name, from_pos, true)
+func build(card_name: String, from_pos: Vector2, animation_time:float  ) -> void:
+	player_draw_built("built", card_name, from_pos, true, animation_time)
 
 
 func get_my_player_info() -> Dictionary:
@@ -402,7 +347,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	TweenMove.animate(
 		[
 			[card_obj, "global_position", from_pos, center],
-			[card_obj, "scale", original_scale, Vector2(1, 1)],
+			[card_obj, "scale", original_scale, Vector2(0.6, 0.6)],
 		]
 	)
 	yield(TweenMove, "tween_all_completed")
@@ -414,14 +359,14 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 				center,
 				$BuiltScript.global_position + get_built_positions_with_new_card()[-1]
 			],
-			[card_obj, "scale", Vector2(1, 1), original_scale],
+			[card_obj, "scale", Vector2(0.6, 0.6), original_scale],
 		]
 	)
 	yield(TweenMove, "tween_all_completed")
 	card_obj.z_index = z_index
 	enable_enlarge_play()
-	rearrange($HandScript, get_hand_positions_with_new_card())
-	rearrange($BuiltScript, get_built_positions_with_new_card())
+	rearrange($HandScript, get_hand_positions_with_new_card(),1)
+	rearrange($BuiltScript, get_built_positions_with_new_card(),1)
 	yield(TweenMove, "tween_all_completed")
 
 

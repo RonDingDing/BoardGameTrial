@@ -150,7 +150,6 @@ func move_char_to(mode: int, char_num: int) -> void:
 		list = useless
 		emite = "sgin_move_char_to_selected"
 		fini = "sgin_selected_char_once_finished"
-
 	if not list.has(char_num):
 		list.append(char_num)
 	if available.has(char_num):
@@ -182,3 +181,4 @@ func on_char_clicked(char_num: int) -> void:
 			move_char_to_hidden(char_num)
 		State.SELECTING:
 			move_char_to_selected(char_num)
+	state = State.IDLE
