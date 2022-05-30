@@ -141,4 +141,5 @@ NOTE_NEED_CARD, "Card", "摸牌"
 NOTE_NEED_GOLD, "Gold", "淘金"
 NOTE_END_TURN, "End", "结束"
 NOTE_PLAY, "Please play cards or activate your employee's skill.", "请出牌或使用雇佣角色的技能。"
+NOTE_ASSASSIN, "Please select an employee to kill.", "请杀死一个角色。"
 

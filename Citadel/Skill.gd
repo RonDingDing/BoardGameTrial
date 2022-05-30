@@ -111,3 +111,31 @@ func cardskill_play_stables():
 
 func museum() -> void:
 	pass
+
+#### Skills - Character
+func charskill_play_active_assassin() -> void:
+	Signal.emit_signal("sgin_assassin_wait")
+
+func charskill_play_active_thief() -> void:
+	print("steal")
+	
+	
+func charskill_play_active_magician() -> void:
+	print("magic")
+	
+func charskill_play_passive_king() -> void:
+	print("king")
+	
+	
+func charskill_play_active_bishop() -> void:
+	print("peach")
+
+func charskill_play_active_merchant() -> void:
+	print("sell")
+
+func charskill_play_passive_architect() -> void:
+	print("build")
+
+func charskill_play_active_warlord() -> void:
+	print("gain or destroy")
+	

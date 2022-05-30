@@ -4,7 +4,7 @@ onready var Signal = get_node("/root/Main/Signal")
 onready var need_gold_pos = $NeedGold.rect_position
 onready var need_card_pos = $NeedCard.rect_position
 onready var end_turn_pos = $EndTurn.rect_position
-
+onready var can_end = true
 
 func _ready() -> void:
 	hide_resource()
@@ -16,7 +16,10 @@ func _ready() -> void:
 	$EndTurn.rect_position = end_turn_pos
 	$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
-
+func set_can_end(end: bool) -> void:
+	can_end = end
+	 
+	
 func show_end_turn() -> void:
 	$EndTurn.show()
 	$EndTurnLabel.show()
@@ -42,9 +45,10 @@ func hide_resource() -> void:
 
 
 func on_end_turn_pressed() -> void:
-	Signal.emit_signal("sgin_end_turn")
-	$EndTurn.rect_position = end_turn_pos
-	$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+	if can_end:
+		Signal.emit_signal("sgin_end_turn")
+		$EndTurn.rect_position = end_turn_pos
+		$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
 
 func on_need_gold_pressed() -> void:

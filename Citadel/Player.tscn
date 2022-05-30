@@ -1,6 +1,6 @@
 [gd_scene load_steps=19 format=2]
 
-[ext_resource path="res://Employee.tscn" type="PackedScene" id=1]
+[ext_resource path="res://EmployeePlayer.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Player.gd" type="Script" id=2]
 [ext_resource path="res://Fonts/xolonium-regular.ttf" type="DynamicFontData" id=3]
 [ext_resource path="res://images/Gold.png" type="Texture" id=4]
@@ -27,29 +27,9 @@ animations = [ {
 "name": "Player5",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 11 ) ],
-"loop": true,
-"name": "Player3",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 12 ) ],
-"loop": true,
-"name": "Player4",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 15 ) ],
-"loop": true,
-"name": "Player1",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 8 ) ],
 "loop": true,
 "name": "Player0",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 14 ) ],
-"loop": true,
-"name": "Player2",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 9 ) ],
@@ -57,9 +37,29 @@ animations = [ {
 "name": "Player6",
 "speed": 5.0
 }, {
+"frames": [ ExtResource( 14 ) ],
+"loop": true,
+"name": "Player2",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 12 ) ],
+"loop": true,
+"name": "Player4",
+"speed": 5.0
+}, {
 "frames": [ ExtResource( 13 ) ],
 "loop": true,
 "name": "Player7",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 15 ) ],
+"loop": true,
+"name": "Player1",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 11 ) ],
+"loop": true,
+"name": "Player3",
 "speed": 5.0
 } ]
 
@@ -122,3 +122,5 @@ __meta__ = {
 position = Vector2( 1328, 844 )
 scale = Vector2( 0.15, 0.15 )
 texture = ExtResource( 7 )
+
+[connection signal="input_event" from="Employee" to="Employee" method="on_input_event"]

@@ -30,6 +30,7 @@ script = ExtResource( 2 )
 
 [connection signal="hand_over" from="Signal" to="Game/Mask" method="on_hand_over"]
 [connection signal="phase" from="Signal" to="Game/Mask" method="on_phase"]
+[connection signal="sgin_assassin_wait" from="Signal" to="Game/Board" method="on_sgin_assassin_wait"]
 [connection signal="sgin_card_dealt" from="Signal" to="Game/Board" method="on_sgin_card_dealt"]
 [connection signal="sgin_card_focused" from="Signal" to="Game/Board" method="on_sgin_card_focused"]
 [connection signal="sgin_card_played" from="Signal" to="Game/Board" method="on_sgin_card_played"]

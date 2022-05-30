@@ -92,7 +92,13 @@ signal sgin_card_selected(card_name, from_pos)
 signal sgin_card_played(card_name, from_pos)
 #warning-ignore:unused_signal
 signal sgin_one_round_finished
- 
+
+#warning-ignore:unused_signal
+signal sgin_assassin_wait
+#warning-ignore:unused_signal
+signal sgin_assassin_once_finished
+#warning-ignore:unused_signal
+signal sgin_assassin_all_finished
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)

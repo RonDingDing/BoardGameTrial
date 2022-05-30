@@ -21,6 +21,7 @@ onready var deck_position = Vector2(-9999, -9999)
 onready var center = get_viewport_rect().size / 2
 
 
+
 func set_bank_position(pos: Vector2) -> void:
 	bank_position = pos
 
@@ -217,7 +218,8 @@ func enable_enlarge() -> void:
 		a.set_mode(a.Mode.ENLARGE)
 
 
-func enable_enlarge_play() -> void:
+func enable_play() -> void:
+	$Employee.set_playing(true)
 	for a in $HandScript.get_children():
 		a.set_mode(a.Mode.PLAY)
 	for a in $BuiltScript.get_children():
@@ -294,9 +296,9 @@ func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
 
 
-func enable_play() -> void:
-	for a in $HandScript.get_children():
-		a.set_mode(a.Mode.PLAY)
+#func enable_play() -> void:
+#	for a in $HandScript.get_children():
+#		a.set_mode(a.Mode.PLAY)
 
 
 func has_enough_money(price: int) -> bool:
@@ -364,7 +366,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	)
 	yield(TweenMove, "tween_all_completed")
 	card_obj.z_index = z_index
-	enable_enlarge_play()
+	enable_play()
 	rearrange($HandScript, get_hand_positions_with_new_card(),1)
 	rearrange($BuiltScript, get_built_positions_with_new_card(),1)
 	yield(TweenMove, "tween_all_completed")

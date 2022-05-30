@@ -566,3 +566,9 @@ func character_reset() -> void:
 
 func game_over():
 	pass
+
+
+
+func on_sgin_assassin_wait():
+	$ButtonScript.set_can_end(false)
+	$Employment.wait_assassin()
