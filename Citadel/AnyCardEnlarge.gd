@@ -1,11 +1,12 @@
 extends Node2D
-enum Mode { ENLARGE, STATIC, SELECT, PLAY }
+enum Mode { ENLARGE, STATIC, SELECT, PLAY, ASSASSINATING, STEALING }
 onready var mode = Mode.ENLARGE
 onready var TweenMove = get_node("/root/Main/Tween")
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var center = get_viewport_rect().size / 2
 onready var enlarging = ""
+
 
 func _ready():
 	$CharacterCard.hide()
@@ -18,21 +19,53 @@ func set_mode(modes: int) -> void:
 	mode = modes
 
 
-func on_sgin_card_focused(card_name: String) -> void:
-	enlarging = card_name
+func assassinate(char_name: String) -> void:
+	on_sgin_char_focused(char_name)
+	set_mode(Mode.ASSASSINATING)
+	TweenMove.animate(
+		[
+			[
+				$KillSword,
+				"global_position",
+				Vector2(-900, $CharacterCard.global_position.y),
+				$CharacterCard.global_position,
+				2
+			]
+		]
+	)
+	yield(TweenMove, "tween_all_completed")
+	set_mode(Mode.ENLARGE)
 	$CharacterCard.hide()
+	$KillSword.set_global_position(Vector2(-99999, -99999))
+
+
+func steal(char_name: String) -> void:
+	on_sgin_char_focused(char_name)
+	set_mode(Mode.STEALING)
+	TweenMove.animate(
+		[
+			[
+				$StealPocket,
+				"global_position",
+				$CharacterCard.global_position,
+				Vector2(99999, $CharacterCard.global_position.y),
+				2
+			]
+		]
+	)
+	yield(TweenMove, "tween_all_completed")
+	set_mode(Mode.ENLARGE)
+	$CharacterCard.hide()
+	$StealPocket.set_global_position(Vector2(-99999, -99999))
+
+
+func on_sgin_card_focused(card_name: String) -> void:
 	if mode == Mode.ENLARGE:
+		$CharacterCard.hide()
 		enlarging = card_name
 		var card_info = Data.get_card_info(card_name)
 		$Card0.show()
-		$Card0.init_card(
-			card_name,
-			card_info["up_offset"],
-			Vector2(0.6, 0.6),
-			center,
-			true,
-			true
-		)
+		$Card0.init_card(card_name, card_info["up_offset"], Vector2(0.6, 0.6), center, true, true)
 
 
 func on_sgin_card_unfocused(card_name: String) -> void:
@@ -41,9 +74,9 @@ func on_sgin_card_unfocused(card_name: String) -> void:
 
 
 func on_sgin_char_focused(char_name: String) -> void:
-	enlarging = char_name
-	$Card0.hide()
 	if mode == Mode.ENLARGE:
+		$Card0.hide()
+		enlarging = char_name
 		var char_info = Data.get_char_info(char_name)
 		$CharacterCard.show()
 		$CharacterCard.init_char(

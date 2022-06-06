@@ -51,11 +51,7 @@ signal sgin_char_selected(char_num)
 #warning-ignore:unused_signal
 signal sgin_set_reminder(text)
 #warning-ignore:unused_signal
-signal sgin_move_char_to_discarded(char_name, from_pos)
-#warning-ignore:unused_signal
-signal sgin_move_char_to_hidden(char_name, from_pos)
-#warning-ignore:unused_signal
-signal sgin_move_char_to_selected(char_name, from_pos)
+
 #warning-ignore:unused_signal
 signal sgin_discarded_once_finished(char_name)
 #warning-ignore:unused_signal
@@ -96,9 +92,27 @@ signal sgin_one_round_finished
 #warning-ignore:unused_signal
 signal sgin_assassin_wait
 #warning-ignore:unused_signal
-signal sgin_assassin_once_finished
+signal sgin_assassin_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
 signal sgin_assassin_all_finished
+
+#warning-ignore:unused_signal
+signal sgin_thief_wait
+#warning-ignore:unused_signal
+signal sgin_thief_once_finished(char_num, char_name)
+#warning-ignore:unused_signal
+signal sgin_thief_all_finished
+#warning-ignore:unused_signal
+signal sgin_thief_stolen
+#warning-ignore:unused_signal
+signal sgin_thief_done
+
+#warning-ignore:unused_signal
+signal sgin_magician_wait
+#warning-ignore:unused_signal
+signal sgin_magician_switch(switch)
+#warning-ignore:unused_signal
+
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)
@@ -114,4 +128,4 @@ func on_sgin_player_draw_ready(_card: Node) -> void:
 
 
 func on_sgin_player_draw_not_ready(card: Node) -> void:
-	card.set_mode(card.Mode.STATIC)
+	card.set_card_mode(card.CardMode.STATIC)

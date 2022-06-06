@@ -30,7 +30,7 @@ func set_deck_position(pos: Vector2) -> void:
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
 
-func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_time:float) -> void:
+func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_time: float) -> void:
 #	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
@@ -39,20 +39,8 @@ func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_tim
 	incoming_card.init_card("Unknown", 0, Vector2(0.175, 0.175), from_pos, false, false)
 	TweenMove.animate(
 		[
-			[
-				incoming_card,
-				"global_position",
-				from_pos,
-				my_card_back_pos,
-				animation_time
-			],
-			[
-				incoming_card,
-				"scale",
-				Vector2(0.175, 0.175),
-				Vector2(0.03, 0.03),
-				animation_time
-			]
+			[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time],
+			[incoming_card, "scale", Vector2(0.175, 0.175), Vector2(0.03, 0.03), animation_time]
 		]
 	)
 	hands.append(card_name)
@@ -95,6 +83,11 @@ func on_draw_gold(from_pos: Vector2) -> void:
 	Signal.emit_signal("sgin_opponent_gold_ready")
 
 
+func set_gold(money: int) -> void:
+	gold = money
+	$MoneyIcon/MoneyNum.text = str(money)
+
+
 func on_player_info(data: Dictionary) -> void:
 	player_num = data.get("player_num", -1)
 	$IconUsername/Icon.animation = str("Player", player_num)
@@ -105,8 +98,8 @@ func on_player_info(data: Dictionary) -> void:
 	else:
 		username_shown = username
 	$IconUsername/Username.text = username_shown
-	gold = data.get("money", 0)
-	$MoneyIcon/MoneyNum.text = str(gold)
+	set_gold(data.get("money", 0))
+
 	hands = data.get("hands", hands)
 	$HandsInfo/HandNum.text = str(data.get("hand_num", hands.size()))
 	set_employee(data.get("employee", employee))

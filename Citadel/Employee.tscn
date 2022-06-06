@@ -21,19 +21,9 @@ animations = [ {
 "name": "Architect",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 5 ) ],
+"frames": [ ExtResource( 11 ) ],
 "loop": true,
-"name": "Assassin",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 3 ) ],
-"loop": true,
-"name": "Thief",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 4 ) ],
-"loop": true,
-"name": "King",
+"name": "Queen",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 6 ) ],
@@ -41,19 +31,14 @@ animations = [ {
 "name": "Merchant",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 8 ) ],
+"frames": [ ExtResource( 1 ) ],
 "loop": true,
-"name": "Bishop",
+"name": "Unchosen",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 11 ) ],
+"frames": [ ExtResource( 4 ) ],
 "loop": true,
-"name": "Queen",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 9 ) ],
-"loop": true,
-"name": "Wizard",
+"name": "King",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 13 ) ],
@@ -61,14 +46,29 @@ animations = [ {
 "name": "Magician",
 "speed": 5.0
 }, {
+"frames": [ ExtResource( 5 ) ],
+"loop": true,
+"name": "Assassin",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 9 ) ],
+"loop": true,
+"name": "Wizard",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 3 ) ],
+"loop": true,
+"name": "Thief",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 8 ) ],
+"loop": true,
+"name": "Bishop",
+"speed": 5.0
+}, {
 "frames": [ ExtResource( 7 ) ],
 "loop": true,
 "name": "Warlord",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 1 ) ],
-"loop": true,
-"name": "Unchosen",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 10 ) ],

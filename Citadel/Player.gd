@@ -4,6 +4,7 @@ const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
+onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var Data = get_node("/root/Main/Data")
 
 onready var hands = []
@@ -21,7 +22,6 @@ onready var deck_position = Vector2(-9999, -9999)
 onready var center = get_viewport_rect().size / 2
 
 
-
 func set_bank_position(pos: Vector2) -> void:
 	bank_position = pos
 
@@ -29,7 +29,10 @@ func set_bank_position(pos: Vector2) -> void:
 func set_deck_position(pos: Vector2) -> void:
 	deck_position = pos
 
-func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_is_up: bool, animation_time: float) -> void:
+
+func player_draw_built(
+	mode: String, card_name: String, from_pos: Vector2, face_is_up: bool, animation_time: float
+) -> void:
 	var list
 	var node
 	var not_ready_signal
@@ -53,7 +56,7 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 		card_name, card_info["up_offset"], Vector2(0.175, 0.175), from_pos, true, false
 	)
 	Signal.emit_signal(not_ready_signal, incoming_card)
-	var positions = get_positions_with_new_card(node)   
+	var positions = get_positions_with_new_card(node)
 	var action_list = [
 		[
 			incoming_card,
@@ -62,20 +65,8 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 			positions[-1] + $HandScript.global_position,
 			animation_time
 		],
-		[
-			incoming_card.get_node("Back"),
-			"visible",
-			true,
-			not face_is_up,
-			animation_time
-		],
-		[
-			incoming_card.get_node("Face"),
-			"visible",
-			false,
-			face_is_up,
-			animation_time
-		]
+		[incoming_card.get_node("Back"), "visible", true, not face_is_up, animation_time],
+		[incoming_card.get_node("Face"), "visible", false, face_is_up, animation_time]
 	]
 	if face_is_up:
 		action_list.insert(
@@ -105,10 +96,9 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 	Signal.emit_signal(ready_signal, incoming_card)
 
 
-
 func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float) -> void:
 	player_draw_built("hands", card_name, from_pos, face_is_up, animation_time)
-	 
+
 
 func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 	var hands_obj = node.get_children()
@@ -189,14 +179,19 @@ func gold_transfer(
 
 func on_sgout_player_obj_pay(to_pos: Vector2) -> void:
 	gold_transfer(
-		$GoldImg.global_position, to_pos, Vector2(2, 2), Vector2(1, 1), "sgin_player_pay_ready", -1
+		$MoneyIcon.global_position,
+		to_pos,
+		Vector2(2, 2),
+		Vector2(1, 1),
+		"sgin_player_pay_ready",
+		-1
 	)
 
 
 func on_draw_gold(from_pos: Vector2) -> void:
 	gold_transfer(
 		from_pos,
-		$GoldImg.global_position,
+		$MoneyIcon.global_position,
 		Vector2(1, 1),
 		Vector2(2, 2),
 		"sgin_player_gold_ready",
@@ -204,26 +199,42 @@ func on_draw_gold(from_pos: Vector2) -> void:
 	)
 
 
+func lose_gold_to_player(num: int, to_pos: Vector2) -> void:
+	gold_transfer(
+		$MoneyIcon.global_position, to_pos, Vector2(1, 1), Vector2(1, 1), "sgin_thief_done", -num
+	)
+	set_gold(0)
+
+
 func disable_enlarge() -> void:
 	for a in $HandScript.get_children():
-		a.set_mode(a.Mode.STATIC)
+		a.set_card_mode(a.CardMode.STATIC)
 	for a in $BuiltScript.get_children():
-		a.set_mode(a.Mode.STATIC)
+		a.set_card_mode(a.CardMode.STATIC)
 
 
 func enable_enlarge() -> void:
 	for a in $HandScript.get_children():
-		a.set_mode(a.Mode.ENLARGE)
+		a.set_card_mode(a.CardMode.ENLARGE)
 	for a in $BuiltScript.get_children():
-		a.set_mode(a.Mode.ENLARGE)
+		a.set_card_mode(a.CardMode.ENLARGE)
+
+
+func disable_play() -> void:
+	$Employee.set_can_skill(false)
 
 
 func enable_play() -> void:
-	$Employee.set_playing(true)
+	$Employee.set_can_skill(true)
 	for a in $HandScript.get_children():
-		a.set_mode(a.Mode.PLAY)
+		a.set_card_mode(a.CardMode.PLAY)
 	for a in $BuiltScript.get_children():
-		a.set_mode(a.Mode.ENLARGE)
+		a.set_card_mode(a.CardMode.ENLARGE)
+
+
+func set_gold(money: int) -> void:
+	gold = money
+	$MoneyNum.text = str(money)
 
 
 func on_player_info(data: Dictionary) -> void:
@@ -236,8 +247,7 @@ func on_player_info(data: Dictionary) -> void:
 	else:
 		username_shown = username
 	$Username.text = username_shown
-	gold = data.get("money", 0)
-	$MoneyNum.text = str(gold)
+	set_gold(data.get("money", 0))
 	set_employee(data.get("employee", employee))
 	set_hide_employee(data.get("hide_employee", hide_employee))
 	has_crown = data.get("has_crown", has_crown)
@@ -258,7 +268,7 @@ func on_player_info(data: Dictionary) -> void:
 		build(b, deck_position, 0)
 
 
-func build(card_name: String, from_pos: Vector2, animation_time:float  ) -> void:
+func build(card_name: String, from_pos: Vector2, animation_time: float) -> void:
 	player_draw_built("built", card_name, from_pos, true, animation_time)
 
 
@@ -298,7 +308,7 @@ func set_crown(with_crown: bool) -> void:
 
 #func enable_play() -> void:
 #	for a in $HandScript.get_children():
-#		a.set_mode(a.Mode.PLAY)
+#		a.set_card_mode(a.CardMode.PLAY)
 
 
 func has_enough_money(price: int) -> bool:
@@ -310,19 +320,24 @@ func has_not_played(card_name: String) -> bool:
 	var not_played = not card_name in played_this_turn
 	return not_played
 
-func has_ever_played()-> bool:
+
+func has_ever_played() -> bool:
 	return played_this_turn.size() < 1
 
-func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
+
+func on_sgin_card_played(card_name: String, from_pos: Vector2) -> bool:
+	disable_play()
+	$Employee.set_can_skill(false)
 	var card_info = Data.get_card_info(card_name)
-	var _suceeded = false
 	var price = card_info["star"]
 	var enough_money = has_enough_money(price)
 	var not_played = has_not_played(card_name)
 	var not_ever_played = has_ever_played()
 	if not (enough_money and not_played and not_ever_played):
-		return
-	_suceeded = true
+		$Employee.set_can_skill(true)
+		enable_play()
+		return false
+
 	played_this_turn.append(card_name)
 	var card_obj
 	for c in $HandScript.get_children():
@@ -331,12 +346,14 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 			break
 
 	if card_obj == null:
-		return
+		$Employee.set_can_skill(true)
+		enable_play()
+		return false
 
 	for _i in range(price):
 		on_sgout_player_obj_pay(bank_position)
 		yield(Signal, "sgin_player_pay_ready")
-	
+
 	hands.erase(card_name)
 	built.append(card_name)
 	$HandScript.remove_child(card_obj)
@@ -366,14 +383,31 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	)
 	yield(TweenMove, "tween_all_completed")
 	card_obj.z_index = z_index
-	enable_play()
-	rearrange($HandScript, get_hand_positions_with_new_card(),1)
-	rearrange($BuiltScript, get_built_positions_with_new_card(),1)
+	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
+	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
+	$Employee.set_can_skill(true)
+	enable_play()
+	return true
 
 
 func after_end_turn() -> void:
 	played_this_turn = []
-	
+
+
 func can_end_game() -> bool:
 	return built.size() >= 7
+
+
+func clear_hands() -> void:
+	hands = []
+	for c in $HandScript.get_children():
+		$HandScript.remove_child(c)
+
+
+func shuffle_hands() -> void:
+	hands.shuffle()
+
+
+func set_activated_this_turn(can: bool) -> void:
+	$Employee.set_activated_this_turn(false)

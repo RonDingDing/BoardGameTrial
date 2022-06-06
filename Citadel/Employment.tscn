@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://CharacterCard.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Employment.gd" type="Script" id=2]
+[ext_resource path="res://Store.gd" type="Script" id=4]
+[ext_resource path="res://images/discarded_hidden.png" type="Texture" id=5]
 
 [node name="Employment" type="Node2D"]
 position = Vector2( 720, 530 )
@@ -53,3 +55,18 @@ scale = Vector2( 0.2, 0.2 )
 visible = false
 position = Vector2( -99999, -99999 )
 scale = Vector2( 0.2, 0.2 )
+
+[node name="DiscardedHidden" type="Node2D" parent="."]
+
+[node name="Dock" type="Sprite" parent="DiscardedHidden"]
+position = Vector2( -600, 0 )
+texture = ExtResource( 5 )
+
+[node name="Discarded" type="Node2D" parent="DiscardedHidden"]
+script = ExtResource( 4 )
+
+[node name="Hidden" type="Node2D" parent="DiscardedHidden"]
+script = ExtResource( 4 )
+
+[node name="Selected" type="Node2D" parent="DiscardedHidden"]
+script = ExtResource( 4 )

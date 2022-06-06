@@ -9,7 +9,7 @@ func on_hand_over(player_name: String) -> void:
 
 
 func on_phase(phase_string: String) -> void:
-	$Text.text = tr(phase_string)	
+	$Text.text = tr(phase_string)
 	show()
 
 

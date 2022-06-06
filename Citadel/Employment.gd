@@ -2,6 +2,9 @@ extends Node2D
 
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
+onready var Skill = get_node("/root/Main/Game/Board/Skill")
+onready var CharacterCard = preload("res://CharacterCard.tscn")
+onready var TweenMove = get_node("/root/Main/Tween")
 onready var available_characters = {
 	1: "Assassin",
 	2: "Thief",
@@ -18,9 +21,137 @@ onready var full_num = 10 if nine_chars else 9
 onready var available = available_characters.keys()
 onready var discarded = []
 onready var hidden = []
-enum State { IDLE, DISCARDING, HIDING, SELECTING, ASSASSINATING }
+enum State { IDLE, DISCARDING, HIDING, SELECTING, ASSASSINATING, STEALING }
 onready var state = State.IDLE
 onready var discarded_hidden_position = Vector2(-9999, -9999)
+onready var char_pos = Vector2(-9999, -9999)
+
+func _ready():
+	Skill.set_full_num(full_num)
+	$DiscardedHidden.hide()
+	
+func find_by_num(employee_num: int) -> String:
+	return available_characters[employee_num]
+
+func hide_discard_hidden() -> void:
+	$DiscardedHidden.hide()
+
+func set_char_pos(pos: Vector2) -> void:
+	char_pos = pos
+
+
+func get_discarded_position() -> Vector2:
+	var discarded_children_count = $DiscardedHidden/Discarded.get_child_count()
+	var local_pos
+	match discarded_children_count:
+		0:
+			local_pos = Vector2(-50, -30)
+		1:
+			local_pos = Vector2(0, -30)
+		2:
+			local_pos = Vector2(50, -30)
+		_:
+			local_pos = Vector2(0, 0)
+	return local_pos + $DiscardedHidden/Dock.global_position
+
+
+func character_to_hidden(char_name: String,  from_pos: Vector2) -> void:
+	character_to(State.HIDING, char_name,  from_pos)
+
+
+func character_to_discarded(char_name: String,  from_pos: Vector2) -> void:
+	character_to(State.DISCARDING, char_name,  from_pos)
+
+
+func character_to_selected(char_name: String, from_pos: Vector2) -> void:
+	character_to(State.SELECTING, char_name,  from_pos)
+
+
+func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
+	var init_face_up
+	var face_visible_org
+	var face_visible_aft
+	var back_visible_org
+	var back_visible_aft
+	var emite
+	var to_pos
+	var sub_node = null
+	if mode == State.HIDING:
+		init_face_up = false
+		face_visible_org = false
+		face_visible_aft = false
+		back_visible_org = true
+		back_visible_aft = true
+		emite = "sgin_hidden_once_finished"
+		to_pos = get_discarded_position()
+		sub_node = $DiscardedHidden/Hidden
+		$DiscardedHidden.show()
+	elif mode == State.DISCARDING:
+		init_face_up = true
+		face_visible_org = false
+		face_visible_aft = true
+		back_visible_org = true
+		back_visible_aft = false
+		emite = "sgin_discarded_once_finished"
+		to_pos = get_discarded_position()
+		sub_node = $DiscardedHidden/Discarded
+		$DiscardedHidden.show()
+	else:
+		init_face_up = true
+		face_visible_org = true
+		face_visible_aft = true
+		back_visible_org = false
+		back_visible_aft = false
+		emite = "sgin_selected_char_once_finished"
+		to_pos = char_pos
+		sub_node = $DiscardedHidden/Selected
+	var char_info = Data.get_char_info(char_name)
+	var animation_name = char_name
+	var number = char_info["char_num"]
+	var up_offset = char_info["char_up_offset"]
+	var incoming_char = CharacterCard.instance()
+	Signal.emit_signal("sgin_char_not_ready", incoming_char)
+	sub_node.add_child(incoming_char)
+	sub_node.store.append(char_info)
+	incoming_char.init_char(
+		animation_name, number, up_offset, Vector2(0.13, 0.13), from_pos, init_face_up
+	)
+	TweenMove.animate(
+		[
+			[
+				incoming_char,
+				"global_position",
+				from_pos,
+				to_pos,
+			],
+			[
+				incoming_char,
+				"scale",
+				Vector2(0.175, 0.175),
+				Vector2(0.04, 0.04),
+			],
+			[
+				incoming_char.get_node("Face"),
+				"visible",
+				face_visible_org,
+				face_visible_aft,
+			],
+			[
+				incoming_char.get_node("Back"),
+				"visible",
+				back_visible_org,
+				back_visible_aft,
+			]
+		]
+	)
+
+	yield(TweenMove, "tween_all_completed")
+	if mode == State.SELECTING:
+		incoming_char.global_position = Vector2(9999,9999)
+#		sub_node.store.erase(char_name)
+	Signal.emit_signal(emite, char_name)
+	Signal.emit_signal("sgin_char_ready", incoming_char)
+
 
 func reset_available() -> void:
 	available = available_characters.keys()
@@ -33,13 +164,9 @@ func add_employee(char_num: int) -> void:
 func set_discarded_hidden_position(pos: Vector2) -> void:
 	discarded_hidden_position = pos
 
-func get_assassinable_characters() -> Array:
-	var char_array = []
-	for num in range(2, full_num):
-		char_array.append(num)
-	return char_array
-	
-	
+
+
+
 func get_selectable_characters(include_4: bool) -> Array:
 	var char_array = []
 	for num in range(1, full_num):
@@ -92,8 +219,8 @@ func put_char_num(char_array: Array, face_up: bool, enlargeable: bool) -> void:
 		)
 		node.set_enlargeable(enlargeable)
 
- 
-	
+
+
 func wait(mode: int, remove: int) -> void:
 	var note
 	var once
@@ -116,11 +243,18 @@ func wait(mode: int, remove: int) -> void:
 		note = "NOTE_ASSASSIN"
 		once = "sgin_assassin_once_finished"
 		alls = "sgin_assassin_all_finished"
+	elif mode == State.STEALING:
+		note = "NOTE_THIEF"
+		once = "sgin_thief_once_finished"
+		alls = "sgin_thief_all_finished"
 		
 	for _i in range(remove):
 		show()
 		if mode == State.ASSASSINATING:
-			char_array = get_assassinable_characters()
+			char_array = Skill.get_assassinable_characters()
+			init_face_up_ordered(char_array)
+		elif  mode == State.STEALING:
+			char_array = Skill.get_stealable_characters()
 			init_face_up_ordered(char_array)
 		elif mode == State.SELECTING:
 			char_array = get_selectable_characters(true)
@@ -138,7 +272,9 @@ func wait(mode: int, remove: int) -> void:
 func wait_assassin() -> void:
 	wait(State.ASSASSINATING, 1)
 	
-	
+func wait_thief() -> void:
+	wait(State.STEALING, 1)
+
 func wait_discard(up_remove: int) -> void:
 	wait(State.DISCARDING, up_remove)
 
@@ -153,23 +289,23 @@ func wait_select() -> void:
 
 func move_char_to(mode: int, char_num: int) -> void:
 	var list
-	var emite
+	var function
 	var fini
 	var useless = []
-	var rm  
+	var rm
 	if mode == State.HIDING:
 		list = hidden
-		emite = "sgin_move_char_to_hidden"
+		function = "character_to_hidden"
 		fini = "sgin_hidden_once_finished"
 		rm = available
 	elif mode == State.DISCARDING:
 		list = discarded
-		emite = "sgin_move_char_to_discarded"
+		function = "character_to_discarded"
 		fini = "sgin_discarded_once_finished"
 		rm = available
 	elif mode == State.SELECTING:
 		list = useless
-		emite = "sgin_move_char_to_selected"
+		function = "character_to_selected"
 		fini = "sgin_selected_char_once_finished"
 		rm = available
 	if not list.has(char_num):
@@ -177,7 +313,7 @@ func move_char_to(mode: int, char_num: int) -> void:
 	if rm.has(char_num) :
 		rm.erase(char_num)
 		var char_card = get_node(str("Characters/CharacterCard", char_num))
-		Signal.emit_signal(emite, char_card.char_name, char_card.global_position)
+		call(function, char_card.char_name, char_card.global_position)
 		yield(Signal, fini)
 
 
@@ -203,4 +339,9 @@ func on_char_clicked(char_num: int) -> void:
 			move_char_to_hidden(char_num)
 		State.SELECTING:
 			move_char_to_selected(char_num)
+		State.ASSASSINATING:
+			Signal.emit_signal("sgin_assassin_once_finished", char_num, available_characters[char_num])
+		State.STEALING:
+			Signal.emit_signal("sgin_thief_once_finished", char_num, available_characters[char_num])
+
 	state = State.IDLE

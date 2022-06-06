@@ -2,8 +2,8 @@ extends Node2D
 
 onready var Signal = get_node("/root/Main/Signal")
 onready var TimerGlobal = get_node("/root/Main/Timer")
-enum Mode { ENLARGE, STATIC, SELECT, PLAY }
-onready var mode = Mode.STATIC
+enum CardMode { ENLARGE, STATIC, SELECT, PLAY }
+onready var mode = CardMode.STATIC
 onready var card_name = "Unknown"
 onready var card_up_offset = 0
 onready var face_up = false
@@ -27,7 +27,7 @@ func init_card(
 	card_up_offset = up_offset
 	$Face/Description.rect_position.y = 282 - up_offset
 	set_face_up(face_is_up)
-	set_mode(modes)
+	set_card_mode(modes)
 	set_scale(scales)
 	set_global_position(pos)
 
@@ -74,7 +74,7 @@ func set_face_up(face_is_up: bool) -> void:
 
 
 func on_mouse_entered() -> void:
-	if face_up and mode in [Mode.ENLARGE, Mode.PLAY]:
+	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY]:
 		# TimerGlobal.set_wait_time(0.05)
 		# TimerGlobal.start()
 		# yield(TimerGlobal, "timeout")
@@ -82,7 +82,7 @@ func on_mouse_entered() -> void:
 
 
 func on_mouse_exited() -> void:
-	if face_up and mode in [Mode.ENLARGE, Mode.PLAY]:
+	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY]:
 		Signal.emit_signal("sgin_card_unfocused", card_name)
 
 
@@ -90,7 +90,7 @@ func get_card_info() -> Dictionary:
 	return {"card_name": card_name, "card_up_offset": card_up_offset, "position": global_position}
 
 
-func set_mode(modes: int) -> void:
+func set_card_mode(modes: int) -> void:
 	mode = modes
 
 
@@ -98,7 +98,7 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
 	if event.is_pressed() and event is InputEventMouseButton and event.doubleclick:
 		match mode:
-			Mode.SELECT:
+			CardMode.SELECT:
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)
-			Mode.PLAY:
+			CardMode.PLAY:
 				Signal.emit_signal("sgin_card_played", card_name, global_position)
