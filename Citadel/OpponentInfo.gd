@@ -1,4 +1,5 @@
 extends Node2D
+enum OpponentState { IDLE, CLICKABLE }
 
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
@@ -10,13 +11,18 @@ onready var hands = []
 onready var built = []
 onready var player_num = -1
 onready var gold = 0
+onready var opponent_state = OpponentState.IDLE
 onready var username = "Unknown"
 onready var employee = "Unchosen"
 onready var hide_employee = true
 onready var has_crown = false
-
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
+onready var original_position = Vector2(-9999, -9999)
+
+
+func set_clickable(able: bool) -> void:
+	opponent_state = OpponentState.CLICKABLE if able else OpponentState.IDLE
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -30,22 +36,33 @@ func set_deck_position(pos: Vector2) -> void:
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
 
-func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_time: float) -> void:
+func remove_hand_name(card_name: String) -> void:
+	hands.erase(card_name)
+	$HandsInfo/HandNum.text = str(hands.size())
+
+
+func draw(
+	card_name: String,
+	_face_is_up: bool,
+	from_pos: Vector2,
+	animation_time: float,
+	start_scale: Vector2 = Vector2(0.175, 0.175),
+	end_scale: Vector2 = Vector2(0.03, 0.03)
+) -> void:
 #	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
 	add_child(incoming_card)
-	incoming_card.init_card("Unknown", 0, Vector2(0.175, 0.175), from_pos, false, false)
+	incoming_card.init_card("Unknown", 0, start_scale, from_pos, false, false)
 	TweenMove.animate(
 		[
 			[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time],
-			[incoming_card, "scale", Vector2(0.175, 0.175), Vector2(0.03, 0.03), animation_time]
+			[incoming_card, "scale", start_scale, end_scale, animation_time]
 		]
 	)
 	hands.append(card_name)
-	var hand_num = hands.size()
-	$HandsInfo/HandNum.text = str(hand_num)
+	$HandsInfo/HandNum.text = str(hands.size())
 	yield(TweenMove, "tween_all_completed")
 	remove_child(incoming_card)
 	incoming_card.queue_free()
@@ -110,6 +127,8 @@ func on_player_info(data: Dictionary) -> void:
 	$Built/BuiltNum.text = str(built.size())
 	has_crown = data.get("has_crown", has_crown)
 	$Crown.set_visible(has_crown)
+	if original_position == Vector2(-9999, -9999):
+		original_position = position
 
 
 func set_hide_employee(hide: bool) -> void:
@@ -147,3 +166,19 @@ func show_employee() -> void:
 
 func can_end_game() -> bool:
 	return built.size() >= 7
+
+
+func on_mouse_entered() -> void:
+	if opponent_state == OpponentState.CLICKABLE:
+		set_position(Vector2(original_position.x, original_position.y - 20))
+
+
+func on_mouse_exited() -> void:
+	if opponent_state == OpponentState.CLICKABLE:
+		set_position(original_position)
+
+
+func on_input_event(_viewport, event, _shape_idx):
+	if opponent_state == OpponentState.CLICKABLE and event is InputEventMouseButton:
+		on_mouse_exited()
+		Signal.emit_signal("sgin_magician_opponent_selected", player_num)

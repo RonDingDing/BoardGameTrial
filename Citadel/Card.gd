@@ -96,7 +96,7 @@ func set_card_mode(modes: int) -> void:
 
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
-	if event.is_pressed() and event is InputEventMouseButton and event.doubleclick:
+	if event.is_pressed() and event is InputEventMouseButton:  #and event.doubleclick:
 		match mode:
 			CardMode.SELECT:
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)

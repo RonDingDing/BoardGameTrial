@@ -146,4 +146,5 @@ NOTE_PLAY, "Please play cards or activate your employee's skill.", "请出牌或
 NOTE_ASSASSIN, "Please select an employee to kill.", "请杀死一个角色。"
 NOTE_THIEF, "Please select an employee to steal.", "请扒窃一个角色。"
 NOTE_MAGICIAN, "Please select whether to exchange your hands with 1) the deck, 2) a player.", "请选择与 1)牌堆；2)玩家交换手牌。"
+NOTE_MAGICIAN_SELECT_CHARACTER, "Please select a character to switch your hands with.", "请选择一名玩家，与其交换手牌。"
 

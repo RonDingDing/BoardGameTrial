@@ -31,7 +31,13 @@ func set_deck_position(pos: Vector2) -> void:
 
 
 func player_draw_built(
-	mode: String, card_name: String, from_pos: Vector2, face_is_up: bool, animation_time: float
+	mode: String,
+	card_name: String,
+	from_pos: Vector2,
+	face_is_up: bool,
+	animation_time: float,
+	start_scale: Vector2,
+	end_scale: Vector2
 ) -> void:
 	var list
 	var node
@@ -52,9 +58,7 @@ func player_draw_built(
 	var incoming_card = Card.instance()
 	list.append(card_name)
 	node.add_child(incoming_card)
-	incoming_card.init_card(
-		card_name, card_info["up_offset"], Vector2(0.175, 0.175), from_pos, true, false
-	)
+	incoming_card.init_card(card_name, card_info["up_offset"], start_scale, from_pos, true, false)
 	Signal.emit_signal(not_ready_signal, incoming_card)
 	var positions = get_positions_with_new_card(node)
 	var action_list = [
@@ -65,8 +69,9 @@ func player_draw_built(
 			positions[-1] + $HandScript.global_position,
 			animation_time
 		],
+		[incoming_card, "scale", start_scale, end_scale, animation_time],
 		[incoming_card.get_node("Back"), "visible", true, not face_is_up, animation_time],
-		[incoming_card.get_node("Face"), "visible", false, face_is_up, animation_time]
+		[incoming_card.get_node("Face"), "visible", false, face_is_up, animation_time],
 	]
 	if face_is_up:
 		action_list.insert(
@@ -96,8 +101,17 @@ func player_draw_built(
 	Signal.emit_signal(ready_signal, incoming_card)
 
 
-func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float) -> void:
-	player_draw_built("hands", card_name, from_pos, face_is_up, animation_time)
+func draw(
+	card_name: String,
+	face_is_up: bool,
+	from_pos: Vector2,
+	animation_time: float,
+	start_scale: Vector2 = Vector2(0.175, 0.175),
+	end_scale: Vector2 = Vector2(0.175, 0.175)
+) -> void:
+	player_draw_built(
+		"hands", card_name, from_pos, face_is_up, animation_time, start_scale, end_scale
+	)
 
 
 func rearrange(node: Node, positions: Array, animation_time: float) -> void:
@@ -268,8 +282,14 @@ func on_player_info(data: Dictionary) -> void:
 		build(b, deck_position, 0)
 
 
-func build(card_name: String, from_pos: Vector2, animation_time: float) -> void:
-	player_draw_built("built", card_name, from_pos, true, animation_time)
+func build(
+	card_name: String,
+	from_pos: Vector2,
+	animation_time: float,
+	start_scale: Vector2 = Vector2(0.175, 0.175),
+	end_scale: Vector2 = Vector2(0.175, 0.175)
+) -> void:
+	player_draw_built("built", card_name, from_pos, true, animation_time, start_scale, end_scale)
 
 
 func get_my_player_info() -> Dictionary:
@@ -409,5 +429,10 @@ func shuffle_hands() -> void:
 	hands.shuffle()
 
 
+func remove_hand(card_obj: Node) -> void:
+	$HandScript.remove_child(card_obj)
+	hands.erase(card_obj.card_name)
+
+
 func set_activated_this_turn(can: bool) -> void:
-	$Employee.set_activated_this_turn(false)
+	$Employee.set_activated_this_turn(can)

@@ -18,7 +18,7 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 	if (
 		event.is_pressed()
 		and event is InputEventMouseButton
-		and event.doubleclick
+		#		and event.doubleclick
 		and can_skill
 		and (not activated_this_turn)
 	):

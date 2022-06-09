@@ -26,15 +26,19 @@ onready var state = State.IDLE
 onready var discarded_hidden_position = Vector2(-9999, -9999)
 onready var char_pos = Vector2(-9999, -9999)
 
+
 func _ready():
 	Skill.set_full_num(full_num)
 	$DiscardedHidden.hide()
-	
+
+
 func find_by_num(employee_num: int) -> String:
 	return available_characters[employee_num]
 
+
 func hide_discard_hidden() -> void:
 	$DiscardedHidden.hide()
+
 
 func set_char_pos(pos: Vector2) -> void:
 	char_pos = pos
@@ -55,16 +59,16 @@ func get_discarded_position() -> Vector2:
 	return local_pos + $DiscardedHidden/Dock.global_position
 
 
-func character_to_hidden(char_name: String,  from_pos: Vector2) -> void:
-	character_to(State.HIDING, char_name,  from_pos)
+func character_to_hidden(char_name: String, from_pos: Vector2) -> void:
+	character_to(State.HIDING, char_name, from_pos)
 
 
-func character_to_discarded(char_name: String,  from_pos: Vector2) -> void:
-	character_to(State.DISCARDING, char_name,  from_pos)
+func character_to_discarded(char_name: String, from_pos: Vector2) -> void:
+	character_to(State.DISCARDING, char_name, from_pos)
 
 
 func character_to_selected(char_name: String, from_pos: Vector2) -> void:
-	character_to(State.SELECTING, char_name,  from_pos)
+	character_to(State.SELECTING, char_name, from_pos)
 
 
 func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
@@ -147,7 +151,7 @@ func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 
 	yield(TweenMove, "tween_all_completed")
 	if mode == State.SELECTING:
-		incoming_char.global_position = Vector2(9999,9999)
+		incoming_char.global_position = Vector2(9999, 9999)
 #		sub_node.store.erase(char_name)
 	Signal.emit_signal(emite, char_name)
 	Signal.emit_signal("sgin_char_ready", incoming_char)
@@ -163,8 +167,6 @@ func add_employee(char_num: int) -> void:
 
 func set_discarded_hidden_position(pos: Vector2) -> void:
 	discarded_hidden_position = pos
-
-
 
 
 func get_selectable_characters(include_4: bool) -> Array:
@@ -220,7 +222,6 @@ func put_char_num(char_array: Array, face_up: bool, enlargeable: bool) -> void:
 		node.set_enlargeable(enlargeable)
 
 
-
 func wait(mode: int, remove: int) -> void:
 	var note
 	var once
@@ -247,13 +248,13 @@ func wait(mode: int, remove: int) -> void:
 		note = "NOTE_THIEF"
 		once = "sgin_thief_once_finished"
 		alls = "sgin_thief_all_finished"
-		
+
 	for _i in range(remove):
 		show()
 		if mode == State.ASSASSINATING:
 			char_array = Skill.get_assassinable_characters()
 			init_face_up_ordered(char_array)
-		elif  mode == State.STEALING:
+		elif mode == State.STEALING:
 			char_array = Skill.get_stealable_characters()
 			init_face_up_ordered(char_array)
 		elif mode == State.SELECTING:
@@ -269,11 +270,14 @@ func wait(mode: int, remove: int) -> void:
 		hide()
 	Signal.emit_signal(alls)
 
+
 func wait_assassin() -> void:
 	wait(State.ASSASSINATING, 1)
-	
+
+
 func wait_thief() -> void:
 	wait(State.STEALING, 1)
+
 
 func wait_discard(up_remove: int) -> void:
 	wait(State.DISCARDING, up_remove)
@@ -310,7 +314,7 @@ func move_char_to(mode: int, char_num: int) -> void:
 		rm = available
 	if not list.has(char_num):
 		list.append(char_num)
-	if rm.has(char_num) :
+	if rm.has(char_num):
 		rm.erase(char_num)
 		var char_card = get_node(str("Characters/CharacterCard", char_num))
 		call(function, char_card.char_name, char_card.global_position)
@@ -340,7 +344,9 @@ func on_char_clicked(char_num: int) -> void:
 		State.SELECTING:
 			move_char_to_selected(char_num)
 		State.ASSASSINATING:
-			Signal.emit_signal("sgin_assassin_once_finished", char_num, available_characters[char_num])
+			Signal.emit_signal(
+				"sgin_assassin_once_finished", char_num, available_characters[char_num]
+			)
 		State.STEALING:
 			Signal.emit_signal("sgin_thief_once_finished", char_num, available_characters[char_num])
 

@@ -2,10 +2,8 @@ extends Sprite
 
 onready var Signal = get_node("/root/Main/Signal")
 
-
 #func draw_gold(relative_to_me: int, pos: Vector2) -> void:
 #	Signal.emit_signal("sgin_gold", relative_to_me, pos)
-
 
 #func on_sgin_card_dealt(all_player_length: int) -> void:
 #	# 每人发2个金币

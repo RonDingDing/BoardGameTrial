@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://IconUsername.tscn" type="PackedScene" id=1]
 [ext_resource path="res://images/Crown.png" type="Texture" id=2]
@@ -9,7 +9,10 @@
 [ext_resource path="res://Built.tscn" type="PackedScene" id=14]
 [ext_resource path="res://OpponentInfo.gd" type="Script" id=15]
 
-[node name="OpponentInfo" type="Node2D"]
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 109.5, 68.5 )
+
+[node name="OpponentInfo" type="Area2D"]
 script = ExtResource( 15 )
 
 [node name="InfoBackground" type="Sprite" parent="."]
@@ -33,3 +36,11 @@ visible = false
 position = Vector2( -23, 36 )
 scale = Vector2( 0.07, 0.07 )
 texture = ExtResource( 2 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2( 0.5, -0.5 )
+shape = SubResource( 1 )
+
+[connection signal="input_event" from="." to="." method="on_input_event"]
+[connection signal="mouse_entered" from="." to="." method="on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="on_mouse_exited"]

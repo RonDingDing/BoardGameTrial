@@ -197,11 +197,11 @@ func get_reseat_info(info_array: Array, relative_seat: int) -> Array:
 	)
 
 
-func cal_relative_to_me(seat_num: int) -> int:
-	if seat_num >= first_person_num:
-		return seat_num - first_person_num
+func cal_relative_to_me(player_num: int) -> int:
+	if player_num >= first_person_num:
+		return player_num - first_person_num
 	else:
-		return opponent_length + 1 - first_person_num + seat_num
+		return opponent_length + 1 - first_person_num + player_num
 
 
 func send_all_player_info(reseated_info: Array) -> void:
@@ -656,3 +656,41 @@ func on_sgin_magician_switch(switch):
 		$Player.enable_play()
 		$ButtonScript.set_can_end(true)
 		$ButtonScript.hide_scripts()
+	else:
+		for i in range(1, opponent_length + 1):
+			var opponent = select_obj_by_num(i)
+			opponent.set_clickable(true)
+		$ButtonScript.hide_scripts()
+		Signal.emit_signal("sgin_set_reminder", "NOTE_MAGICIAN_SELECT_CHARACTER")
+		var player_num = yield(Signal, "sgin_magician_opponent_selected")
+		for i in range(1, opponent_length + 1):
+			var opponent = select_obj_by_num(i)
+			opponent.set_clickable(false)
+		var relative_to_me = cal_relative_to_me(player_num)
+		var switch_opponent = select_obj_by_num(relative_to_me)
+		var player_hands_obj = $Player/HandScript.get_children().duplicate()
+		var switch_hands_name = switch_opponent.hands.duplicate()
+
+		for card_obj in player_hands_obj:
+			switch_opponent.draw(card_obj.card_name, true, card_obj.global_position, 1)
+			$Player.remove_hand(card_obj)
+
+		for i in range(player_hands_obj.size()):
+			yield(Signal, "sgin_opponent_draw_ready")
+
+		for card_name in switch_hands_name:
+			$Player.draw(
+				card_name,
+				true,
+				switch_opponent.get_node("HandsInfo").global_position,
+				1,
+				Vector2(0.03, 0.03)
+			)
+			switch_opponent.remove_hand_name(card_name)
+
+		for i in range(switch_hands_name.size()):
+			yield(Signal, "sgin_player_draw_ready")
+
+		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
+		$Player.enable_play()
+		$ButtonScript.set_can_end(true)

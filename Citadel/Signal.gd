@@ -112,6 +112,7 @@ signal sgin_magician_wait
 #warning-ignore:unused_signal
 signal sgin_magician_switch(switch)
 #warning-ignore:unused_signal
+signal sgin_magician_opponent_selected
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:
