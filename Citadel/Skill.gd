@@ -4,7 +4,10 @@ onready var assassinated = [0, "Unchosen"]
 onready var stolen = [0, "Unchosen"]
 var full_num = 0
 #### Skills - Cards
-
+const me_num = 0
+const deck_num = -1
+const bank_num = -2
+const unfound = -3
 
 func set_full_num(full: int) -> void:
 	full_num = full
@@ -87,7 +90,7 @@ func cardskill_gameover_dragon_gate() -> void:
 
 func cardskill_end_poor_house(gold: int) -> void:
 	if gold == 0:
-		Signal.emit_signal("sgin_gold", 0)
+		pass
 
 
 func haunted_quarter() -> void:
@@ -174,8 +177,16 @@ func charskill_play_active_magician() -> void:
 
 
 func charskill_play_passive_king() -> void:
-	print("king")
+	Signal.emit_signal("sgin_king_move_crown")
 
+func charskill_play_active_king(built_yellow_num: int) -> void:
+	var add_num = card_type_change("yellow")
+	for i in range(add_num + built_yellow_num):
+		Signal.emit_signal("sgin_gold_transfer", bank_num, me_num, "sgin_player_gold_ready")
+		yield(Signal, "sgin_player_gold_ready")
+	 
+func card_type_change(color: String) -> int:
+	return 0
 
 func charskill_play_active_bishop() -> void:
 	print("peach")
@@ -194,23 +205,23 @@ func charskill_play_active_warlord() -> void:
 
 
 #### Regular functions
-func assassinate(char_num: int, char_name: String) -> void:
-	assassinated = [char_num, char_name]
+func assassinate(employee_num: int, employee_name: String) -> void:
+	assassinated = [employee_num, employee_name]
 
 
-func is_assassinated(char_num: int, char_name: String) -> bool:
-	return [char_num, char_name] == assassinated
+func is_assassinated(employee_num: int, employee_name: String) -> bool:
+	return [employee_num, employee_name] == assassinated
 
 
-func steal(char_num: int, char_name: String) -> void:
-	stolen = [char_num, char_name]
+func steal(employee_num: int, employee_name: String) -> void:
+	stolen = [employee_num, employee_name]
 
 
-func is_stolen(char_num: int, char_name: String) -> bool:
-	return [char_num, char_name] == stolen
+func is_stolen(employee_num: int, employee_name: String) -> bool:
+	return [employee_num, employee_name] == stolen
 
 
-func handle_stolen(_employee_name: String) -> void:
+func handle_stolen() -> void:
 	Signal.emit_signal("sgin_thief_stolen")
 
 
@@ -221,9 +232,14 @@ func check_continue(employee_num: int, employee_name: String, player_is_null: in
 		return true
 	return false
 
+func is_number_four(employee_num: int) -> bool:
+	return employee_num == 4
 
-func check_reveal(employee_num: int, employee_name: String, _player_is_null: int) -> bool:
+func check_reveal(employee_num: int, employee_name: String, _player_num: int) -> String:
 	if is_stolen(employee_num, employee_name):
-		handle_stolen(employee_name)
-		return true
-	return false
+		handle_stolen()
+		return "sgin_thief_done"
+	elif is_number_four(employee_num) and (not is_assassinated(employee_num, employee_name)):
+		charskill_play_passive_king()
+		return "sgin_4_done"
+	return ""

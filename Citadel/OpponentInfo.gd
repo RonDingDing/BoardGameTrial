@@ -1,4 +1,4 @@
-extends Node2D
+extends "res://BasePlayer.gd"
 enum OpponentState { IDLE, CLICKABLE }
 
 const Card = preload("res://Card.tscn")
@@ -7,19 +7,14 @@ onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
 onready var Data = get_node("/root/Main/Data")
 
-onready var hands = []
-onready var built = []
-onready var player_num = -1
-onready var gold = 0
+ 
 onready var opponent_state = OpponentState.IDLE
-onready var username = "Unknown"
-onready var employee = "Unchosen"
-onready var hide_employee = true
-onready var has_crown = false
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
 onready var original_position = Vector2(-9999, -9999)
 
+func _ready() -> void:
+	$Crown.hide()
 
 func set_clickable(able: bool) -> void:
 	opponent_state = OpponentState.CLICKABLE if able else OpponentState.IDLE
@@ -68,36 +63,36 @@ func draw(
 	incoming_card.queue_free()
 	Signal.emit_signal("sgin_opponent_draw_ready", incoming_card)
 
-
-func on_draw_gold(from_pos: Vector2) -> void:
-	var incoming_gold = Gold.instance()
-	var my_card_back_pos = Vector2(
-		$MoneyIcon.global_position.x - 61, $MoneyIcon.global_position.y - 4
-	)
-	incoming_gold.to_coin(Vector2(1, 1), from_pos)
-	add_child(incoming_gold)
-	TweenMove.animate(
-		[
-			[
-				incoming_gold,
-				"global_position",
-				from_pos,
-				my_card_back_pos,
-			],
-			[
-				incoming_gold,
-				"scale",
-				Vector2(1, 1),
-				Vector2(1, 1),
-			],
-		]
-	)
-	gold += 1
-	$MoneyIcon/MoneyNum.text = str(gold)
-	yield(TweenMove, "tween_all_completed")
-	remove_child(incoming_gold)
-	incoming_gold.queue_free()
-	Signal.emit_signal("sgin_opponent_gold_ready")
+#
+#func on_draw_gold(from_pos: Vector2) -> void:
+#	var incoming_gold = Gold.instance()
+#	var my_card_back_pos = Vector2(
+#		$MoneyIcon.global_position.x - 61, $MoneyIcon.global_position.y - 4
+#	)
+#	incoming_gold.to_coin(Vector2(1, 1), from_pos)
+#	add_child(incoming_gold)
+#	TweenMove.animate(
+#		[
+#			[
+#				incoming_gold,
+#				"global_position",
+#				from_pos,
+#				my_card_back_pos,
+#			],
+#			[
+#				incoming_gold,
+#				"scale",
+#				Vector2(1, 1),
+#				Vector2(1, 1),
+#			],
+#		]
+#	)
+#	gold += 1
+#	$MoneyIcon/MoneyNum.text = str(gold)
+#	yield(TweenMove, "tween_all_completed")
+#	remove_child(incoming_gold)
+#	incoming_gold.queue_free()
+#	Signal.emit_signal("sgin_opponent_gold_ready")
 
 
 func set_gold(money: int) -> void:
@@ -116,7 +111,6 @@ func on_player_info(data: Dictionary) -> void:
 		username_shown = username
 	$IconUsername/Username.text = username_shown
 	set_gold(data.get("money", 0))
-
 	hands = data.get("hands", hands)
 	$HandsInfo/HandNum.text = str(data.get("hand_num", hands.size()))
 	set_employee(data.get("employee", employee))
@@ -126,7 +120,7 @@ func on_player_info(data: Dictionary) -> void:
 	built = data.get("built", built)
 	$Built/BuiltNum.text = str(built.size())
 	has_crown = data.get("has_crown", has_crown)
-	$Crown.set_visible(has_crown)
+	set_crown(has_crown)
 	if original_position == Vector2(-9999, -9999):
 		original_position = position
 
@@ -143,6 +137,7 @@ func set_employee(employ: String) -> void:
 
 func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
+	$Crown.set_visible(has_crown)
 
 
 func get_my_player_info() -> Dictionary:
@@ -182,3 +177,7 @@ func on_input_event(_viewport, event, _shape_idx):
 	if opponent_state == OpponentState.CLICKABLE and event is InputEventMouseButton:
 		on_mouse_exited()
 		Signal.emit_signal("sgin_magician_opponent_selected", player_num)
+
+func add_gold(num: int) -> void:
+	gold += num
+	$MoneyIcon/MoneyNum.text = str(gold)

@@ -1,6 +1,5 @@
-extends Node2D
-onready var Signal = get_node("/root/Main/Signal")
-onready var Data = get_node("/root/Main/Data")
+extends "res://BasePlayer.gd"
+
 onready var deck_base = [
 	"Monastery",
 	"Temple",

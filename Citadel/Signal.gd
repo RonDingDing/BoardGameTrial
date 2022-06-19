@@ -1,5 +1,6 @@
 extends Node
-
+#warning-ignore:unused_signal
+signal sgin_gold_transfer(from_relative, to_relative, done_signal)
 #warning-ignore:unused_signal
 signal sgin_add_point(point)
 #warning-ignore:unused_signal
@@ -25,11 +26,10 @@ signal sgin_opponent_draw_not_ready(card)
 signal sgout_enlarge_enable
 #warning-ignore:unused_signal
 signal sgin_card_focused(card_name)
+#warning-ignore:unused_signal
 signal sgin_card_unfocused
 #warning-ignore:unused_signal
 signal sgin_card_dealt
-#warning-ignore:unused_signal
-signal sgin_gold(player_num, from_pos)
 #warning-ignore:unused_signal
 signal sgin_opponent_gold_ready
 #warning-ignore:unused_signal
@@ -87,6 +87,8 @@ signal sgin_card_selected(card_name, from_pos)
 #warning-ignore:unused_signal
 signal sgin_card_played(card_name, from_pos)
 #warning-ignore:unused_signal
+signal sgin_card_played_finished(card_name)
+#warning-ignore:unused_signal
 signal sgin_one_round_finished
 
 #warning-ignore:unused_signal
@@ -113,6 +115,10 @@ signal sgin_magician_wait
 signal sgin_magician_switch(switch)
 #warning-ignore:unused_signal
 signal sgin_magician_opponent_selected
+#warning-ignore:unused_signal
+signal sgin_king_move_crown(player_num)
+#warning-ignore:unused_signal
+signal sgin_4_done
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:

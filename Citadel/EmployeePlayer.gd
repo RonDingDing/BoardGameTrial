@@ -29,6 +29,8 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				Skill.charskill_play_active_thief()
 			"Magician":
 				Skill.charskill_play_active_magician()
+			"King":
+				Skill.charskill_play_active_king($Player.built_color_num("yellow"))
 			"Bishop":
 				Skill.charskill_play_active_bishop()
 			"Warlord":

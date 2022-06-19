@@ -1,4 +1,9 @@
-extends Node2D
+extends "res://BasePlayer.gd"
+
+const me_num = 0
+const deck_num = -1
+const bank_num = -2
+const unfound = -3
 
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
@@ -7,19 +12,165 @@ onready var TweenMove = get_node("/root/Main/Tween")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var Data = get_node("/root/Main/Data")
 
-onready var hands = []
-onready var built = []
-onready var player_num = -1
-onready var gold = 0
-onready var username = "Unknown"
-onready var employee = "Unchosen"
-onready var has_crown = false
-onready var hide_employee = true
+ 
 onready var played_this_turn = []
 
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
 onready var center = get_viewport_rect().size / 2
+
+enum Need { GOLD, CARD }
+enum MagicianSwitch { DECK, PLAYER }
+enum ScriptMode { RESOURCE, MAGICIAN }
+onready var script1_pos = $Script1.rect_position
+onready var script2_pos = $Script2.rect_position
+onready var end_turn_pos = $EndTurn.rect_position
+onready var can_end = true
+onready var script_mode = ScriptMode.RESOURCE
+
+
+func _ready() -> void:
+	hide_scripts()
+	hide_end_turn()
+	hide_kill_steal_info()
+	$Script1.rect_position = script1_pos
+	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
+	$Script2.rect_position = script2_pos
+	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
+	$EndTurn.rect_position = end_turn_pos
+	$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+
+
+func set_script_mode(mode: int) -> void:
+	script_mode = mode
+	if mode == ScriptMode.RESOURCE:
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+	elif mode == ScriptMode.MAGICIAN:
+		$Script1Label.text = "NOTE_FROM_DECK"
+		$Script2Label.text = "NOTE_FROM_PLAYER"
+
+
+func set_assassinated(char_name: String) -> void:
+	$KillStealInfo/KillChar/Pic.animation = char_name
+	$KillStealInfo.show()
+	$KillStealInfo/KillChar.show()
+	$KillStealInfo/KillSword.show()
+
+
+func set_stolen(char_name: String) -> void:
+	$KillStealInfo/StealChar/Pic.animation = char_name
+	$KillStealInfo.show()
+	$KillStealInfo/StealChar.show()
+	$KillStealInfo/StealPocket.show()
+
+
+func set_reminder_text(string: String) -> void:
+	$ReminderLabel.text = string
+
+
+func hide_kill_steal_info() -> void:
+	$KillStealInfo.hide()
+	$KillStealInfo/StealChar.hide()
+	$KillStealInfo/StealPocket.hide()
+
+
+func show_reminder() -> void:
+	$ReminderBackground.show()
+	$ReminderLabel.show()
+
+
+func hide_reminder() -> void:
+	$ReminderBackground.hide()
+	$ReminderLabel.hide()
+
+
+func show_end_turn() -> void:
+	$EndTurn.show()
+	$EndTurnLabel.show()
+
+
+func hide_end_turn() -> void:
+	$EndTurn.hide()
+	$EndTurnLabel.hide()
+
+
+func show_scripts() -> void:
+	$Script2.show()
+	$Script2Label.show()
+	$Script1.show()
+	$Script1Label.show()
+
+
+func hide_scripts() -> void:
+	$Script1.hide()
+	$Script1Label.hide()
+	$Script2.hide()
+	$Script2Label.hide()
+
+
+func on_end_turn_pressed() -> void:
+	if can_end:
+		Signal.emit_signal("sgin_end_turn")
+		$EndTurn.rect_position = end_turn_pos
+		$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+
+
+func on_script1_pressed() -> void:
+	if script_mode == ScriptMode.RESOURCE:
+		Signal.emit_signal("sgin_resource_need", Need.GOLD)
+	elif script_mode == ScriptMode.MAGICIAN:
+		Signal.emit_signal("sgin_magician_switch", MagicianSwitch.DECK)
+	$Script1.rect_position = script1_pos
+	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
+
+
+func on_script2_pressed() -> void:
+	if script_mode == ScriptMode.RESOURCE:
+		Signal.emit_signal("sgin_resource_need", Need.CARD)
+	elif script_mode == ScriptMode.MAGICIAN:
+		Signal.emit_signal("sgin_magician_switch", MagicianSwitch.PLAYER)
+	$Script2.rect_position = script2_pos
+	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
+
+
+func on_end_turn_mouse_entered() -> void:
+	if can_end:
+		$EndTurn.set_position(Vector2(end_turn_pos.x, end_turn_pos.y - 20))
+		$EndTurnLabel.set_position(Vector2(end_turn_pos.x + 25, end_turn_pos.y + 8))
+
+
+func on_end_turn_mouse_exited() -> void:
+	if can_end:
+		$EndTurn.set_position(end_turn_pos)
+		$EndTurnLabel.set_position(Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28))
+
+
+func on_script2_mouse_entered() -> void:
+	$Script2.set_position(Vector2(script2_pos.x, script2_pos.y - 20))
+	$Script2Label.set_position(Vector2(script2_pos.x + 25, script2_pos.y + 8))
+
+
+func on_script2_mouse_exited() -> void:
+	$Script2.set_position(script2_pos)
+	$Script2Label.set_position(Vector2(script2_pos.x + 25, script2_pos.y + 28))
+
+
+func on_script1_mouse_entered() -> void:
+	$Script1.set_position(Vector2(script1_pos.x, script1_pos.y - 20))
+	$Script1Label.set_position(Vector2(script1_pos.x + 25, script1_pos.y + 8))
+
+
+func on_script1_mouse_exited() -> void:
+	$Script1.set_position(script1_pos)
+	$Script1Label.set_position(Vector2(script1_pos.x + 25, script1_pos.y + 28))
+
+
+func wait_magician() -> void:
+	disable_play()
+	set_script_mode(ScriptMode.MAGICIAN)
+	Signal.emit_signal("sgin_set_reminder", "NOTE_MAGICIAN")
+	show_scripts()
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -155,70 +306,20 @@ func get_built_positions_with_new_card() -> Array:
 	return get_positions_with_new_card($BuiltScript)
 
 
-func gold_transfer(
-	from_pos: Vector2,
-	to_pos: Vector2,
-	start_scale: Vector2,
-	end_scale: Vector2,
-	callback_signal: String,
-	add_num: int
-) -> void:
-	var incoming_gold = Gold.instance()
-	incoming_gold.to_coin(start_scale, from_pos)
-	add_child(incoming_gold)
-	TweenMove.animate(
-		[
-			[
-				incoming_gold,
-				"global_position",
-				from_pos,
-				to_pos,
-			],
-			[
-				incoming_gold,
-				"scale",
-				start_scale,
-				end_scale,
-			],
-		]
-	)
-	TweenMove.start()
-	gold += add_num
-	$MoneyNum.text = str(gold)
-	yield(TweenMove, "tween_all_completed")
-	remove_child(incoming_gold)
-	incoming_gold.queue_free()
-	Signal.emit_signal(callback_signal)
 
+ 
 
-func on_sgout_player_obj_pay(to_pos: Vector2) -> void:
-	gold_transfer(
-		$MoneyIcon.global_position,
-		to_pos,
-		Vector2(2, 2),
-		Vector2(1, 1),
-		"sgin_player_pay_ready",
-		-1
-	)
+#func on_draw_gold(from_pos: Vector2) -> void:
+#	gold_transfer(
+#		from_pos,
+#		$MoneyIcon.global_position,
+#		Vector2(1, 1),
+#		Vector2(2, 2),
+#		"sgin_player_gold_ready",
+#		1
+#	)
 
-
-func on_draw_gold(from_pos: Vector2) -> void:
-	gold_transfer(
-		from_pos,
-		$MoneyIcon.global_position,
-		Vector2(1, 1),
-		Vector2(2, 2),
-		"sgin_player_gold_ready",
-		1
-	)
-
-
-func lose_gold_to_player(num: int, to_pos: Vector2) -> void:
-	gold_transfer(
-		$MoneyIcon.global_position, to_pos, Vector2(1, 1), Vector2(1, 1), "sgin_thief_done", -num
-	)
-	set_gold(0)
-
+ 
 
 func disable_enlarge() -> void:
 	for a in $HandScript.get_children():
@@ -236,6 +337,13 @@ func enable_enlarge() -> void:
 
 func disable_play() -> void:
 	$Employee.set_can_skill(false)
+	for a in $HandScript.get_children():
+		a.set_card_mode(a.CardMode.ENLARGE)
+	for a in $BuiltScript.get_children():
+		a.set_card_mode(a.CardMode.ENLARGE)
+	can_end = false
+	var color = Color(0.76171875, 0.76171875, 0.76171875)  #gray
+	$EndTurnLabel.set("custom_colors/font_color", color)
 
 
 func enable_play() -> void:
@@ -244,6 +352,9 @@ func enable_play() -> void:
 		a.set_card_mode(a.CardMode.PLAY)
 	for a in $BuiltScript.get_children():
 		a.set_card_mode(a.CardMode.ENLARGE)
+	can_end = true
+	var color = Color(1, 0, 0)
+	$EndTurnLabel.set("custom_colors/font_color", color)
 
 
 func set_gold(money: int) -> void:
@@ -324,11 +435,7 @@ func show_employee() -> void:
 
 func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
-
-
-#func enable_play() -> void:
-#	for a in $HandScript.get_children():
-#		a.set_card_mode(a.CardMode.PLAY)
+	$Crown.set_visible(has_crown)
 
 
 func has_enough_money(price: int) -> bool:
@@ -347,14 +454,12 @@ func has_ever_played() -> bool:
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> bool:
 	disable_play()
-	$Employee.set_can_skill(false)
 	var card_info = Data.get_card_info(card_name)
 	var price = card_info["star"]
 	var enough_money = has_enough_money(price)
 	var not_played = has_not_played(card_name)
 	var not_ever_played = has_ever_played()
 	if not (enough_money and not_played and not_ever_played):
-		$Employee.set_can_skill(true)
 		enable_play()
 		return false
 
@@ -371,7 +476,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> bool:
 		return false
 
 	for _i in range(price):
-		on_sgout_player_obj_pay(bank_position)
+		Signal.emit_signal("sgin_gold_transfer", me_num, bank_num, "sgin_player_pay_ready")
 		yield(Signal, "sgin_player_pay_ready")
 
 	hands.erase(card_name)
@@ -406,8 +511,8 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> bool:
 	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
-	$Employee.set_can_skill(true)
 	enable_play()
+	Signal.emit_signal("sgin_card_played_finished", card_name)
 	return true
 
 
@@ -436,3 +541,17 @@ func remove_hand(card_obj: Node) -> void:
 
 func set_activated_this_turn(can: bool) -> void:
 	$Employee.set_activated_this_turn(can)
+
+
+func add_gold(num: int) -> void:
+	gold += num
+	$MoneyNum.text = str(gold)
+
+ 
+
+func built_color_num(color: String) -> int:
+	var num = 0
+	for card_name in built:
+		if color == Data.get_card_info(card_name)["kind"]:
+			num += 1
+	return num

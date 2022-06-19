@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://images/Crown.png" type="Texture" id=1]
+[ext_resource path="res://Crown.gd" type="Script" id=2]
+
+[node name="Crown" type="Sprite"]
+position = Vector2( 1328, 814 )
+scale = Vector2( 0.15, 0.15 )
+texture = ExtResource( 1 )
+script = ExtResource( 2 )

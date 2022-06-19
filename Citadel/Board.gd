@@ -11,9 +11,16 @@ onready var Data = get_node("/root/Main/Data")
 onready var TweenMove = get_node("/root/Main/Tween")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var started = false
+const Crown = preload("res://Crown.tscn")
+const Money = preload("res://Money.tscn")
 enum Phase { CHARACTER_SELECTION, RESOURCE, TURN, END, GAME_OVER }
 enum Need { GOLD, CARD }
-enum FindPlayerObjBy { EMPLOYEE, EMPLOYEE_NUM, PLAYER_NUM, RELATIVE_TO_ME }
+enum FindPlayerObjBy { EMPLOYEE, EMPLOYEE_NUM, PLAYER_NUM, RELATIVE_TO_ME, CROWN }
+
+const me_num = 0
+const deck_num = -1
+const bank_num = -2
+const unfound = -3
 
 
 class ObjStruct:
@@ -34,18 +41,29 @@ func select_obj_by_employee(employee_name: String) -> Node:
 
 
 func find_employee_4_relative_to_me() -> int:
-	var crown_relative_to_me = select_player_obj_by(FindPlayerObjBy.EMPLOYEE_NUM, 4).relative_to_me
-	if crown_relative_to_me == -1:
-		crown_relative_to_me = 0
+	var employee_4_relative = select_player_obj_by(FindPlayerObjBy.EMPLOYEE_NUM, 4).relative_to_me
+	if employee_4_relative == unfound:
+		employee_4_relative = me_num
+	return employee_4_relative
+
+
+func find_crown_relative_to_me() -> int:
+	var crown_relative_to_me = select_player_obj_by(FindPlayerObjBy.CROWN, 0).relative_to_me
+	if crown_relative_to_me == unfound:
+		crown_relative_to_me =  me_num
 	return crown_relative_to_me
 
 
 func select_player_obj_by(find_mode: int, clue) -> ObjStruct:
 	var player_obj
 
-	for relative_to_me in range(opponent_length + 1):
-		if relative_to_me == 0:
+	for relative_to_me in range(-2, opponent_length + 1):
+		if relative_to_me == me_num:
 			player_obj = $Player
+		elif relative_to_me == bank_num:
+			player_obj = $Bank
+		elif relative_to_me == deck_num:
+			player_obj = $Deck
 		else:
 			player_obj = get_node(str("Opponent", relative_to_me))
 
@@ -56,11 +74,13 @@ func select_player_obj_by(find_mode: int, clue) -> ObjStruct:
 			and player_obj.employee == $Employment.find_by_num(clue)
 		):
 			return ObjStruct.new(player_obj, relative_to_me)
+		elif find_mode == FindPlayerObjBy.CROWN and player_obj.has_crown:
+			return ObjStruct.new(player_obj, relative_to_me)
 		elif find_mode == FindPlayerObjBy.PLAYER_NUM and player_obj.player_num == clue:
 			return ObjStruct.new(player_obj, relative_to_me)
 		elif find_mode == FindPlayerObjBy.RELATIVE_TO_ME and relative_to_me == clue:
 			return ObjStruct.new(player_obj, relative_to_me)
-	return ObjStruct.new(null, -1)
+	return ObjStruct.new(null, -3)
 
 
 func _ready() -> void:
@@ -74,7 +94,7 @@ func _ready() -> void:
 
 	$Employment.set_discarded_hidden_position(discarded_hidden_position)
 	show_player()
-	onsgin_set_reminder("")
+	on_sgin_set_reminder("")
 	$Employment.set_char_pos($Player/Employee.global_position)
 	to_be_delete()
 
@@ -106,12 +126,6 @@ func cal_seat_num(relative_to_me: int) -> int:
 		return opponent_length + 1 - first_person_num + relative_to_me
 
 
-func on_sgin_gold(relative_to_me: int, from_pos: Vector2 = bank_position) -> void:
-	if from_pos == null:
-		from_pos = bank_position
-	var player_obj = select_obj_by_num(relative_to_me)
-	player_obj.on_draw_gold(from_pos)
-
 
 func on_sgin_draw_card(relative_to_me: int, face_is_up: bool, from_pos: Vector2 = deck_position):
 	if from_pos == null:
@@ -138,29 +152,29 @@ func deal_cards():
 			on_sgin_draw_card(relative_to_me, false)
 	for _i in range(4):
 		for relative_to_me in range(all_player_length):
-			if relative_to_me == 0:
+			if relative_to_me ==  me_num:
 				yield(Signal, "sgin_player_draw_ready")
 			else:
 				yield(Signal, "sgin_opponent_draw_ready")
 	Signal.emit_signal("sgin_card_dealt", all_player_length)
 
 
+
 func on_sgin_card_dealt(all_player_length: int) -> void:
-	# 每人发2个金币
 	for _i in range(2):
 		for relative_to_me in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
 			yield(TimerGlobal, "timeout")
-			on_sgin_gold(relative_to_me, bank_position)
-	for _i in range(2):
-		for relative_to_me in range(all_player_length):
-			if relative_to_me == 0:
-				yield(Signal, "sgin_player_gold_ready")
-			else:
-				yield(Signal, "sgin_opponent_gold_ready")
+			var done_signal = (
+				"sgin_player_gold_ready"
+				if relative_to_me ==  me_num
+				else "sgin_opponent_gold_ready"
+			)			
+			on_sgin_gold_transfer(bank_num, relative_to_me, done_signal)
+	yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_ready_game")
-
+	
 
 func first_player() -> int:
 	var seat_num = randi() % (opponent_length + 1)
@@ -213,7 +227,7 @@ func send_all_player_info(reseated_info: Array) -> void:
 func reseat(relative_to_me: int) -> void:
 	# 座位从0开始，0是自己，先获取所有的player_info
 	var info_array = get_all_players_info()
-	if relative_to_me == 0:
+	if relative_to_me ==  me_num:
 		send_all_player_info(info_array)
 		return
 	# 将主视角交给座位号为 relative_to_me 的玩家，也就是 opponentN，即将原数组向左移动N
@@ -252,8 +266,8 @@ func phase(phase_string: int) -> void:
 
 func resource():
 	Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
-	$ButtonScript.set_script_mode($ButtonScript.ScriptMode.RESOURCE)
-	$ButtonScript.show_scripts()
+	$Player.set_script_mode($Player.ScriptMode.RESOURCE)
+	$Player.show_scripts()
 
 
 func mask_turn() -> void:
@@ -360,12 +374,7 @@ func to_be_delete():
 		node.on_player_info(d)
 
 
-func onsgin_set_reminder(text: String) -> void:
-	if not text:
-		$ButtonScript.hide_reminder()
-	else:
-		$ButtonScript.show_reminder()
-	$ButtonScript.set_reminder_text(tr(text))
+	
 
 
 func on_sgin_char_selected(char_num: int) -> void:
@@ -460,23 +469,23 @@ func on_start_turn() -> void:
 		hand_over_control(relative_to_me)
 		yield(Signal, "uncover")
 		show()
-		var should_wait = $Skill.check_reveal(employee_num, employee_name, player_obj == null)
-		if should_wait:
-			yield(Signal, "sgin_thief_done")
+		var wait_signal = $Skill.check_reveal(employee_num, employee_name, player_obj.player_num)
+		if wait_signal:
+			yield(Signal, wait_signal)
 
 		phase(Phase.RESOURCE)
 		$Player.disable_play()
 		yield(Signal, "sgin_resource_need")
-		$ButtonScript.hide_scripts()
+		$Player.hide_scripts()
 		yield(Signal, "sgin_resource_end")
 
 		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 		$Player.set_activated_this_turn(false)
 		$Player.enable_play()
 
-		$ButtonScript.show_end_turn()
+		$Player.show_end_turn()
 		yield(Signal, "sgin_end_turn")
-		$ButtonScript.hide_end_turn()
+		$Player.hide_end_turn()
 		$Player.after_end_turn()
 		for n in range(opponent_length + 1):
 			var player_objs = select_obj_by_num(n)
@@ -511,8 +520,12 @@ func on_sgin_resource_need(what: int) -> void:
 func gain_gold() -> void:
 	var gold_to_gain = 2
 	for _i in range(gold_to_gain):
-		on_sgin_gold(0, bank_position)
-		yield(Signal, "sgin_player_gold_ready")
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
+		var done_signal = "sgin_player_gold_ready"
+		on_sgin_gold_transfer(bank_num,  me_num, done_signal)	
+		yield(Signal, done_signal)
 	Signal.emit_signal("sgin_resource_end")
 
 
@@ -538,12 +551,12 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
-	$ButtonScript.set_can_end(false)
-	var success_play = $Player.on_sgin_card_played(card_name, from_pos)
-	if success_play:
-		for _i in range(3):
-			yield(TweenMove, "tween_all_completed")
-	$ButtonScript.set_can_end(true)
+	if $Player.can_end:
+		$Player.disable_play()
+		var success_play = $Player.on_sgin_card_played(card_name, from_pos)
+		if success_play:
+			yield(Signal, "sgin_card_played_finished")
+		$Player.enable_play()
 
 
 func is_game_over() -> bool:
@@ -577,7 +590,7 @@ func game_over() -> void:
 
 func on_sgin_assassin_wait() -> void:
 	$Employment.hide_discard_hidden()
-	$ButtonScript.set_can_end(false)
+	$Player.disable_play()
 	$Employment.wait_assassin()
 
 
@@ -586,9 +599,8 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 	$Skill.assassinate(char_num, char_name)
 	$AnyCardEnlarge.assassinate(char_name)
 	yield(TweenMove, "tween_all_completed")
-	$ButtonScript.set_assassinated(char_name)
+	$Player.set_assassinated(char_name)
 	$Player.enable_play()
-	$ButtonScript.set_can_end(true)
 
 
 func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
@@ -596,101 +608,184 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 	$Skill.steal(char_num, char_name)
 	$AnyCardEnlarge.steal(char_name)
 	yield(TweenMove, "tween_all_completed")
-	$ButtonScript.set_stolen(char_name)
+	$Player.set_stolen(char_name)
 	$Player.enable_play()
-	$ButtonScript.set_can_end(true)
 
 
 func on_sgin_thief_wait():
 	$Employment.hide_discard_hidden()
-	$ButtonScript.set_can_end(false)
+	$Player.disable_play()
 	$Employment.wait_thief()
 
 
 func on_sgin_thief_stolen():
-	$ButtonScript.set_can_end(false)
 	$Player.disable_play()
 	var thief_struct = select_player_obj_by(FindPlayerObjBy.EMPLOYEE, "Thief")
-	var player_gold = $Player.gold
-	$Player.lose_gold_to_player(
-		player_gold, thief_struct.player_obj.get_node("MoneyIcon").global_position
-	)
-	var thief = thief_struct.player_obj
-	thief.set_gold(thief.gold + player_gold)
-	yield(Signal, "sgin_player_gold_ready")
-	$ButtonScript.set_can_end(true)
+	var thief_relative = thief_struct.relative_to_me
+	for _i in range($Player.gold):
+		on_sgin_gold_transfer(me_num, thief_relative, "sgin_player_gold_ready")
+		yield(Signal, "sgin_player_gold_ready")
 	$Player.enable_play()
+	Signal.emit_signal("sgin_thief_done")
 
 
 func on_sgin_magician_wait():
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
-	$ButtonScript.set_can_end(false)
-	$ButtonScript.wait_magician()
+	$Player.wait_magician()
+
+
+func magician_select_deck() -> void:
+	for c in $Player/HandScript.get_children():
+		TweenMove.animate(
+			[
+				[c, "global_position", c.global_position, deck_position, 1],
+			]
+		)
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
+	yield(TweenMove, "tween_all_completed")
+
+	$Player.shuffle_hands()
+	var temp = $Player.hands
+	$Player.clear_hands()
+	$Deck.extend(temp)
+	for _i in temp.size():
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
+		on_sgin_draw_card(me_num, true)
+	yield(TweenMove, "tween_all_completed")
+	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
+	$Player.enable_play()
+	$Player.hide_scripts()
+
+
+func magician_select_player() -> void:
+	for i in range(1, opponent_length + 1):
+		var opponent = select_obj_by_num(i)
+		opponent.set_clickable(true)
+
+	$Player.hide_scripts()
+	Signal.emit_signal("sgin_set_reminder", "NOTE_MAGICIAN_SELECT_CHARACTER")
+	var player_num = yield(Signal, "sgin_magician_opponent_selected")
+
+	for i in range(1, opponent_length + 1):
+		var opponent = select_obj_by_num(i)
+		opponent.set_clickable(false)
+
+	var relative_to_me = cal_relative_to_me(player_num)
+	var switch_opponent = select_obj_by_num(relative_to_me)
+	var player_hands_obj = $Player/HandScript.get_children().duplicate()
+	var switch_hands_name = switch_opponent.hands.duplicate()
+
+	for card_obj in player_hands_obj:
+		switch_opponent.draw(card_obj.card_name, true, card_obj.global_position, 1)
+		$Player.remove_hand(card_obj)
+
+	for _i in range(player_hands_obj.size()):
+		yield(Signal, "sgin_opponent_draw_ready")
+
+	for card_name in switch_hands_name:
+		$Player.draw(
+			card_name,
+			true,
+			switch_opponent.get_node("HandsInfo").global_position,
+			1,
+			Vector2(0.03, 0.03)
+		)
+		switch_opponent.remove_hand_name(card_name)
+
+	for _i in range(switch_hands_name.size()):
+		yield(Signal, "sgin_player_draw_ready")
+
+	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
+	$Player.enable_play()
 
 
 func on_sgin_magician_switch(switch):
-	if switch == $ButtonScript.MagicianSwitch.DECK:
-		for c in $Player/HandScript.get_children():
-			TweenMove.animate(
-				[
-					[c, "global_position", c.global_position, deck_position, 1],
-				]
-			)
-			TimerGlobal.set_wait_time(0.1)
-			TimerGlobal.start()
-			yield(TimerGlobal, "timeout")
-		yield(TweenMove, "tween_all_completed")
-
-		$Player.shuffle_hands()
-		var temp = $Player.hands
-		$Player.clear_hands()
-		$Deck.extend(temp)
-		for _i in temp.size():
-			TimerGlobal.set_wait_time(0.1)
-			TimerGlobal.start()
-			yield(TimerGlobal, "timeout")
-			on_sgin_draw_card(0, true)
-		yield(TweenMove, "tween_all_completed")
-		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
-		$Player.enable_play()
-		$ButtonScript.set_can_end(true)
-		$ButtonScript.hide_scripts()
+	if switch == $Player.MagicianSwitch.DECK:
+		magician_select_deck()
 	else:
-		for i in range(1, opponent_length + 1):
-			var opponent = select_obj_by_num(i)
-			opponent.set_clickable(true)
-		$ButtonScript.hide_scripts()
-		Signal.emit_signal("sgin_set_reminder", "NOTE_MAGICIAN_SELECT_CHARACTER")
-		var player_num = yield(Signal, "sgin_magician_opponent_selected")
-		for i in range(1, opponent_length + 1):
-			var opponent = select_obj_by_num(i)
-			opponent.set_clickable(false)
-		var relative_to_me = cal_relative_to_me(player_num)
-		var switch_opponent = select_obj_by_num(relative_to_me)
-		var player_hands_obj = $Player/HandScript.get_children().duplicate()
-		var switch_hands_name = switch_opponent.hands.duplicate()
+		magician_select_player()
 
-		for card_obj in player_hands_obj:
-			switch_opponent.draw(card_obj.card_name, true, card_obj.global_position, 1)
-			$Player.remove_hand(card_obj)
 
-		for i in range(player_hands_obj.size()):
-			yield(Signal, "sgin_opponent_draw_ready")
+func on_sgin_king_move_crown() -> void:
+	var crown_relative_to_me = find_crown_relative_to_me()
+	var original_crown_owner = select_obj_by_num(crown_relative_to_me)
+	var from_pos = original_crown_owner.get_node("Crown").global_position
 
-		for card_name in switch_hands_name:
-			$Player.draw(
-				card_name,
-				true,
-				switch_opponent.get_node("HandsInfo").global_position,
-				1,
-				Vector2(0.03, 0.03)
-			)
-			switch_opponent.remove_hand_name(card_name)
+	var emoloyee_4_relative_to_me = find_employee_4_relative_to_me()
+	var emoloyee_4 = select_obj_by_num(emoloyee_4_relative_to_me)
+	var to_pos = emoloyee_4.get_node("Crown").global_position
 
-		for i in range(switch_hands_name.size()):
-			yield(Signal, "sgin_player_draw_ready")
+	var start_scale = Vector2(0.15, 0.15) if crown_relative_to_me ==  me_num else Vector2(0.07, 0.07)
+	var end_scale = Vector2(0.15, 0.15) if emoloyee_4_relative_to_me ==  me_num else Vector2(0.07, 0.07)
 
-		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
-		$Player.enable_play()
-		$ButtonScript.set_can_end(true)
+	var crown = Crown.instance()
+	crown.init(from_pos)
+	$Player.add_child(crown)
+	TweenMove.animate(
+		[
+			[
+				crown,
+				"global_position",
+				from_pos,
+				to_pos,
+			],
+			[
+				crown,
+				"scale",
+				start_scale,
+				end_scale,
+			],
+		]
+	)
+	yield(TweenMove, "tween_all_completed")
+	original_crown_owner.set_crown(false)
+	emoloyee_4.set_crown(true)
+	$Player.remove_child(crown)
+	Signal.emit_signal("sgin_4_done")
+
+
+func on_sgin_gold_transfer(from_relative: int, to_relative: int, done_signal: String) -> void:
+	var from_player = select_obj_by_num(from_relative)
+	var to_player = select_obj_by_num(to_relative)
+	var start_scale = Vector2(1.7,1.7) if from_relative ==  me_num else Vector2(1, 1)
+	var end_scale = Vector2(1.7, 1.7) if to_relative ==  me_num else Vector2(1,1)
+	var from_pos = from_player.get_node("MoneyIcon").global_position
+	var to_pos = to_player.get_node("MoneyIcon").global_position
+	var money = Money.instance()
+	money.to_coin(start_scale, from_pos)
+	$Bank.add_child(money)
+	TweenMove.animate(
+		[
+			[
+				money,
+				"global_position",
+				from_pos,
+				to_pos,
+			],
+			[
+				money,
+				"scale",
+				start_scale,
+				end_scale,
+			],
+		]
+	)
+	TweenMove.start()
+	from_player.add_gold(-1)
+	to_player.add_gold(1)
+	yield(TweenMove, "tween_all_completed")
+	$Bank.remove_child(money)
+	Signal.emit_signal(done_signal)
+
+
+func on_sgin_set_reminder(text: String) -> void:
+	if not text:
+		$Player.hide_reminder()
+	else:
+		$Player.show_reminder()
+	$Player.set_reminder_text(tr(text))

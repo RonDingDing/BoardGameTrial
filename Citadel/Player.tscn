@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://EmployeePlayer.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Player.gd" type="Script" id=2]
@@ -6,7 +6,7 @@
 [ext_resource path="res://images/Gold.png" type="Texture" id=4]
 [ext_resource path="res://images/Built2.png" type="Texture" id=5]
 [ext_resource path="res://images/Hand2.png" type="Texture" id=6]
-[ext_resource path="res://images/Crown.png" type="Texture" id=7]
+[ext_resource path="res://Crown.tscn" type="PackedScene" id=7]
 [ext_resource path="res://images/Player1.png" type="Texture" id=8]
 [ext_resource path="res://images/Player7.png" type="Texture" id=9]
 [ext_resource path="res://images/Player6.png" type="Texture" id=10]
@@ -15,6 +15,13 @@
 [ext_resource path="res://images/Player8.png" type="Texture" id=13]
 [ext_resource path="res://images/Player3.png" type="Texture" id=14]
 [ext_resource path="res://images/Player2.png" type="Texture" id=15]
+[ext_resource path="res://images/Dagger.png" type="Texture" id=16]
+[ext_resource path="res://images/TextBackground.png" type="Texture" id=17]
+[ext_resource path="res://images/ButtonScript.png" type="Texture" id=18]
+[ext_resource path="res://images/Pocket.png" type="Texture" id=19]
+[ext_resource path="res://images/KillStealInfo.png" type="Texture" id=20]
+[ext_resource path="res://dynamicfont.tres" type="DynamicFont" id=21]
+[ext_resource path="res://Fonts/SiweiBlack.ttf" type="DynamicFontData" id=22]
 
 [sub_resource type="DynamicFont" id=1]
 size = 40
@@ -22,19 +29,19 @@ font_data = ExtResource( 3 )
 
 [sub_resource type="SpriteFrames" id=2]
 animations = [ {
-"frames": [ ExtResource( 10 ) ],
+"frames": [ ExtResource( 13 ) ],
 "loop": true,
-"name": "Player5",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 15 ) ],
-"loop": true,
-"name": "Player1",
+"name": "Player7",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 8 ) ],
 "loop": true,
 "name": "Player0",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 14 ) ],
+"loop": true,
+"name": "Player2",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 9 ) ],
@@ -47,25 +54,31 @@ animations = [ {
 "name": "Player4",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 14 ) ],
+"frames": [ ExtResource( 15 ) ],
 "loop": true,
-"name": "Player2",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 13 ) ],
-"loop": true,
-"name": "Player7",
+"name": "Player1",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 11 ) ],
 "loop": true,
 "name": "Player3",
 "speed": 5.0
+}, {
+"frames": [ ExtResource( 10 ) ],
+"loop": true,
+"name": "Player5",
+"speed": 5.0
 } ]
 
 [sub_resource type="DynamicFont" id=3]
 size = 23
 font_data = ExtResource( 3 )
+
+[sub_resource type="DynamicFont" id=4]
+size = 20
+outline_size = 1
+outline_color = Color( 0, 0, 0, 1 )
+font_data = ExtResource( 22 )
 
 [node name="Player" type="Node2D"]
 script = ExtResource( 2 )
@@ -118,9 +131,122 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Crown" type="Sprite" parent="."]
-position = Vector2( 1328, 814 )
-scale = Vector2( 0.15, 0.15 )
-texture = ExtResource( 7 )
+[node name="Crown" parent="." instance=ExtResource( 7 )]
+
+[node name="Script1" type="TextureButton" parent="."]
+margin_left = 400.0
+margin_top = 530.0
+margin_right = 1120.0
+margin_bottom = 1038.0
+rect_scale = Vector2( 0.15, 0.15 )
+texture_normal = ExtResource( 18 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Script1Label" type="Label" parent="."]
+margin_left = 425.0
+margin_top = 558.0
+margin_right = 625.0
+margin_bottom = 599.0
+custom_colors/font_color = Color( 1, 1, 0, 1 )
+custom_fonts/font = SubResource( 4 )
+text = "NOTE_NEED_GOLD"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Script2" type="TextureButton" parent="."]
+margin_left = 933.0
+margin_top = 530.0
+margin_right = 1653.0
+margin_bottom = 1038.0
+rect_scale = Vector2( 0.15, 0.15 )
+texture_normal = ExtResource( 18 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Script2Label" type="Label" parent="."]
+margin_left = 958.0
+margin_top = 558.0
+margin_right = 1158.0
+margin_bottom = 600.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_fonts/font = SubResource( 4 )
+text = "NOTE_NEED_CARD"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EndTurn" type="TextureButton" parent="."]
+margin_left = 39.0
+margin_top = 530.0
+margin_right = 759.0
+margin_bottom = 1038.0
+rect_scale = Vector2( 0.15, 0.15 )
+texture_normal = ExtResource( 18 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EndTurnLabel" type="Label" parent="."]
+margin_left = 64.0
+margin_top = 558.0
+margin_right = 264.0
+margin_bottom = 600.0
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+custom_fonts/font = SubResource( 4 )
+text = "NOTE_END_TURN"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ReminderBackground" type="Sprite" parent="."]
+position = Vector2( 720, 876 )
+scale = Vector2( 2.4, 0.3 )
+texture = ExtResource( 17 )
+
+[node name="ReminderLabel" type="Label" parent="."]
+margin_left = 1.0
+margin_top = 855.0
+margin_right = 1441.0
+margin_bottom = 890.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = ExtResource( 21 )
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="KillStealInfo" type="Sprite" parent="."]
+position = Vector2( 1328, 530 )
+texture = ExtResource( 20 )
+
+[node name="KillSword" type="Sprite" parent="KillStealInfo"]
+position = Vector2( -29, -29 )
+scale = Vector2( 0.3, 0.3 )
+texture = ExtResource( 16 )
+
+[node name="KillChar" parent="KillStealInfo" instance=ExtResource( 1 )]
+position = Vector2( 32, -29 )
+scale = Vector2( 0.1, 0.1 )
+
+[node name="StealPocket" type="Sprite" parent="KillStealInfo"]
+position = Vector2( -32, 30 )
+scale = Vector2( 0.02, 0.02 )
+texture = ExtResource( 19 )
+
+[node name="StealChar" parent="KillStealInfo" instance=ExtResource( 1 )]
+position = Vector2( 32, 31.0001 )
+scale = Vector2( 0.1, 0.1 )
 
 [connection signal="input_event" from="Employee" to="Employee" method="on_input_event"]
+[connection signal="mouse_entered" from="Script1" to="." method="on_script1_mouse_entered"]
+[connection signal="mouse_exited" from="Script1" to="." method="on_script1_mouse_exited"]
+[connection signal="pressed" from="Script1" to="." method="on_script1_pressed"]
+[connection signal="mouse_entered" from="Script2" to="." method="on_script2_mouse_entered"]
+[connection signal="mouse_exited" from="Script2" to="." method="on_script2_mouse_exited"]
+[connection signal="pressed" from="Script2" to="." method="on_script2_pressed"]
+[connection signal="pressed" from="EndTurn" to="." method="on_end_turn_pressed"]

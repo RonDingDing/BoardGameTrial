@@ -33,7 +33,9 @@ func _ready():
 
 
 func find_by_num(employee_num: int) -> String:
-	return available_characters[employee_num]
+	if employee_num in available_characters:
+		return available_characters[employee_num]
+	return "Unchosen"
 
 
 func hide_discard_hidden() -> void:
