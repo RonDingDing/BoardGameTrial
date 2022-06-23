@@ -119,7 +119,14 @@ signal sgin_magician_opponent_selected
 signal sgin_king_move_crown(player_num)
 #warning-ignore:unused_signal
 signal sgin_4_done
-
+#warning-ignore:unused_signal
+signal sgin_ask_built_num(color)
+#warning-ignore:unused_signal
+signal sgin_ans_built_num(color, num)
+#warning-ignore:unused_signal
+signal sgin_merchant_wait
+#warning-ignore:unused_signal
+signal sgin_merchant_gold(mode)
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)

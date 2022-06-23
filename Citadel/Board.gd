@@ -463,7 +463,6 @@ func on_start_turn() -> void:
 		var should_continue = $Skill.check_continue(employee_num, employee_name, player_obj == null)
 		if should_continue:
 			continue
-
 		player_obj.show_employee()
 		var relative_to_me = cal_relative_to_me(player_obj.player_num)
 		hand_over_control(relative_to_me)
@@ -473,14 +472,15 @@ func on_start_turn() -> void:
 		if wait_signal:
 			yield(Signal, wait_signal)
 
+		$Player.set_all_activated_this_turn(false)
 		phase(Phase.RESOURCE)
+		
 		$Player.disable_play()
 		yield(Signal, "sgin_resource_need")
 		$Player.hide_scripts()
 		yield(Signal, "sgin_resource_end")
 
 		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
-		$Player.set_activated_this_turn(false)
 		$Player.enable_play()
 
 		$Player.show_end_turn()
@@ -552,8 +552,15 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	if $Player.can_end:
+		var card_info = Data.get_card_info(card_name)
+		var price = card_info["star"]
+		var enough_money = $Player.has_enough_money(price)
+		var not_played_same = $Player.has_not_played_same(card_name) 
+		var not_ever_played = $Skill.has_ever_played($Player.employee, $Player.played_this_turn) or $Player.has_ever_played()
+		if not (enough_money and not_played_same and not_ever_played):
+			return
 		$Player.disable_play()
-		var success_play = $Player.on_sgin_card_played(card_name, from_pos)
+		var success_play = $Player.card_played(card_name, price, from_pos)
 		if success_play:
 			yield(Signal, "sgin_card_played_finished")
 		$Player.enable_play()
@@ -633,6 +640,11 @@ func on_sgin_magician_wait():
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
 	$Player.wait_magician()
+
+func on_sgin_merchant_wait():
+	$Employment.hide_discard_hidden()
+	$Player.disable_play()
+	$Player.wait_merchant()
 
 
 func magician_select_deck() -> void:
@@ -789,3 +801,19 @@ func on_sgin_set_reminder(text: String) -> void:
 	else:
 		$Player.show_reminder()
 	$Player.set_reminder_text(tr(text))
+
+
+func on_sgin_ask_built_num(color: String) -> void:
+	var num = $Player.built_color_num(color)
+	$Skill.set_player_built_color(color, num)
+
+
+func on_sgin_merchant_gold(mode: int) -> void:
+	$Player.hide_scripts()
+	if mode == $Player.MerchantGold.ONE:
+		on_sgin_gold_transfer(bank_num, me_num, "sgin_player_gold_ready")
+		yield(Signal, "sgin_player_gold_ready")
+	else:
+		print('here')
+		$Skill.gain_gold_by_color("green")
+	$Player.enable_play()

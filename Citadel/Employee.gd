@@ -13,8 +13,3 @@ func on_mouse_entered():
 func on_mouse_exited():
 	if employee != "Unchosen" and (not hide_employee):
 		Signal.emit_signal("sgin_char_unfocused", employee)
-
-#func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-#
-#	if event.is_pressed() and event is InputEventMouseButton and event.doubleclick:
-#		print(1111)

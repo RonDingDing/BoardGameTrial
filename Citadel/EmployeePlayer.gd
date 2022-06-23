@@ -2,11 +2,18 @@ extends "res://Employee.gd"
 
 onready var Skill = get_node("/root/Main/Game/Board/Skill")
 onready var can_skill = false
-onready var activated_this_turn = true
+onready var skill_1_activated_this_turn = true
+onready var skill_2_activated_this_turn = true
+enum ActivateMode { ALL, SKILL1, SKILL2 }
 
-
-func set_activated_this_turn(can: bool) -> void:
-	activated_this_turn = can
+func set_activated_this_turn(mode: int, can: bool) -> void:
+	if mode == ActivateMode.ALL:
+		skill_1_activated_this_turn = can
+		skill_2_activated_this_turn = can
+	elif mode == ActivateMode.SKILL1:
+		skill_1_activated_this_turn = can
+	elif mode == ActivateMode.SKILL2:
+		skill_2_activated_this_turn = can
 
 
 func set_can_skill(can: bool) -> void:
@@ -15,24 +22,37 @@ func set_can_skill(can: bool) -> void:
 
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
+	if event.is_pressed() and event is InputEventMouseButton:
+		print(can_skill)
+		print(not skill_1_activated_this_turn)
+		print(not skill_2_activated_this_turn)
+		print(not skill_1_activated_this_turn or (not skill_2_activated_this_turn))
+		print()
 	if (
 		event.is_pressed()
 		and event is InputEventMouseButton
 		#		and event.doubleclick
 		and can_skill
-		and (not activated_this_turn)
+		and (not skill_1_activated_this_turn or (not skill_2_activated_this_turn))
 	):
 		match employee:
 			"Assassin":
 				Skill.charskill_play_active_assassin()
+				set_activated_this_turn(ActivateMode.ALL, true)
 			"Thief":
 				Skill.charskill_play_active_thief()
+				set_activated_this_turn(ActivateMode.ALL, true)
 			"Magician":
 				Skill.charskill_play_active_magician()
+				set_activated_this_turn(ActivateMode.ALL, true)
 			"King":
-				Skill.charskill_play_active_king($Player.built_color_num("yellow"))
+				Skill.charskill_play_active_king()
+				set_activated_this_turn(ActivateMode.ALL, true)
 			"Bishop":
 				Skill.charskill_play_active_bishop()
+				set_activated_this_turn(ActivateMode.ALL, true)
+			"Merchant":
+				Skill.charskill_play_active_merchant()
 			"Warlord":
 				Skill.charskill_play_active_warlord()
-		set_activated_this_turn(true)
+		

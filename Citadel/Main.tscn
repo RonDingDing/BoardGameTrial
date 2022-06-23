@@ -30,6 +30,7 @@ script = ExtResource( 2 )
 
 [connection signal="hand_over" from="Signal" to="Game/Mask" method="on_hand_over"]
 [connection signal="phase" from="Signal" to="Game/Mask" method="on_phase"]
+[connection signal="sgin_ask_built_num" from="Signal" to="Game/Board" method="on_sgin_ask_built_num"]
 [connection signal="sgin_assassin_once_finished" from="Signal" to="Game/Board" method="on_sgin_assassin_once_finished"]
 [connection signal="sgin_assassin_wait" from="Signal" to="Game/Board" method="on_sgin_assassin_wait"]
 [connection signal="sgin_card_dealt" from="Signal" to="Game/Board" method="on_sgin_card_dealt"]
@@ -48,6 +49,8 @@ script = ExtResource( 2 )
 [connection signal="sgin_king_move_crown" from="Signal" to="Game/Board" method="on_sgin_king_move_crown"]
 [connection signal="sgin_magician_switch" from="Signal" to="Game/Board" method="on_sgin_magician_switch"]
 [connection signal="sgin_magician_wait" from="Signal" to="Game/Board" method="on_sgin_magician_wait"]
+[connection signal="sgin_merchant_gold" from="Signal" to="Game/Board" method="on_sgin_merchant_gold"]
+[connection signal="sgin_merchant_wait" from="Signal" to="Game/Board" method="on_sgin_merchant_wait"]
 [connection signal="sgin_one_round_finished" from="Signal" to="Game/Board" method="on_sgin_one_round_finished"]
 [connection signal="sgin_player_draw_not_ready" from="Signal" to="Signal" method="on_sgin_player_draw_not_ready"]
 [connection signal="sgin_player_draw_ready" from="Signal" to="Signal" method="on_sgin_player_draw_ready"]

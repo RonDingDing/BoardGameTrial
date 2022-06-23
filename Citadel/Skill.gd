@@ -9,6 +9,17 @@ const deck_num = -1
 const bank_num = -2
 const unfound = -3
 
+onready var player_built_color = {
+	"red": 0,
+	"yellow": 0,
+	"blue": 0,
+	"green": 0,
+	"purple": 0
+}
+
+func set_player_built_color(color: String, num: int) -> void:
+	player_built_color[color] = num
+
 func set_full_num(full: int) -> void:
 	full_num = full
 
@@ -176,24 +187,29 @@ func charskill_play_active_magician() -> void:
 	Signal.emit_signal("sgin_magician_wait")
 
 
+func gain_gold_by_color(color: String) -> void:
+	Signal.emit_signal("sgin_ask_built_num", color)
+	var built_yellow_num = player_built_color[color]
+	var add_num = card_type_change(color)
+	for _i in range(add_num + built_yellow_num):
+		Signal.emit_signal("sgin_gold_transfer", bank_num, me_num, "sgin_player_gold_ready")
+		yield(Signal, "sgin_player_gold_ready")
+
 func charskill_play_passive_king() -> void:
 	Signal.emit_signal("sgin_king_move_crown")
 
-func charskill_play_active_king(built_yellow_num: int) -> void:
-	var add_num = card_type_change("yellow")
-	for i in range(add_num + built_yellow_num):
-		Signal.emit_signal("sgin_gold_transfer", bank_num, me_num, "sgin_player_gold_ready")
-		yield(Signal, "sgin_player_gold_ready")
+func charskill_play_active_king() -> void:
+	gain_gold_by_color("yellow")
 	 
-func card_type_change(color: String) -> int:
+func card_type_change(_color: String) -> int:
 	return 0
 
 func charskill_play_active_bishop() -> void:
-	print("peach")
+	gain_gold_by_color("blue")
 
 
 func charskill_play_active_merchant() -> void:
-	print("sell")
+	Signal.emit_signal("sgin_merchant_wait")
 
 
 func charskill_play_passive_architect() -> void:
@@ -243,3 +259,8 @@ func check_reveal(employee_num: int, employee_name: String, _player_num: int) ->
 		charskill_play_passive_king()
 		return "sgin_4_done"
 	return ""
+	
+func has_ever_played(employee_name: String, built: Array) -> bool:
+	if employee_name == "Architect":
+		return built.size() < 3
+	return false
