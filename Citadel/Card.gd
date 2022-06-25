@@ -2,7 +2,7 @@ extends Node2D
 
 onready var Signal = get_node("/root/Main/Signal")
 onready var TimerGlobal = get_node("/root/Main/Timer")
-enum CardMode { ENLARGE, STATIC, SELECT, PLAY }
+enum CardMode { ENLARGE, STATIC, SELECT, PLAY, WARLORD_SELECT }
 onready var mode = CardMode.STATIC
 onready var card_name = "Unknown"
 onready var card_up_offset = 0
@@ -74,7 +74,7 @@ func set_face_up(face_is_up: bool) -> void:
 
 
 func on_mouse_entered() -> void:
-	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY]:
+	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY, CardMode.WARLORD_SELECT]:
 		# TimerGlobal.set_wait_time(0.05)
 		# TimerGlobal.start()
 		# yield(TimerGlobal, "timeout")
@@ -82,7 +82,7 @@ func on_mouse_entered() -> void:
 
 
 func on_mouse_exited() -> void:
-	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY]:
+	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY, CardMode.WARLORD_SELECT]:
 		Signal.emit_signal("sgin_card_unfocused", card_name)
 
 
@@ -102,3 +102,5 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)
 			CardMode.PLAY:
 				Signal.emit_signal("sgin_card_played", card_name, global_position)
+			CardMode.WARLORD_SELECT:
+				Signal.emit_signal("sgin_card_warlord_selected", card_name, global_position)

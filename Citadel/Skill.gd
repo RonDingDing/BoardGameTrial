@@ -217,7 +217,7 @@ func charskill_play_active_merchant() -> void:
 
 func charskill_play_active_architect() -> void:
 	for _i in range(2):
-		Signal.emit_signal("sgin_draw_card", 0, true)
+		Signal.emit_signal("sgin_draw_card", first_person_num, true)
 		yield(Signal, "sgin_player_draw_ready")
 
 

@@ -20,11 +20,13 @@ enum Need { GOLD, CARD }
 enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
 enum ScriptMode { RESOURCE, MAGICIAN, MERCHANT }
+enum OpponentBuiltMode { SHOW, WARLORD_SHOW }
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
 onready var end_turn_pos = $EndTurn.rect_position
-onready var can_end = true
+onready var can_end = false
 onready var script_mode = ScriptMode.RESOURCE
+onready var opponent_built_mode = OpponentBuiltMode.SHOW
 
 const gray = Color(0.76171875, 0.76171875, 0.76171875)
 const yellow = Color(1, 1, 0)
@@ -35,6 +37,7 @@ func _ready() -> void:
 	hide_scripts()
 	hide_end_turn()
 	hide_kill_steal_info()
+	hide_opponent_built()
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 	$Script2.rect_position = script2_pos
@@ -310,17 +313,20 @@ func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 	var hands_obj = node.get_children()
 	for index in range(hands_obj.size()):
 		var each_card = hands_obj[index]
-		TweenMove.animate(
-			[
+		if animation_time > 0:
+			TweenMove.animate(
 				[
-					each_card,
-					"global_position",
-					each_card.global_position,
-					positions[index] + node.global_position,
-					animation_time
+					[
+						each_card,
+						"global_position",
+						each_card.global_position,
+						positions[index] + node.global_position,
+						animation_time
+					]
 				]
-			]
-		)
+			)
+		else:
+			each_card.global_position = positions[index] + node.global_position
 
 
 func get_positions_with_new_card(obj: Node) -> Array:
@@ -584,3 +590,28 @@ func built_color_num(color: String) -> int:
 		if color == Data.get_card_info(card_name)["kind"]:
 			num += 1
 	return num
+
+func show_opponent_built(name: String, cards: Array) -> void:
+	if can_end:
+		for c in $OpponentBuilt.get_children():
+			$OpponentBuilt.remove_child(c)
+		var start_scale = Vector2(0.175, 0.175)
+		var from_pos = Vector2(0, 0)
+		
+		for card_name in cards:
+			var card_info = Data.get_card_info(card_name)
+			var incoming_card = Card.instance()
+			$OpponentBuilt.add_child(incoming_card)
+			incoming_card.init_card(card_name, card_info["up_offset"], start_scale, from_pos, true, false)
+		var positions = get_positions_with_new_card($OpponentBuilt)
+		rearrange($OpponentBuilt, positions, 0)
+			
+		$OpponentBuilt.show()
+		$OpponentBuiltName.show()
+		$OpponentBuiltNameText.text = name
+		$OpponentBuiltNameText.show()
+
+func hide_opponent_built() -> void:
+	$OpponentBuilt.hide()
+	$OpponentBuiltName.hide()
+	$OpponentBuiltNameText.hide()

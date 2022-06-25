@@ -133,7 +133,10 @@ signal sgin_merchant_gold(mode)
 #warning-ignore:unused_signal
 signal sgin_show_built(player_num)
 #warning-ignore:unused_signal
-signal sgin_hide_built(player_num)
+signal sgin_hide_built
+
+#warning-ignore:unused_signal
+signal sgin_card_warlord_selected(card_name, global_position)
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:

@@ -92,16 +92,7 @@ func _ready() -> void:
 	to_be_delete()
 
 
-func _input(event):
-	if (
-		event is InputEventMouseButton
-		and event.button_index == BUTTON_LEFT
-		and event.pressed
-		and not started
-	):
-		start_game()
-		started = true
-
+	
 
 func show_player() -> void:
 	$OpponentPath2D/PathFollow2D.unit_offset = 0
@@ -682,7 +673,7 @@ func magician_select_player() -> void:
 	var xrange = range(first_person_num, opponent_length + 1) + range(0,  opponent_length + 1) + range(0, first_person_num)
 	for i in range(1, opponent_length + 1):
 		var opponent = select_obj_by_player_num(xrange[i])
-		opponent.set_clickable(true)
+		opponent.set_opponent_state(opponent.OpponentState.MAGICIAN_CLICKABLE)
 
 	$Player.hide_scripts()
 	Signal.emit_signal("sgin_set_reminder", "NOTE_MAGICIAN_SELECT_CHARACTER")
@@ -690,7 +681,7 @@ func magician_select_player() -> void:
 
 	for i in range(1, opponent_length + 1):
 		var opponent = select_obj_by_player_num(xrange[i])
-		opponent.set_clickable(false)
+		opponent.set_opponent_state(opponent.OpponentState.IDLE)
 
 	var switch_opponent = select_obj_by_player_num(player_num)
 	var player_hands_obj = $Player/HandScript.get_children().duplicate()
@@ -830,9 +821,26 @@ func on_sgin_merchant_gold(mode: int) -> void:
 	$Player.enable_play()
 
 
-func on_sgin_show_built(player_num: int):
+func on_sgin_show_built(player_num: int) -> void:
 	var player_obj = select_obj_by_player_num(player_num)
+	if player_obj != null:
+		var built = player_obj.built
+		var name = player_obj.username
+		$Player.show_opponent_built(name, built)
+
+func on_sgin_hide_built() -> void:
+	$Player.hide_opponent_built()
 
 
-func on_sgin_hide_built(player_num: int):
-	pass
+func on_input_event(viewport, event, shape_idx):
+	if (
+		event is InputEventMouseButton
+		and event.button_index == BUTTON_LEFT
+		and event.pressed
+		
+	):
+		if not started:
+			start_game()
+			started = true
+		$Player.hide_opponent_built()
+

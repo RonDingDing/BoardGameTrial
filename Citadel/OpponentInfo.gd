@@ -1,5 +1,5 @@
 extends "res://BasePlayer.gd"
-enum OpponentState { IDLE, CLICKABLE }
+enum OpponentState { IDLE, MAGICIAN_CLICKABLE }
 
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
@@ -16,9 +16,8 @@ onready var original_position = Vector2(-9999, -9999)
 func _ready() -> void:
 	$Crown.hide()
 
-func set_clickable(able: bool) -> void:
-	opponent_state = OpponentState.CLICKABLE if able else OpponentState.IDLE
-
+func set_opponent_state(state: int) -> void:
+	opponent_state = state
 
 func set_bank_position(pos: Vector2) -> void:
 	bank_position = pos
@@ -164,17 +163,17 @@ func can_end_game() -> bool:
 
 
 func on_mouse_entered() -> void:
-	if opponent_state == OpponentState.CLICKABLE:
+	if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
 		set_position(Vector2(original_position.x, original_position.y - 20))
 
 
 func on_mouse_exited() -> void:
-	if opponent_state == OpponentState.CLICKABLE:
+	if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
 		set_position(original_position)
 
 
 func on_input_event(_viewport, event, _shape_idx):
-	if opponent_state == OpponentState.CLICKABLE and event is InputEventMouseButton:
+	if opponent_state == OpponentState.MAGICIAN_CLICKABLE and event is InputEventMouseButton:
 		on_mouse_exited()
 		Signal.emit_signal("sgin_magician_opponent_selected", player_num)
 
@@ -183,11 +182,16 @@ func add_gold(num: int) -> void:
 	$MoneyIcon/MoneyNum.text = str(gold)
 
 
-func _on_Built_mouse_entered():
-	Signal.emit_signal("sgin_show_built", player_num)
-	print("sgin_show_built", player_num)
+	
 
 
 func on_Built_mouse_exited():
-	Signal.emit_signal("sgin_hide_built", player_num)
-	print("sgin_hide_built", player_num)
+	Signal.emit_signal("sgin_hide_built" )
+	print("sgin_hide_built" )
+
+
+func on_Built_input_event(viewport, event, shape_idx):
+	if opponent_state == OpponentState.IDLE and event is InputEventMouseButton:
+		Signal.emit_signal("sgin_show_built", player_num)
+		print("sgin_show_built", player_num)
+
