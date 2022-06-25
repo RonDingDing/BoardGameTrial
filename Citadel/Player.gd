@@ -1,6 +1,4 @@
 extends "res://BasePlayer.gd"
-
-const me_num = 0
 const deck_num = -1
 const bank_num = -2
 const unfound = -3
@@ -12,7 +10,6 @@ onready var TweenMove = get_node("/root/Main/Tween")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var Data = get_node("/root/Main/Data")
 
- 
 onready var played_this_turn = []
 
 onready var bank_position = Vector2(-9999, -9999)
@@ -22,12 +19,16 @@ onready var center = get_viewport_rect().size / 2
 enum Need { GOLD, CARD }
 enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
-enum ScriptMode { RESOURCE, MAGICIAN, MERCHANT}
+enum ScriptMode { RESOURCE, MAGICIAN, MERCHANT }
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
 onready var end_turn_pos = $EndTurn.rect_position
 onready var can_end = true
 onready var script_mode = ScriptMode.RESOURCE
+
+const gray = Color(0.76171875, 0.76171875, 0.76171875)
+const yellow = Color(1, 1, 0)
+const white = Color(1, 1, 1)
 
 
 func _ready() -> void:
@@ -56,6 +57,7 @@ func set_script_mode(mode: int) -> void:
 	elif mode == ScriptMode.WARLORD:
 		$Script1Label.text = "NOTE_WARLORD_DESTROY"
 		$Script2Label.text = "NOTE_GAIN_RED"
+
 
 func set_assassinated(char_name: String) -> void:
 	$KillStealInfo/KillChar/Pic.animation = char_name
@@ -161,7 +163,7 @@ func on_end_turn_mouse_exited() -> void:
 func on_script2_mouse_entered() -> void:
 	if script_mode == ScriptMode.MERCHANT and $Employee.skill_2_activated_this_turn:
 		return
-		
+
 	$Script2.set_position(Vector2(script2_pos.x, script2_pos.y - 20))
 	$Script2Label.set_position(Vector2(script2_pos.x + 25, script2_pos.y + 8))
 
@@ -192,27 +194,26 @@ func wait_magician() -> void:
 	set_script_mode(ScriptMode.MAGICIAN)
 	Signal.emit_signal("sgin_set_reminder", "NOTE_MAGICIAN")
 	show_scripts()
-	
+
+
 func wait_merchant() -> void:
 	disable_play()
 	set_script_mode(ScriptMode.MERCHANT)
 	Signal.emit_signal("sgin_set_reminder", "NOTE_MERCHANT")
 	show_scripts()
-	var gray = Color(0.76171875, 0.76171875, 0.76171875)   
-	var yellow = Color(1, 1, 0)   
-	var white = Color(1, 1, 1)   	
 	var color
 	if $Employee.skill_1_activated_this_turn:
-		color = gray	
+		color = gray
 	else:
 		color = yellow
 	$Script1Label.set("custom_colors/font_color", color)
 	if $Employee.skill_2_activated_this_turn:
-		color = gray	
+		color = gray
 	else:
 		color = white
 	$Script2Label.set("custom_colors/font_color", color)
-		
+
+
 func set_bank_position(pos: Vector2) -> void:
 	bank_position = pos
 
@@ -346,9 +347,6 @@ func get_built_positions_with_new_card() -> Array:
 	return get_positions_with_new_card($BuiltScript)
 
 
-
- 
-
 #func on_draw_gold(from_pos: Vector2) -> void:
 #	gold_transfer(
 #		from_pos,
@@ -359,7 +357,6 @@ func get_built_positions_with_new_card() -> Array:
 #		1
 #	)
 
- 
 
 func disable_enlarge() -> void:
 	for a in $HandScript.get_children():
@@ -382,8 +379,7 @@ func disable_play() -> void:
 	for a in $BuiltScript.get_children():
 		a.set_card_mode(a.CardMode.ENLARGE)
 	can_end = false
-	var color = Color(0.76171875, 0.76171875, 0.76171875)  #gray
-	$EndTurnLabel.set("custom_colors/font_color", color)
+	$EndTurnLabel.set("custom_colors/font_color", gray)
 
 
 func enable_play() -> void:
@@ -506,7 +502,7 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 		return false
 
 	for _i in range(price):
-		Signal.emit_signal("sgin_gold_transfer", me_num, bank_num, "sgin_player_pay_ready")
+		Signal.emit_signal("sgin_gold_transfer", player_num, bank_num, "sgin_player_pay_ready")
 		yield(Signal, "sgin_player_pay_ready")
 
 	hands.erase(card_name)
@@ -572,11 +568,15 @@ func set_all_activated_this_turn(can: bool) -> void:
 	$Employee.set_activated_this_turn($Employee.ActivateMode.ALL, can)
 
 
+func reset_script_color() -> void:
+	$Script1Label.set("custom_colors/font_color", yellow)
+	$Script2Label.set("custom_colors/font_color", white)
+
+
 func add_gold(num: int) -> void:
 	gold += num
 	$MoneyNum.text = str(gold)
 
- 
 
 func built_color_num(color: String) -> int:
 	var num = 0

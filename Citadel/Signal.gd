@@ -1,10 +1,10 @@
 extends Node
 #warning-ignore:unused_signal
-signal sgin_gold_transfer(from_relative, to_relative, done_signal)
+signal sgin_gold_transfer(from_pnum, to_pnum, done_signal)
 #warning-ignore:unused_signal
 signal sgin_add_point(point)
 #warning-ignore:unused_signal
-signal sgin_draw_card(relative_to_me, face_is_up, from_pos)
+signal sgin_draw_card(pnum, face_is_up, from_pos)
 #warning-ignore:unused_signal
 signal sgin_player_obj_built_card(player_obj, card_name, from_pos)
 #warning-ignore:unused_signal
@@ -119,14 +119,22 @@ signal sgin_magician_opponent_selected
 signal sgin_king_move_crown(player_num)
 #warning-ignore:unused_signal
 signal sgin_4_done
+
 #warning-ignore:unused_signal
 signal sgin_ask_built_num(color)
 #warning-ignore:unused_signal
 signal sgin_ans_built_num(color, num)
+
 #warning-ignore:unused_signal
 signal sgin_merchant_wait
 #warning-ignore:unused_signal
 signal sgin_merchant_gold(mode)
+
+#warning-ignore:unused_signal
+signal sgin_show_built(player_num)
+#warning-ignore:unused_signal
+signal sgin_hide_built(player_num)
+
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)

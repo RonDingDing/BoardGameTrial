@@ -4,10 +4,10 @@ onready var assassinated = [0, "Unchosen"]
 onready var stolen = [0, "Unchosen"]
 var full_num = 0
 #### Skills - Cards
-const me_num = 0
 const deck_num = -1
 const bank_num = -2
 const unfound = -3
+onready var first_person_num = 0
 
 onready var player_built_color = {
 	"red": 0,
@@ -16,6 +16,9 @@ onready var player_built_color = {
 	"green": 0,
 	"purple": 0
 }
+
+func set_first_person_num(player_num: int) -> void:
+	first_person_num = player_num
 
 func set_player_built_color(color: String, num: int) -> void:
 	player_built_color[color] = num
@@ -192,7 +195,7 @@ func gain_gold_by_color(color: String) -> void:
 	var built_yellow_num = player_built_color[color]
 	var add_num = card_type_change(color)
 	for _i in range(add_num + built_yellow_num):
-		Signal.emit_signal("sgin_gold_transfer", bank_num, me_num, "sgin_player_gold_ready")
+		Signal.emit_signal("sgin_gold_transfer", bank_num, first_person_num, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 
 func charskill_play_passive_king() -> void:
@@ -212,8 +215,10 @@ func charskill_play_active_merchant() -> void:
 	Signal.emit_signal("sgin_merchant_wait")
 
 
-func charskill_play_passive_architect() -> void:
-	print("build")
+func charskill_play_active_architect() -> void:
+	for _i in range(2):
+		Signal.emit_signal("sgin_draw_card", 0, true)
+		yield(Signal, "sgin_player_draw_ready")
 
 
 func charskill_play_active_warlord() -> void:

@@ -181,3 +181,13 @@ func on_input_event(_viewport, event, _shape_idx):
 func add_gold(num: int) -> void:
 	gold += num
 	$MoneyIcon/MoneyNum.text = str(gold)
+
+
+func _on_Built_mouse_entered():
+	Signal.emit_signal("sgin_show_built", player_num)
+	print("sgin_show_built", player_num)
+
+
+func on_Built_mouse_exited():
+	Signal.emit_signal("sgin_hide_built", player_num)
+	print("sgin_hide_built", player_num)

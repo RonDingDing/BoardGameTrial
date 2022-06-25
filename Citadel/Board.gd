@@ -15,72 +15,65 @@ const Crown = preload("res://Crown.tscn")
 const Money = preload("res://Money.tscn")
 enum Phase { CHARACTER_SELECTION, RESOURCE, TURN, END, GAME_OVER }
 enum Need { GOLD, CARD }
-enum FindPlayerObjBy { EMPLOYEE, EMPLOYEE_NUM, PLAYER_NUM, RELATIVE_TO_ME, CROWN }
-
-const me_num = 0
+enum FindPlayerObjBy { EMPLOYEE, EMPLOYEE_NUM, PLAYER_NUM, CROWN, RELATIVE_TO_FIRST_PERSON }
 const deck_num = -1
 const bank_num = -2
 const unfound = -3
 
 
-class ObjStruct:
-	var player_obj: Node = null
-	var relative_to_me: int = -1
-
-	func _init(player: Node, relative: int) -> void:
-		player_obj = player
-		relative_to_me = relative
+func select_obj_by_relative_to_first_person(relative_to_me: int) -> Node:
+	return select_player_obj_by(FindPlayerObjBy.RELATIVE_TO_FIRST_PERSON, relative_to_me)
 
 
-func select_obj_by_num(relative_to_me: int) -> Node:
-	return select_player_obj_by(FindPlayerObjBy.RELATIVE_TO_ME, relative_to_me).player_obj
+func select_obj_by_player_num(player_num: int) -> Node:
+	return select_player_obj_by(FindPlayerObjBy.PLAYER_NUM, player_num)
 
 
 func select_obj_by_employee(employee_name: String) -> Node:
-	return select_player_obj_by(FindPlayerObjBy.EMPLOYEE, employee_name).player_obj
+	return select_player_obj_by(FindPlayerObjBy.EMPLOYEE, employee_name)
 
 
-func find_employee_4_relative_to_me() -> int:
-	var employee_4_relative = select_player_obj_by(FindPlayerObjBy.EMPLOYEE_NUM, 4).relative_to_me
-	if employee_4_relative == unfound:
-		employee_4_relative = me_num
-	return employee_4_relative
+func find_employee_4_pnum() -> int:
+	var employee_4 = select_player_obj_by(FindPlayerObjBy.EMPLOYEE_NUM, 4)
+	if employee_4 == null:
+		return $Player.player_num
+	return employee_4.player_num
 
 
-func find_crown_relative_to_me() -> int:
-	var crown_relative_to_me = select_player_obj_by(FindPlayerObjBy.CROWN, 0).relative_to_me
-	if crown_relative_to_me == unfound:
-		crown_relative_to_me =  me_num
-	return crown_relative_to_me
+func find_crown_pnum() -> int:
+	var crown_player = select_player_obj_by(FindPlayerObjBy.CROWN, 0)
+	if crown_player == null:
+		return $Player.player_num
+	return crown_player.player_num
 
 
-func select_player_obj_by(find_mode: int, clue) -> ObjStruct:
+func select_player_obj_by(find_mode: int, clue) -> Node:
 	var player_obj
 
-	for relative_to_me in range(-2, opponent_length + 1):
-		if relative_to_me == me_num:
+	for n in range(-2, opponent_length + 1):
+		if n == 0:
 			player_obj = $Player
-		elif relative_to_me == bank_num:
+		elif n == bank_num:
 			player_obj = $Bank
-		elif relative_to_me == deck_num:
+		elif n == deck_num:
 			player_obj = $Deck
 		else:
-			player_obj = get_node(str("Opponent", relative_to_me))
+			player_obj = get_node(str("Opponent", n))
 
 		if find_mode == FindPlayerObjBy.EMPLOYEE and player_obj.employee == clue:
-			return ObjStruct.new(player_obj, relative_to_me)
+			return player_obj
 		elif (
 			find_mode == FindPlayerObjBy.EMPLOYEE_NUM
 			and player_obj.employee == $Employment.find_by_num(clue)
 		):
-			return ObjStruct.new(player_obj, relative_to_me)
+			return player_obj
 		elif find_mode == FindPlayerObjBy.CROWN and player_obj.has_crown:
-			return ObjStruct.new(player_obj, relative_to_me)
+			return player_obj
 		elif find_mode == FindPlayerObjBy.PLAYER_NUM and player_obj.player_num == clue:
-			return ObjStruct.new(player_obj, relative_to_me)
-		elif find_mode == FindPlayerObjBy.RELATIVE_TO_ME and relative_to_me == clue:
-			return ObjStruct.new(player_obj, relative_to_me)
-	return ObjStruct.new(null, -3)
+			return player_obj
+		elif find_mode == FindPlayerObjBy.RELATIVE_TO_FIRST_PERSON and n == clue:
+			return player_obj
+	return null
 
 
 func _ready() -> void:
@@ -118,20 +111,11 @@ func show_player() -> void:
 		node.position = $OpponentPath2D/PathFollow2D.position
 
 
-func cal_seat_num(relative_to_me: int) -> int:
-	# 算出是opponent几号
-	if relative_to_me >= first_person_num:
-		return relative_to_me - first_person_num
-	else:
-		return opponent_length + 1 - first_person_num + relative_to_me
-
-
-
-func on_sgin_draw_card(relative_to_me: int, face_is_up: bool, from_pos: Vector2 = deck_position):
+func on_sgin_draw_card(player_num: int, face_is_up: bool, from_pos: Vector2 = deck_position):
 	if from_pos == null:
 		from_pos = deck_position
 	var card_name = $Deck.pop()
-	var player_obj = select_obj_by_num(relative_to_me)
+	var player_obj = select_obj_by_player_num(player_num)
 	player_obj.draw(card_name, face_is_up, from_pos, 1)
 
 
@@ -145,40 +129,39 @@ func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
 	for _i in range(4):
-		for relative_to_me in range(all_player_length):
+		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
 			yield(TimerGlobal, "timeout")
-			on_sgin_draw_card(relative_to_me, false)
+			on_sgin_draw_card(p_num, false)
 	for _i in range(4):
-		for relative_to_me in range(all_player_length):
-			if relative_to_me ==  me_num:
+		for p_num in range(all_player_length):
+			if p_num == $Player.player_num:
 				yield(Signal, "sgin_player_draw_ready")
 			else:
 				yield(Signal, "sgin_opponent_draw_ready")
 	Signal.emit_signal("sgin_card_dealt", all_player_length)
 
 
-
 func on_sgin_card_dealt(all_player_length: int) -> void:
 	for _i in range(2):
-		for relative_to_me in range(all_player_length):
+		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
 			yield(TimerGlobal, "timeout")
 			var done_signal = (
 				"sgin_player_gold_ready"
-				if relative_to_me ==  me_num
+				if p_num == $Player.player_num
 				else "sgin_opponent_gold_ready"
-			)			
-			on_sgin_gold_transfer(bank_num, relative_to_me, done_signal)
+			)
+			on_sgin_gold_transfer(bank_num, p_num, done_signal)
 	yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_ready_game")
-	
+
 
 func first_player() -> int:
-	var seat_num = randi() % (opponent_length + 1)
-	return seat_num
+	var player_num = randi() % (opponent_length + 1)
+	return player_num
 
 
 func character_phase_remove() -> Array:
@@ -195,60 +178,53 @@ func character_phase_remove() -> Array:
 			return [2, 1, 0]
 
 
-func get_all_players_info() -> Array:
+func get_all_players_info_relative() -> Array:
 	var info_array = []
 	for i in range(opponent_length + 1):
-		var player_obj = select_obj_by_num(i)
+		var player_obj = select_obj_by_relative_to_first_person(i)
 		var info = player_obj.get_my_player_info()
 		info_array.append(info)
 	return info_array
 
 
-func get_reseat_info(info_array: Array, relative_seat: int) -> Array:
-	return (
-		info_array.slice(relative_seat, info_array.size())
-		+ info_array.slice(0, relative_seat - 1)
+func get_reseat_info(info_array: Array, original_first_player: int, current_first_player) -> Array:
+	var seat = (
+		current_first_player - original_first_player
+		if current_first_player >= original_first_player
+		else opponent_length + 1 - original_first_player + current_first_player
 	)
 
-
-func cal_relative_to_me(player_num: int) -> int:
-	if player_num >= first_person_num:
-		return player_num - first_person_num
-	else:
-		return opponent_length + 1 - first_person_num + player_num
+	return info_array.slice(seat, info_array.size()) + info_array.slice(0, seat - 1)
 
 
 func send_all_player_info(reseated_info: Array) -> void:
 	for i in range(opponent_length + 1):
-		var player_obj = select_obj_by_num(i)
+		var player_obj = select_obj_by_relative_to_first_person(i)
 		player_obj.on_player_info(reseated_info[i])
 
 
-func reseat(relative_to_me: int) -> void:
-	# 座位从0开始，0是自己，先获取所有的player_info
-	var info_array = get_all_players_info()
-	if relative_to_me ==  me_num:
+func reseat(orginal_first_player: int, current_first_player: int) -> void:
+	var info_array = get_all_players_info_relative()
+	if current_first_player == $Player.player_num:
 		send_all_player_info(info_array)
 		return
-	# 将主视角交给座位号为 relative_to_me 的玩家，也就是 opponentN，即将原数组向左移动N
-	var e = []
-	for f in info_array:
-		var s = f.get("hands", [])
-		var p = []
-		for m in s:
-			p.append(m)
-		e.append(p)
 
-	var reseated_info = get_reseat_info(info_array, relative_to_me)
+	var reseated_info = get_reseat_info(info_array, orginal_first_player, current_first_player)
 	send_all_player_info(reseated_info)
 
 
-func hand_over_control(relative_to_me: int) -> void:
-	var player_obj = select_obj_by_num(relative_to_me)
+func set_first_person_num(num: int) -> void:
+	first_person_num = num
+	$Skill.set_first_person_num(num)
+
+func hand_over_control(player_num: int) -> void:
+	var player_obj = select_obj_by_player_num(player_num)
 	var player_name = player_obj.username
-	first_person_num = player_obj.player_num
+	var orginal_first_player = first_person_num
+	var current_first_player = player_obj.player_num
+	set_first_person_num(player_obj.player_num)
 	Signal.emit_signal("hand_over", player_name)
-	reseat(relative_to_me)
+	reseat(orginal_first_player, current_first_player)
 	hide()
 
 
@@ -282,17 +258,17 @@ func mask_character_selection() -> void:
 
 
 func on_sgin_ready_game() -> void:
-	var relative_to_me = first_player()
-	var player_obj = select_obj_by_num(relative_to_me)
+	var player_num = first_player()
+	var player_obj = select_obj_by_player_num(player_num)
 	player_obj.set_crown(true)
-	character_selection(relative_to_me)
+	character_selection(player_num)
 
 
-func character_selection(relative_to_me: int) -> void:
+func character_selection(player_num: int) -> void:
 	phase(Phase.CHARACTER_SELECTION)
 	yield(Signal, "uncover")
 	show()
-	hand_over_control(relative_to_me)
+	hand_over_control(player_num)
 	yield(Signal, "uncover")
 	show()
 	var remove_data = character_phase_remove()
@@ -370,11 +346,8 @@ func to_be_delete():
 	]
 	for i in range(data.size()):
 		var d = data[i]
-		var node = select_obj_by_num(i)
+		var node = select_obj_by_relative_to_first_person(i)
 		node.on_player_info(d)
-
-
-	
 
 
 func on_sgin_char_selected(char_num: int) -> void:
@@ -410,6 +383,15 @@ func handle_last_player_who_select(i: int) -> void:
 		hidden_char_obj.queue_free()
 
 
+func get_next_x_player_num(x: int = 1) -> int:
+	var next_x_num = $Player.player_num + x
+	if next_x_num > opponent_length:
+		print("next " + str(x) + " num: ", next_x_num - opponent_length - 1)
+		return next_x_num - opponent_length - 1
+	print("next " + str(x) + " num: ", next_x_num)
+	return next_x_num
+
+
 func on_sgin_character_selection() -> void:
 	for i in range(opponent_length + 1):
 		handle_last_player_who_select(i)
@@ -417,7 +399,8 @@ func on_sgin_character_selection() -> void:
 		yield(Signal, "sgin_selected_char_once_finished")
 		# 交给下一位玩家
 		if i < opponent_length:
-			hand_over_control(1)
+			var next_player_num = get_next_x_player_num(1)
+			hand_over_control(next_player_num)
 			yield(Signal, "uncover")
 			show()
 	Signal.emit_signal("sgin_start_turn")
@@ -464,17 +447,34 @@ func on_start_turn() -> void:
 		if should_continue:
 			continue
 		player_obj.show_employee()
-		var relative_to_me = cal_relative_to_me(player_obj.player_num)
-		hand_over_control(relative_to_me)
+		hand_over_control(player_obj.player_num)
 		yield(Signal, "uncover")
 		show()
+
+		print("start turn: ")
+		for n in range(opponent_length + 1):
+			var player_objs = select_obj_by_relative_to_first_person(n)
+			print(
+				player_objs.username,
+				" ",
+				player_objs.hands,
+				" ",
+				player_objs.built,
+				" ",
+				player_objs.employee,
+				" ",
+				player_objs.gold
+			)
+		print()
+
 		var wait_signal = $Skill.check_reveal(employee_num, employee_name, player_obj.player_num)
 		if wait_signal:
 			yield(Signal, wait_signal)
 
 		$Player.set_all_activated_this_turn(false)
+		$Player.reset_script_color()
 		phase(Phase.RESOURCE)
-		
+
 		$Player.disable_play()
 		yield(Signal, "sgin_resource_need")
 		$Player.hide_scripts()
@@ -487,8 +487,9 @@ func on_start_turn() -> void:
 		yield(Signal, "sgin_end_turn")
 		$Player.hide_end_turn()
 		$Player.after_end_turn()
+		print("end turn: ")
 		for n in range(opponent_length + 1):
-			var player_objs = select_obj_by_num(n)
+			var player_objs = select_obj_by_relative_to_first_person(n)
 			print(
 				player_objs.username,
 				" ",
@@ -524,7 +525,7 @@ func gain_gold() -> void:
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
 		var done_signal = "sgin_player_gold_ready"
-		on_sgin_gold_transfer(bank_num,  me_num, done_signal)	
+		on_sgin_gold_transfer(bank_num, $Player.player_num, done_signal)
 		yield(Signal, done_signal)
 	Signal.emit_signal("sgin_resource_end")
 
@@ -555,8 +556,11 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 		var card_info = Data.get_card_info(card_name)
 		var price = card_info["star"]
 		var enough_money = $Player.has_enough_money(price)
-		var not_played_same = $Player.has_not_played_same(card_name) 
-		var not_ever_played = $Skill.has_ever_played($Player.employee, $Player.played_this_turn) or $Player.has_ever_played()
+		var not_played_same = $Player.has_not_played_same(card_name)
+		var not_ever_played = (
+			$Skill.has_ever_played($Player.employee, $Player.played_this_turn)
+			or $Player.has_ever_played()
+		)
 		if not (enough_money and not_played_same and not_ever_played):
 			return
 		$Player.disable_play()
@@ -569,7 +573,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 func is_game_over() -> bool:
 	var game_over = false
 	for p in range(opponent_length + 1):
-		var player_obj = select_obj_by_num(p)
+		var player_obj = select_obj_by_player_num(p)
 		if player_obj.can_end_game():
 			game_over = true
 	return game_over
@@ -577,17 +581,17 @@ func is_game_over() -> bool:
 
 func on_sgin_one_round_finished() -> void:
 	if not is_game_over():
-		var crown_player_relative_to_me = find_employee_4_relative_to_me()
+		var crown_player_num = find_employee_4_pnum()
 		$Employment.reset_available()
 		character_reset()
-		character_selection(crown_player_relative_to_me)
+		character_selection(crown_player_num)
 	else:
 		game_over()
 
 
 func character_reset() -> void:
 	for i in range(opponent_length + 1):
-		var player_obj = select_obj_by_num(i)
+		var player_obj = select_obj_by_player_num(i)
 		player_obj.set_employee("Unchosen")
 
 
@@ -627,10 +631,9 @@ func on_sgin_thief_wait():
 
 func on_sgin_thief_stolen():
 	$Player.disable_play()
-	var thief_struct = select_player_obj_by(FindPlayerObjBy.EMPLOYEE, "Thief")
-	var thief_relative = thief_struct.relative_to_me
+	var thief_obj = select_player_obj_by(FindPlayerObjBy.EMPLOYEE, "Thief")
 	for _i in range($Player.gold):
-		on_sgin_gold_transfer(me_num, thief_relative, "sgin_player_gold_ready")
+		on_sgin_gold_transfer($Player.player_num, thief_obj.player_num, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 	$Player.enable_play()
 	Signal.emit_signal("sgin_thief_done")
@@ -640,6 +643,7 @@ func on_sgin_magician_wait():
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
 	$Player.wait_magician()
+
 
 func on_sgin_merchant_wait():
 	$Employment.hide_discard_hidden()
@@ -667,7 +671,7 @@ func magician_select_deck() -> void:
 		TimerGlobal.set_wait_time(0.1)
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
-		on_sgin_draw_card(me_num, true)
+		on_sgin_draw_card($Player.player_num, true)
 	yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 	$Player.enable_play()
@@ -675,8 +679,9 @@ func magician_select_deck() -> void:
 
 
 func magician_select_player() -> void:
+	var xrange = range(first_person_num, opponent_length + 1) + range(0,  opponent_length + 1) + range(0, first_person_num)
 	for i in range(1, opponent_length + 1):
-		var opponent = select_obj_by_num(i)
+		var opponent = select_obj_by_player_num(xrange[i])
 		opponent.set_clickable(true)
 
 	$Player.hide_scripts()
@@ -684,11 +689,10 @@ func magician_select_player() -> void:
 	var player_num = yield(Signal, "sgin_magician_opponent_selected")
 
 	for i in range(1, opponent_length + 1):
-		var opponent = select_obj_by_num(i)
+		var opponent = select_obj_by_player_num(xrange[i])
 		opponent.set_clickable(false)
 
-	var relative_to_me = cal_relative_to_me(player_num)
-	var switch_opponent = select_obj_by_num(relative_to_me)
+	var switch_opponent = select_obj_by_player_num(player_num)
 	var player_hands_obj = $Player/HandScript.get_children().duplicate()
 	var switch_hands_name = switch_opponent.hands.duplicate()
 
@@ -724,16 +728,24 @@ func on_sgin_magician_switch(switch):
 
 
 func on_sgin_king_move_crown() -> void:
-	var crown_relative_to_me = find_crown_relative_to_me()
-	var original_crown_owner = select_obj_by_num(crown_relative_to_me)
+	var crown_pnum = find_crown_pnum()
+	var original_crown_owner = select_obj_by_player_num(crown_pnum)
 	var from_pos = original_crown_owner.get_node("Crown").global_position
 
-	var emoloyee_4_relative_to_me = find_employee_4_relative_to_me()
-	var emoloyee_4 = select_obj_by_num(emoloyee_4_relative_to_me)
+	var emoloyee_4_pnum = find_employee_4_pnum()
+	var emoloyee_4 = select_obj_by_player_num(emoloyee_4_pnum)
 	var to_pos = emoloyee_4.get_node("Crown").global_position
 
-	var start_scale = Vector2(0.15, 0.15) if crown_relative_to_me ==  me_num else Vector2(0.07, 0.07)
-	var end_scale = Vector2(0.15, 0.15) if emoloyee_4_relative_to_me ==  me_num else Vector2(0.07, 0.07)
+	var start_scale = (
+		Vector2(0.15, 0.15)
+		if crown_pnum == $Player.player_num
+		else Vector2(0.07, 0.07)
+	)
+	var end_scale = (
+		Vector2(0.15, 0.15)
+		if emoloyee_4_pnum == $Player.player_num
+		else Vector2(0.07, 0.07)
+	)
 
 	var crown = Crown.instance()
 	crown.init(from_pos)
@@ -761,11 +773,11 @@ func on_sgin_king_move_crown() -> void:
 	Signal.emit_signal("sgin_4_done")
 
 
-func on_sgin_gold_transfer(from_relative: int, to_relative: int, done_signal: String) -> void:
-	var from_player = select_obj_by_num(from_relative)
-	var to_player = select_obj_by_num(to_relative)
-	var start_scale = Vector2(1.7,1.7) if from_relative ==  me_num else Vector2(1, 1)
-	var end_scale = Vector2(1.7, 1.7) if to_relative ==  me_num else Vector2(1,1)
+func on_sgin_gold_transfer(from_pnum: int, to_pnum: int, done_signal: String) -> void:
+	var from_player = select_obj_by_player_num(from_pnum)
+	var to_player = select_obj_by_player_num(to_pnum)
+	var start_scale = Vector2(1.7, 1.7) if from_pnum == $Player.player_num else Vector2(1, 1)
+	var end_scale = Vector2(1.7, 1.7) if to_pnum == $Player.player_num else Vector2(1, 1)
 	var from_pos = from_player.get_node("MoneyIcon").global_position
 	var to_pos = to_player.get_node("MoneyIcon").global_position
 	var money = Money.instance()
@@ -811,9 +823,16 @@ func on_sgin_ask_built_num(color: String) -> void:
 func on_sgin_merchant_gold(mode: int) -> void:
 	$Player.hide_scripts()
 	if mode == $Player.MerchantGold.ONE:
-		on_sgin_gold_transfer(bank_num, me_num, "sgin_player_gold_ready")
+		on_sgin_gold_transfer(bank_num, $Player.player_num, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 	else:
-		print('here')
 		$Skill.gain_gold_by_color("green")
 	$Player.enable_play()
+
+
+func on_sgin_show_built(player_num: int):
+	var player_obj = select_obj_by_player_num(player_num)
+
+
+func on_sgin_hide_built(player_num: int):
+	pass

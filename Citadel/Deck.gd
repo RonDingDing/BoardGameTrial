@@ -76,7 +76,9 @@ onready var deck_standard_unique = [
 
 onready var deck = deck_base + deck_standard_unique
 
-
+func _ready() -> void:
+	player_num = -1
+	
 func shuffle():
 	randomize()
 	deck.shuffle()

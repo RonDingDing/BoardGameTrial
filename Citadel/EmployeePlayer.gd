@@ -6,6 +6,7 @@ onready var skill_1_activated_this_turn = true
 onready var skill_2_activated_this_turn = true
 enum ActivateMode { ALL, SKILL1, SKILL2 }
 
+
 func set_activated_this_turn(mode: int, can: bool) -> void:
 	if mode == ActivateMode.ALL:
 		skill_1_activated_this_turn = can
@@ -53,6 +54,8 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				set_activated_this_turn(ActivateMode.ALL, true)
 			"Merchant":
 				Skill.charskill_play_active_merchant()
+			"Architect":
+				Skill.charskill_play_active_architect()
+				set_activated_this_turn(ActivateMode.ALL, true)
 			"Warlord":
 				Skill.charskill_play_active_warlord()
-		
