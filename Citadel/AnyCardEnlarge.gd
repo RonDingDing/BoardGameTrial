@@ -48,7 +48,7 @@ func steal(char_name: String) -> void:
 				$StealPocket,
 				"global_position",
 				$CharacterCard.global_position,
-				Vector2(99999, $CharacterCard.global_position.y),
+				Vector2(2000, $CharacterCard.global_position.y),
 				2
 			]
 		]

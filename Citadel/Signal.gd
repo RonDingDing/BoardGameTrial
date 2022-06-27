@@ -110,7 +110,7 @@ signal sgin_thief_stolen
 signal sgin_thief_done
 
 #warning-ignore:unused_signal
-signal sgin_magician_wait
+#signal sgin_magician_wait
 #warning-ignore:unused_signal
 signal sgin_magician_switch(switch)
 #warning-ignore:unused_signal
@@ -121,12 +121,12 @@ signal sgin_king_move_crown(player_num)
 signal sgin_4_done
 
 #warning-ignore:unused_signal
-signal sgin_ask_built_num(color)
+#signal sgin_ask_built_num(color)
 #warning-ignore:unused_signal
-signal sgin_ans_built_num(color, num)
+#signal sgin_ans_built_num(color, num)
 
 #warning-ignore:unused_signal
-signal sgin_merchant_wait
+#signal sgin_merchant_wait
 #warning-ignore:unused_signal
 signal sgin_merchant_gold(mode)
 

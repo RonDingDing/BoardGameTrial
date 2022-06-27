@@ -21,6 +21,11 @@ const bank_num = -2
 const unfound = -3
 
 
+#Skill
+onready var stolen = [0, "Unchosen"]
+onready var assassinated = [0, "Unchosen"]
+
+
 func _ready() -> void:
 	TranslationServer.set_locale(lang)
 	$Player.set_deck_position(deck_position)
@@ -204,7 +209,6 @@ func reseat(orginal_first_player: int, current_first_player: int) -> void:
 
 func set_first_person_num(num: int) -> void:
 	first_person_num = num
-	$Skill.set_first_person_num(num)
 
 
 func hand_over_control(player_num: int) -> void:
@@ -385,7 +389,7 @@ class Params:
 func make_params(player_obj: Node, employee_num: int, employee_name: String) -> Params:
 	var employ_global_pos
 	var scaling
-	if player_obj == null or $Skill.is_assassinated(employee_num, employee_name):
+	if player_obj == null or is_assassinated(employee_num, employee_name):
 		employ_global_pos = get_viewport_rect().size / 2
 		scaling = Vector2(0, 0)
 	else:
@@ -411,7 +415,7 @@ func on_start_turn() -> void:
 		$AnyCardEnlarge.char_enter(employee_name, param.scaling, param.employ_global_pos)
 		yield(Signal, "sgin_char_entered")
 
-		var should_continue = $Skill.check_continue(employee_num, employee_name, player_obj == null)
+		var should_continue = check_continue(employee_num, employee_name, player_obj == null)
 		if should_continue:
 			continue
 		player_obj.show_employee()
@@ -434,13 +438,13 @@ func on_start_turn() -> void:
 				player_objs.gold
 			)
 		print()
-
-		var wait_signal = $Skill.check_reveal(employee_num, employee_name, player_obj.player_num)
+		$Player.disable_play()
+		var wait_signal = check_reveal(employee_num, employee_name, player_obj.player_num)
 		if wait_signal:
 			yield(Signal, wait_signal)
 		$Player.set_all_activated_this_turn(false)
 		Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
-		$Player.disable_play()
+		
 		$Player.set_script_mode($Player.ScriptMode.RESOURCE)
 		$Player.show_scripts()
 		yield(Signal, "sgin_resource_need")
@@ -518,12 +522,14 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	if $Player.script_mode == $Player.ScriptMode.PLAYING:
+		$AnyCardEnlarge.reset_characters()
+		$AnyCardEnlarge.reset_cards()
 		var card_info = Data.get_card_info(card_name)
 		var price = card_info["star"]
 		var enough_money = $Player.has_enough_money(price)
 		var not_played_same = $Player.has_not_played_same(card_name)
 		var not_ever_played = (
-			$Skill.has_ever_played($Player.employee, $Player.played_this_turn)
+			has_ever_played($Player.employee, $Player.played_this_turn)
 			or $Player.has_ever_played()
 		)
 		if not (enough_money and not_played_same and not_ever_played):
@@ -564,17 +570,24 @@ func game_over() -> void:
 	pass
 
 
+# Skill
+func has_ever_played(employee_name: String, built: Array) -> bool:
+	if employee_name == "Architect":
+		return built.size() < 3
+	return false
+
+
 func assassin_wait() -> void:
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
 	$Player.set_script_mode($Player.ScriptMode.ASSASSIN)
-	$Employment.wait_assassin()
+	$Employment.wait_assassin(get_assassinable_characters())
 
 
 func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 	$Player.disable_play()
 	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
-	$Skill.assassinate(char_num, char_name)
+	assassinate(char_num, char_name)
 	$AnyCardEnlarge.assassinate(char_name)
 	yield(TweenMove, "tween_all_completed")
 	$Player.set_assassinated(char_name)
@@ -584,7 +597,7 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 	$Player.disable_play()
 	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
-	$Skill.steal(char_num, char_name)
+	steal(char_num, char_name)
 	$AnyCardEnlarge.steal(char_name)
 	yield(TweenMove, "tween_all_completed")
 	$Player.set_stolen(char_name)
@@ -594,7 +607,10 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 func thief_wait():
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
-	$Employment.wait_thief()
+	$Player.set_script_mode($Player.ScriptMode.THIEF)
+	$Employment.wait_thief(get_stealable_characters())
+
+
 
 
 func on_sgin_thief_stolen():
@@ -607,19 +623,17 @@ func on_sgin_thief_stolen():
 	Signal.emit_signal("sgin_thief_done")
 
 
-func on_sgin_magician_wait():
+func magician_wait():
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
+	$Player.set_script_mode($Player.ScriptMode.MAGICIAN)
 	$Player.wait_magician()
 
-
-func on_sgin_merchant_wait():
-	$Employment.hide_discard_hidden()
-	$Player.disable_play()
-	$Player.wait_merchant()
-
+ 
 
 func magician_select_deck() -> void:
+	$Player.hide_scripts()
+	$Player.disable_play()
 	for c in $Player.get_handscript_children():
 		TweenMove.animate(
 			[
@@ -643,17 +657,11 @@ func magician_select_deck() -> void:
 	yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 	$Player.enable_play()
-	$Player.hide_scripts()
 
 
 func magician_select_player() -> void:
-	var xrange = (
-		range(first_person_num, opponent_length + 1)
-		+ range(0, opponent_length + 1)
-		+ range(0, first_person_num)
-	)
 	for i in range(1, opponent_length + 1):
-		var opponent = select_obj_by_player_num(xrange[i])
+		var opponent = select_obj_by_relative_to_first_person(i)
 		opponent.set_opponent_state(opponent.OpponentState.MAGICIAN_CLICKABLE)
 
 	$Player.hide_scripts()
@@ -661,7 +669,7 @@ func magician_select_player() -> void:
 	var player_num = yield(Signal, "sgin_magician_opponent_selected")
 
 	for i in range(1, opponent_length + 1):
-		var opponent = select_obj_by_player_num(xrange[i])
+		var opponent = select_obj_by_relative_to_first_person(i)
 		opponent.set_opponent_state(opponent.OpponentState.IDLE)
 
 	var switch_opponent = select_obj_by_player_num(player_num)
@@ -787,9 +795,7 @@ func on_sgin_set_reminder(text: String) -> void:
 	$Player.set_reminder_text(tr(text))
 
 
-func on_sgin_ask_built_num(color: String) -> void:
-	var num = $Player.built_color_num(color)
-	$Skill.set_player_built_color(color, num)
+
 
 
 func on_sgin_merchant_gold(mode: int) -> void:
@@ -798,7 +804,7 @@ func on_sgin_merchant_gold(mode: int) -> void:
 		on_sgin_gold_transfer(bank_num, $Player.player_num, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 	else:
-		$Skill.gain_gold_by_color("green")
+		gain_gold_by_color("green")
 	$Player.enable_play()
 
 
@@ -827,6 +833,18 @@ func on_sgin_skill(skill_name: String) -> void:
 		assassin_wait()
 	elif skill_name == "thief":
 		thief_wait()
+	elif skill_name == "magician":
+		magician_wait()
+	elif skill_name == "king":
+		charskill_play_active_king()
+	elif skill_name == "bishop":
+		charskill_play_active_bishop()
+	elif skill_name == "merchant":
+		charskill_play_active_merchant()
+	elif skill_name == "architect":
+		charskill_play_active_architect()
+	elif skill_name == "warlord":
+		charskill_play_active_warlord()
 
 
 func on_sgin_cancel_skill(component: String, activate_mode: int) -> void:
@@ -834,4 +852,263 @@ func on_sgin_cancel_skill(component: String, activate_mode: int) -> void:
 		$Employment.hide()
 		$Player.set_employee_can_skill(true)
 		$Player.set_employee_activated_this_turn(activate_mode, false)
+		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 		$Player.enable_play()
+		
+	elif component == "opponent":
+		for p in range(1, opponent_length + 1):
+			var opponent = select_obj_by_relative_to_first_person(p)
+			opponent.set_opponent_state(opponent.OpponentState.IDLE)
+		$Player.hide_scripts()
+		$Player.set_employee_can_skill(true)
+		$Player.set_employee_activated_this_turn(activate_mode, false)
+		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
+		$Player.enable_play()
+		
+func is_stolen(employee_num: int, employee_name: String) -> bool:
+	return [employee_num, employee_name] == stolen
+	
+func check_reveal(employee_num: int, employee_name: String, _player_num: int) -> String:
+	if is_stolen(employee_num, employee_name):
+		handle_stolen()
+		return "sgin_thief_done"
+	elif is_number_four(employee_num) and (not is_assassinated(employee_num, employee_name)):
+		charskill_play_passive_king()
+		return "sgin_4_done"
+	return ""
+	
+	
+func check_continue(employee_num: int, employee_name: String, player_is_null: int) -> bool:
+	if player_is_null:
+		return true
+	elif is_assassinated(employee_num, employee_name):
+		return true
+	return false
+
+func is_number_four(employee_num: int) -> bool:
+	return employee_num == 4
+
+
+func handle_stolen() -> void:
+	Signal.emit_signal("sgin_thief_stolen")
+
+
+func charskill_play_active_king() -> void:
+	var gained = gain_gold_by_color("yellow")
+	if gained == 0:
+		$Player.set_employee_activated_this_turn($Player.ActivateMode.ALL, false)
+
+func charskill_play_active_bishop() -> void:
+	var gained = gain_gold_by_color("blue")
+	if gained == 0:
+		$Player.set_employee_activated_this_turn($Player.ActivateMode.ALL, false)
+
+
+
+func gain_gold_by_color(color: String) -> int:
+	var built_color_num = $Player.built_color_num(color)
+	var add_num = card_type_change(color)
+	for _i in range(add_num + built_color_num):
+		Signal.emit_signal("sgin_gold_transfer", bank_num, first_person_num, "sgin_player_gold_ready")
+		yield(Signal, "sgin_player_gold_ready")
+	return add_num + built_color_num
+
+func card_type_change(_color: String) -> int:
+	return 0
+
+
+
+
+
+func cardskill_resourcedraw_library(card_to_gain: int) -> int:
+	return card_to_gain
+
+
+func cardskill_end_park(hand_size: int) -> void:
+	if hand_size == 0:
+		for _i in range(2):
+			Signal.emit_signal("sgin_draw_card", 0, true)
+			yield(Signal, "sgin_player_draw_ready")
+
+
+func cardskill_play_quarry() -> bool:
+	return false
+
+
+func armory() -> void:
+	pass
+
+
+func cardskill_charskill8() -> bool:
+	return false
+
+
+func cardskill_gameover_ivory_tower(unique_size: int) -> void:
+	if unique_size == 1:
+		Signal.emit_signal("sgin_add_point", 5)
+
+
+func cardskill_resourcedraw_observatory() -> int:
+	return 3
+
+
+func cardskill_play_factory(color: String, price: int) -> int:
+	if color == "purple":
+		return price - 1
+	return price
+
+
+func smithy():
+	pass
+
+
+func laboratory():
+	pass
+
+
+func cardskill_gameover_basilica(odd_size: int) -> void:
+	Signal.emit_signal("sgin_add_point", odd_size)
+
+
+func cardskill_gameover_wishing_well(purple_size: int) -> void:
+	Signal.emit_signal("sgin_add_point", purple_size)
+
+
+func cardskill_gameover_statue(has_crown: bool) -> void:
+	if has_crown:
+		Signal.emit_signal("sgin_add_point", 5)
+
+
+func cardskill_gameover_imperial_treasury(gold: int) -> void:
+	Signal.emit_signal("sgin_add_point", gold)
+
+
+func great_wall():
+	pass
+
+
+func cardskill_resourcegold_gold_mine() -> int:
+	return 3
+
+
+func cardskill_gameover_dragon_gate() -> void:
+	Signal.emit_signal("sgin_add_point", 2)
+
+
+func cardskill_end_poor_house(gold: int) -> void:
+	if gold == 0:
+		pass
+
+
+func haunted_quarter() -> void:
+	pass
+
+
+func framework() -> void:
+	pass
+
+
+func necropolis() -> void:
+	pass
+
+
+func cardskill_gameover_map_room(hand_num: int) -> void:
+	Signal.emit_signal("sgin_add_point", hand_num)
+
+
+func cardskill_canbuild_monument(built_num: int) -> bool:
+	return built_num >= 5
+
+
+func cardskill_builtcount_monument() -> int:
+	return 2
+
+
+func cardskill_gameoverhand_secret_vault() -> void:
+	Signal.emit_signal("sgin_add_point", 3)
+
+
+func school_of_magic() -> void:
+	pass
+
+
+func thieves_den() -> void:
+	pass
+
+
+func cardskill_gameover_capitol(
+	red_num: int, blue_num: int, green_num: int, yellow_num: int, purple_num: int
+) -> void:
+	if red_num >= 3 or blue_num >= 3 or green_num >= 3 or yellow_num >= 3 or purple_num >= 3:
+		Signal.emit_signal("sgin_add_point", 3)
+
+
+func theater():
+	pass
+
+
+func cardskill_play_stables():
+	return false
+
+
+func museum() -> void:
+	pass
+
+
+#### Skills - Character
+#func charskill_play_active_assassin() -> void:
+#	Signal.emit_signal("sgin_assassin_wait")
+
+
+func get_assassinable_characters() -> Array:
+	var char_array = []
+	for num in range(2, $Employment.full_num):
+		char_array.append(num)
+	return char_array
+
+
+
+
+func get_stealable_characters() -> Array:
+	var char_array = []
+	for num in range(3, $Employment.full_num):
+		if num != assassinated[0]:
+			char_array.append(num)
+	return char_array
+
+func assassinate(employee_num: int, employee_name: String) -> void:
+	assassinated = [employee_num, employee_name]
+
+
+func is_assassinated(employee_num: int, employee_name: String) -> bool:
+	return [employee_num, employee_name] == assassinated
+
+
+func steal(employee_num: int, employee_name: String) -> void:
+	stolen = [employee_num, employee_name]
+
+
+func charskill_play_passive_king() -> void:
+	Signal.emit_signal("sgin_king_move_crown")
+
+#func charskill_play_active_king() -> void:
+#	gain_gold_by_color("yellow")
+
+
+
+
+func charskill_play_active_merchant() -> void:
+	$Employment.hide_discard_hidden()
+	$Player.disable_play()
+	$Player.set_script_mode($Player.ScriptMode.MERCHANT)
+	$Player.wait_merchant()
+
+
+func charskill_play_active_architect() -> void:
+	for _i in range(2):
+		on_sgin_draw_card(first_person_num, true)
+		yield(Signal, "sgin_player_draw_ready")
+
+
+func charskill_play_active_warlord() -> void:
+	print("gain or destroy")

@@ -28,7 +28,6 @@ onready var char_pos = Vector2(-9999, -9999)
 
 
 func _ready():
-	Skill.set_full_num(full_num)
 	$DiscardedHidden.hide()
 
 
@@ -224,7 +223,7 @@ func put_char_num(char_array: Array, face_up: bool, enlargeable: bool) -> void:
 		node.set_enlargeable(enlargeable)
 
 
-func wait(mode: int, remove: int) -> void:
+func wait(mode: int, remove: int, info: Array=[]) -> void:
 	var note
 	var once
 	var alls
@@ -254,10 +253,10 @@ func wait(mode: int, remove: int) -> void:
 	for _i in range(remove):
 		show()
 		if mode == State.ASSASSINATING:
-			char_array = Skill.get_assassinable_characters()
+			char_array = info
 			init_face_up_ordered(char_array)
 		elif mode == State.STEALING:
-			char_array = Skill.get_stealable_characters()
+			char_array = info
 			init_face_up_ordered(char_array)
 		elif mode == State.SELECTING:
 			char_array = get_selectable_characters(true)
@@ -273,12 +272,12 @@ func wait(mode: int, remove: int) -> void:
 	Signal.emit_signal(alls)
 
 
-func wait_assassin() -> void:
-	wait(State.ASSASSINATING, 1)
+func wait_assassin(info: Array) -> void:
+	wait(State.ASSASSINATING, 1, info)
 
 
-func wait_thief() -> void:
-	wait(State.STEALING, 1)
+func wait_thief(info: Array) -> void:
+	wait(State.STEALING, 1, info)
 
 
 func wait_discard(up_remove: int) -> void:
