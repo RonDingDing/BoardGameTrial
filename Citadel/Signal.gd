@@ -91,15 +91,15 @@ signal sgin_card_played_finished(card_name)
 #warning-ignore:unused_signal
 signal sgin_one_round_finished
 
-#warning-ignore:unused_signal
-signal sgin_assassin_wait
+##warning-ignore:unused_signal
+#signal sgin_assassin_wait
 #warning-ignore:unused_signal
 signal sgin_assassin_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
 signal sgin_assassin_all_finished
 
 #warning-ignore:unused_signal
-signal sgin_thief_wait
+#signal sgin_thief_wait
 #warning-ignore:unused_signal
 signal sgin_thief_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
@@ -137,6 +137,12 @@ signal sgin_hide_built
 
 #warning-ignore:unused_signal
 signal sgin_card_warlord_selected(card_name, global_position)
+
+#warning-ignore:unused_signal
+signal sgin_skill(skill_name)
+
+#warning-ignore:unused_signal
+signal sgin_cancel_skill(component, reset)
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:

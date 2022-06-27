@@ -163,8 +163,8 @@ func museum() -> void:
 
 
 #### Skills - Character
-func charskill_play_active_assassin() -> void:
-	Signal.emit_signal("sgin_assassin_wait")
+#func charskill_play_active_assassin() -> void:
+#	Signal.emit_signal("sgin_assassin_wait")
 
 
 func get_assassinable_characters() -> Array:

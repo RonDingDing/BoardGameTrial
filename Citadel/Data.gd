@@ -205,16 +205,28 @@ const up_offset_char = {
 	}
 }
 
+func rid_num(name: String) -> String:
+	var regex = RegEx.new()
+	regex.compile("[0-9]")
+	var result = regex.search(name)
+	var new_name = name
+	if result != null:
+		new_name = name.replace(result.get_string(0), "")
+	return new_name
+
+
 
 func get_up_offset(name: String) -> float:
-	return up_offset[TranslationServer.get_locale()].get(name, 0)
-
+	var new_name = rid_num(name)
+	return up_offset[TranslationServer.get_locale()].get(new_name, 0)
+	
 
 func get_card_info(name: String) -> Dictionary:
-	var info_dic = card_data[name]
+	var new_name = rid_num(name)
+	var info_dic = card_data[new_name]
 	var dic = {
-		"card_name": name,
-		"up_offset": get_up_offset(name),
+		"card_name": new_name,
+		"up_offset": get_up_offset(new_name),
 		"star": info_dic["star"],
 		"kind": info_dic["kind"],
 	}

@@ -19,18 +19,32 @@ onready var center = get_viewport_rect().size / 2
 enum Need { GOLD, CARD }
 enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
-enum ScriptMode { RESOURCE, MAGICIAN, MERCHANT }
+enum ScriptMode { RESOURCE, PLAYING, NOT_PLAYING, ASSASSIN, THIEF, MAGICIAN, MERCHANT, WARLORD }
 enum OpponentBuiltMode { SHOW, WARLORD_SHOW }
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
-onready var end_turn_pos = $EndTurn.rect_position
-onready var can_end = false
+onready var end_turn_pos = $Script3.rect_position
 onready var script_mode = ScriptMode.RESOURCE
 onready var opponent_built_mode = OpponentBuiltMode.SHOW
 
+# https://colors.artyclick.com/color-name-finder/?color=#162739
 const gray = Color(0.76171875, 0.76171875, 0.76171875)
-const yellow = Color(1, 1, 0)
 const white = Color(1, 1, 1)
+const white_smoke = Color(0.95703125, 0.95703125, 0.95703125)
+const white_lilac = Color(0.96875, 0.96484375, 0.984375)
+const jaguar = Color(0.0315, 0.00390625, 0.0625)
+const black = Color(0, 0, 0)
+const dark = Color(0.10546875, 0.140625, 0.19140625)
+const palatinate_purple = Color(0.40625, 0.15625, 0.375)
+const dark_lilac = Color(0.609375, 0.42578125, 0.64453125)
+const grape_purple = Color(0.36328125, 0.078125, 0.31640625)
+const basket_ball_orange = Color(0.96875, 0.50390625, 0.34375)
+const green_teal = Color(0.046875, 0.70703125, 0.46484375)
+const shamrock_green = Color(0, 0.6171875, 0.375)
+const green = Color(0, 1, 0)
+const red = Color(1, 0, 0)
+const cherry = Color(0.80859375, 0.0078125, 0.203125)
+const venetian_red = Color(0.78125, 0.03125, 0.08203125)
 
 
 func _ready() -> void:
@@ -42,24 +56,86 @@ func _ready() -> void:
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
-	$EndTurn.rect_position = end_turn_pos
-	$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+	$Script3.rect_position = end_turn_pos
+	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
 
 func set_script_mode(mode: int) -> void:
+	var color1
+	var color2
+	var color3
 	script_mode = mode
 	if mode == ScriptMode.RESOURCE:
 		$Script1Label.text = "NOTE_NEED_GOLD"
 		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = white
+		color2 = white
+		color3 = white
+	elif mode == ScriptMode.ASSASSIN:
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = white_smoke
+		color2 = white_smoke
+		color3 = white_smoke
+	elif mode == ScriptMode.THIEF:
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = basket_ball_orange
+		color2 = basket_ball_orange
+		color3 = basket_ball_orange
 	elif mode == ScriptMode.MAGICIAN:
 		$Script1Label.text = "NOTE_FROM_DECK"
 		$Script2Label.text = "NOTE_FROM_PLAYER"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = palatinate_purple
+		color2 = dark_lilac
+		color3 = grape_purple
 	elif mode == ScriptMode.MERCHANT:
 		$Script1Label.text = "NOTE_GAIN_1"
 		$Script2Label.text = "NOTE_GAIN_GREEN"
+		$Script3Label.text = "NOTE_CANCEL"
+		if $Employee.skill_1_activated_this_turn:
+			color1 = gray
+		else:
+			color1 = shamrock_green
+		if $Employee.skill_2_activated_this_turn:
+			color2 = gray
+		else:
+			color2 = green_teal
+		color3 = green
 	elif mode == ScriptMode.WARLORD:
 		$Script1Label.text = "NOTE_WARLORD_DESTROY"
 		$Script2Label.text = "NOTE_GAIN_RED"
+		$Script3Label.text = "NOTE_CANCEL"
+		if $Employee.skill_1_activated_this_turn:
+			color1 = gray
+		else:
+			color1 = venetian_red
+		if $Employee.skill_2_activated_this_turn:
+			color2 = gray
+		else:
+			color2 = cherry
+		color3 = red
+	elif mode == ScriptMode.PLAYING:
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_END_TURN"
+		color1 = white_lilac
+		color2 = white_lilac
+		color3 = white_lilac
+	else:  # mode == ScriptMode.NOT_PLAYING
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_END_TURN"
+		color1 = white_lilac
+		color2 = white_lilac
+		color3 = gray
+	$Script1Label.set("custom_colors/font_color", color1)
+	$Script2Label.set("custom_colors/font_color", color2)
+	$Script3Label.set("custom_colors/font_color", color3)
 
 
 func set_assassinated(char_name: String) -> void:
@@ -97,13 +173,13 @@ func hide_reminder() -> void:
 
 
 func show_end_turn() -> void:
-	$EndTurn.show()
-	$EndTurnLabel.show()
+	$Script3.show()
+	$Script3Label.show()
 
 
 func hide_end_turn() -> void:
-	$EndTurn.hide()
-	$EndTurnLabel.hide()
+	$Script3.hide()
+	$Script3Label.hide()
 
 
 func show_scripts() -> void:
@@ -120,14 +196,8 @@ func hide_scripts() -> void:
 	$Script2Label.hide()
 
 
-func on_end_turn_pressed() -> void:
-	if can_end:
-		Signal.emit_signal("sgin_end_turn")
-		$EndTurn.rect_position = end_turn_pos
-		$EndTurnLabel.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
-
-
 func on_script1_pressed() -> void:
+	print(script_mode)
 	if script_mode == ScriptMode.RESOURCE:
 		Signal.emit_signal("sgin_resource_need", Need.GOLD)
 	elif script_mode == ScriptMode.MAGICIAN:
@@ -151,16 +221,18 @@ func on_script2_pressed() -> void:
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 
 
-func on_end_turn_mouse_entered() -> void:
-	if can_end:
-		$EndTurn.set_position(Vector2(end_turn_pos.x, end_turn_pos.y - 20))
-		$EndTurnLabel.set_position(Vector2(end_turn_pos.x + 25, end_turn_pos.y + 8))
+func on_script1_mouse_entered() -> void:
+	if script_mode == ScriptMode.MERCHANT and $Employee.skill_1_activated_this_turn:
+		return
+	$Script1.set_position(Vector2(script1_pos.x, script1_pos.y - 20))
+	$Script1Label.set_position(Vector2(script1_pos.x + 25, script1_pos.y + 8))
 
 
-func on_end_turn_mouse_exited() -> void:
-	if can_end:
-		$EndTurn.set_position(end_turn_pos)
-		$EndTurnLabel.set_position(Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28))
+func on_script1_mouse_exited() -> void:
+	if script_mode == ScriptMode.MERCHANT and $Employee.skill_1_activated_this_turn:
+		return
+	$Script1.set_position(script1_pos)
+	$Script1Label.set_position(Vector2(script1_pos.x + 25, script1_pos.y + 28))
 
 
 func on_script2_mouse_entered() -> void:
@@ -178,18 +250,26 @@ func on_script2_mouse_exited() -> void:
 	$Script2Label.set_position(Vector2(script2_pos.x + 25, script2_pos.y + 28))
 
 
-func on_script1_mouse_entered() -> void:
-	if script_mode == ScriptMode.MERCHANT and $Employee.skill_1_activated_this_turn:
-		return
-	$Script1.set_position(Vector2(script1_pos.x, script1_pos.y - 20))
-	$Script1Label.set_position(Vector2(script1_pos.x + 25, script1_pos.y + 8))
+func on_script3_pressed() -> void:
+	match script_mode:
+		ScriptMode.PLAYING:
+			Signal.emit_signal("sgin_end_turn")
+		ScriptMode.ASSASSIN, ScriptMode.THIEF:
+			Signal.emit_signal("sgin_cancel_skill", "employment", $Employee.ActivateMode.ALL)
+	$Script3.rect_position = end_turn_pos
+	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
 
-func on_script1_mouse_exited() -> void:
-	if script_mode == ScriptMode.MERCHANT and $Employee.skill_1_activated_this_turn:
-		return
-	$Script1.set_position(script1_pos)
-	$Script1Label.set_position(Vector2(script1_pos.x + 25, script1_pos.y + 28))
+func on_script3_mouse_entered() -> void:
+	if script_mode != ScriptMode.NOT_PLAYING:
+		$Script3.set_position(Vector2(end_turn_pos.x, end_turn_pos.y - 20))
+		$Script3Label.set_position(Vector2(end_turn_pos.x + 25, end_turn_pos.y + 8))
+
+
+func on_script3_mouse_exited() -> void:
+	if script_mode != ScriptMode.NOT_PLAYING:
+		$Script3.set_position(end_turn_pos)
+		$Script3Label.set_position(Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28))
 
 
 func wait_magician() -> void:
@@ -204,17 +284,6 @@ func wait_merchant() -> void:
 	set_script_mode(ScriptMode.MERCHANT)
 	Signal.emit_signal("sgin_set_reminder", "NOTE_MERCHANT")
 	show_scripts()
-	var color
-	if $Employee.skill_1_activated_this_turn:
-		color = gray
-	else:
-		color = yellow
-	$Script1Label.set("custom_colors/font_color", color)
-	if $Employee.skill_2_activated_this_turn:
-		color = gray
-	else:
-		color = white
-	$Script2Label.set("custom_colors/font_color", color)
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -253,7 +322,14 @@ func player_draw_built(
 	var incoming_card = Card.instance()
 	list.append(card_name)
 	node.add_child(incoming_card)
-	incoming_card.init_card(card_name, card_info["up_offset"], start_scale, from_pos, true, false)
+	incoming_card.init_card(
+		card_name,
+		card_info["up_offset"],
+		start_scale,
+		from_pos,
+		true,
+		incoming_card.CardMode.ENLARGE
+	)
 	Signal.emit_signal(not_ready_signal, incoming_card)
 	var positions = get_positions_with_new_card(node)
 	var action_list = [
@@ -384,8 +460,8 @@ func disable_play() -> void:
 		a.set_card_mode(a.CardMode.ENLARGE)
 	for a in $BuiltScript.get_children():
 		a.set_card_mode(a.CardMode.ENLARGE)
-	can_end = false
-	$EndTurnLabel.set("custom_colors/font_color", gray)
+	set_script_mode(ScriptMode.NOT_PLAYING)
+	$Script3Label.set("custom_colors/font_color", gray)
 
 
 func enable_play() -> void:
@@ -394,9 +470,7 @@ func enable_play() -> void:
 		a.set_card_mode(a.CardMode.PLAY)
 	for a in $BuiltScript.get_children():
 		a.set_card_mode(a.CardMode.ENLARGE)
-	can_end = true
-	var color = Color(1, 0, 0)
-	$EndTurnLabel.set("custom_colors/font_color", color)
+	set_script_mode(ScriptMode.PLAYING)
 
 
 func set_gold(money: int) -> void:
@@ -574,11 +648,6 @@ func set_all_activated_this_turn(can: bool) -> void:
 	$Employee.set_activated_this_turn($Employee.ActivateMode.ALL, can)
 
 
-func reset_script_color() -> void:
-	$Script1Label.set("custom_colors/font_color", yellow)
-	$Script2Label.set("custom_colors/font_color", white)
-
-
 func add_gold(num: int) -> void:
 	gold += num
 	$MoneyNum.text = str(gold)
@@ -591,27 +660,51 @@ func built_color_num(color: String) -> int:
 			num += 1
 	return num
 
+
 func show_opponent_built(name: String, cards: Array) -> void:
-	if can_end:
-		for c in $OpponentBuilt.get_children():
-			$OpponentBuilt.remove_child(c)
-		var start_scale = Vector2(0.175, 0.175)
-		var from_pos = Vector2(0, 0)
-		
-		for card_name in cards:
-			var card_info = Data.get_card_info(card_name)
-			var incoming_card = Card.instance()
-			$OpponentBuilt.add_child(incoming_card)
-			incoming_card.init_card(card_name, card_info["up_offset"], start_scale, from_pos, true, false)
-		var positions = get_positions_with_new_card($OpponentBuilt)
-		rearrange($OpponentBuilt, positions, 0)
-			
-		$OpponentBuilt.show()
-		$OpponentBuiltName.show()
-		$OpponentBuiltNameText.text = name
-		$OpponentBuiltNameText.show()
+	for c in $OpponentBuilt.get_children():
+		$OpponentBuilt.remove_child(c)
+	var start_scale = Vector2(0.175, 0.175)
+	var from_pos = Vector2(0, 0)
+
+	for card_name in cards:
+		var card_info = Data.get_card_info(card_name)
+		var incoming_card = Card.instance()
+		$OpponentBuilt.add_child(incoming_card)
+		incoming_card.init_card(
+			card_name,
+			card_info["up_offset"],
+			start_scale,
+			from_pos,
+			true,
+			incoming_card.CardMode.ENLARGE
+		)
+	var positions = get_positions_with_new_card($OpponentBuilt)
+	rearrange($OpponentBuilt, positions, 0)
+
+	$OpponentBuilt.show()
+	$OpponentBuiltName.show()
+	$OpponentBuiltNameText.text = name
+	$OpponentBuiltNameText.show()
+
 
 func hide_opponent_built() -> void:
 	$OpponentBuilt.hide()
 	$OpponentBuiltName.hide()
 	$OpponentBuiltNameText.hide()
+
+
+func get_employee_global_position() -> Vector2:
+	return $Employee.global_position
+
+
+func get_handscript_children() -> Array:
+	return $HandScript.get_children()
+
+
+func set_employee_activated_this_turn(mode: int, can: bool) -> void:
+	$Employee.set_activated_this_turn(mode, can)
+
+
+func set_employee_can_skill(can: bool) -> void:
+	$Employee.set_can_skill(can)

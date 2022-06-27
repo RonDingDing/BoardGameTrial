@@ -36,6 +36,11 @@ animations = [ {
 "name": "Player7",
 "speed": 5.0
 }, {
+"frames": [ ExtResource( 8 ) ],
+"loop": true,
+"name": "Player0",
+"speed": 5.0
+}, {
 "frames": [ ExtResource( 12 ) ],
 "loop": true,
 "name": "Player4",
@@ -46,21 +51,6 @@ animations = [ {
 "name": "Player1",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 14 ) ],
-"loop": true,
-"name": "Player2",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 8 ) ],
-"loop": true,
-"name": "Player0",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 10 ) ],
-"loop": true,
-"name": "Player5",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 11 ) ],
 "loop": true,
 "name": "Player3",
@@ -69,6 +59,16 @@ animations = [ {
 "frames": [ ExtResource( 9 ) ],
 "loop": true,
 "name": "Player6",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 14 ) ],
+"loop": true,
+"name": "Player2",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 10 ) ],
+"loop": true,
+"name": "Player5",
 "speed": 5.0
 } ]
 
@@ -181,7 +181,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="EndTurn" type="TextureButton" parent="."]
+[node name="Script3" type="TextureButton" parent="."]
 margin_left = 39.0
 margin_top = 530.0
 margin_right = 759.0
@@ -192,7 +192,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="EndTurnLabel" type="Label" parent="."]
+[node name="Script3Label" type="Label" parent="."]
 margin_left = 64.0
 margin_top = 558.0
 margin_right = 264.0
@@ -274,4 +274,6 @@ __meta__ = {
 [connection signal="mouse_entered" from="Script2" to="." method="on_script2_mouse_entered"]
 [connection signal="mouse_exited" from="Script2" to="." method="on_script2_mouse_exited"]
 [connection signal="pressed" from="Script2" to="." method="on_script2_pressed"]
-[connection signal="pressed" from="EndTurn" to="." method="on_end_turn_pressed"]
+[connection signal="mouse_entered" from="Script3" to="." method="on_script3_mouse_entered"]
+[connection signal="mouse_exited" from="Script3" to="." method="on_script3_mouse_exited"]
+[connection signal="pressed" from="Script3" to="." method="on_script3_pressed"]

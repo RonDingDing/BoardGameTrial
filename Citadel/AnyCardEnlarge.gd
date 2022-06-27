@@ -65,7 +65,14 @@ func on_sgin_card_focused(card_name: String) -> void:
 		enlarging = card_name
 		var card_info = Data.get_card_info(card_name)
 		$Card0.show()
-		$Card0.init_card(card_name, card_info["up_offset"], Vector2(0.6, 0.6), center, true, true)
+		$Card0.init_card(
+			card_name,
+			card_info["up_offset"],
+			Vector2(0.6, 0.6),
+			center,
+			true,
+			$Card0.CardMode.ENLARGE
+		)
 
 
 func on_sgin_card_unfocused(card_name: String) -> void:

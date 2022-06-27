@@ -21,6 +21,22 @@ const bank_num = -2
 const unfound = -3
 
 
+func _ready() -> void:
+	TranslationServer.set_locale(lang)
+	$Player.set_deck_position(deck_position)
+	$Player.set_bank_position(bank_position)
+	for i in range(1, 9):
+		var opponent = get_node(str("Opponent", i))
+		opponent.set_deck_position(deck_position)
+		opponent.set_bank_position(bank_position)
+
+	$Employment.set_discarded_hidden_position(discarded_hidden_position)
+	show_player()
+	on_sgin_set_reminder("")
+	$Employment.set_char_pos($Player.get_employee_global_position())
+	to_be_delete()
+
+
 func select_obj_by_relative_to_first_person(relative_to_me: int) -> Node:
 	return select_player_obj_by(FindPlayerObjBy.RELATIVE_TO_FIRST_PERSON, relative_to_me)
 
@@ -75,24 +91,6 @@ func select_player_obj_by(find_mode: int, clue) -> Node:
 			return player_obj
 	return null
 
-
-func _ready() -> void:
-	TranslationServer.set_locale(lang)
-	$Player.set_deck_position(deck_position)
-	$Player.set_bank_position(bank_position)
-	for i in range(1, 9):
-		var opponent = get_node(str("Opponent", i))
-		opponent.set_deck_position(deck_position)
-		opponent.set_bank_position(bank_position)
-
-	$Employment.set_discarded_hidden_position(discarded_hidden_position)
-	show_player()
-	on_sgin_set_reminder("")
-	$Employment.set_char_pos($Player/Employee.global_position)
-	to_be_delete()
-
-
-	
 
 func show_player() -> void:
 	$OpponentPath2D/PathFollow2D.unit_offset = 0
@@ -208,6 +206,7 @@ func set_first_person_num(num: int) -> void:
 	first_person_num = num
 	$Skill.set_first_person_num(num)
 
+
 func hand_over_control(player_num: int) -> void:
 	var player_obj = select_obj_by_player_num(player_num)
 	var player_name = player_obj.username
@@ -216,29 +215,6 @@ func hand_over_control(player_num: int) -> void:
 	set_first_person_num(player_obj.player_num)
 	Signal.emit_signal("hand_over", player_name)
 	reseat(orginal_first_player, current_first_player)
-	hide()
-
-
-func phase(phase_string: int) -> void:
-	match phase_string:
-		Phase.CHARACTER_SELECTION:
-			mask_character_selection()
-
-		Phase.TURN:
-			mask_turn()
-
-		Phase.RESOURCE:
-			resource()
-
-
-func resource():
-	Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
-	$Player.set_script_mode($Player.ScriptMode.RESOURCE)
-	$Player.show_scripts()
-
-
-func mask_turn() -> void:
-	Signal.emit_signal("phase", "PHASE_TURN_START")
 	hide()
 
 
@@ -256,7 +232,7 @@ func on_sgin_ready_game() -> void:
 
 
 func character_selection(player_num: int) -> void:
-	phase(Phase.CHARACTER_SELECTION)
+	mask_character_selection()
 	yield(Signal, "uncover")
 	show()
 	hand_over_control(player_num)
@@ -423,7 +399,8 @@ func make_params(player_obj: Node, employee_num: int, employee_name: String) -> 
 
 
 func on_start_turn() -> void:
-	mask_turn()
+	Signal.emit_signal("phase", "PHASE_TURN_START")
+	hide()
 	yield(Signal, "uncover")
 	show()
 	for employee_num in range(1, $Employment.full_num):
@@ -461,19 +438,16 @@ func on_start_turn() -> void:
 		var wait_signal = $Skill.check_reveal(employee_num, employee_name, player_obj.player_num)
 		if wait_signal:
 			yield(Signal, wait_signal)
-
 		$Player.set_all_activated_this_turn(false)
-		$Player.reset_script_color()
-		phase(Phase.RESOURCE)
-
+		Signal.emit_signal("sgin_set_reminder", "NOTE_CHOOSE_RESOURCE")
 		$Player.disable_play()
+		$Player.set_script_mode($Player.ScriptMode.RESOURCE)
+		$Player.show_scripts()
 		yield(Signal, "sgin_resource_need")
 		$Player.hide_scripts()
 		yield(Signal, "sgin_resource_end")
-
 		Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 		$Player.enable_play()
-
 		$Player.show_end_turn()
 		yield(Signal, "sgin_end_turn")
 		$Player.hide_end_turn()
@@ -543,7 +517,7 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
-	if $Player.can_end:
+	if $Player.script_mode == $Player.ScriptMode.PLAYING:
 		var card_info = Data.get_card_info(card_name)
 		var price = card_info["star"]
 		var enough_money = $Player.has_enough_money(price)
@@ -590,13 +564,15 @@ func game_over() -> void:
 	pass
 
 
-func on_sgin_assassin_wait() -> void:
+func assassin_wait() -> void:
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
+	$Player.set_script_mode($Player.ScriptMode.ASSASSIN)
 	$Employment.wait_assassin()
 
 
 func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
+	$Player.disable_play()
 	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 	$Skill.assassinate(char_num, char_name)
 	$AnyCardEnlarge.assassinate(char_name)
@@ -606,6 +582,7 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 
 
 func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
+	$Player.disable_play()
 	Signal.emit_signal("sgin_set_reminder", "NOTE_PLAY")
 	$Skill.steal(char_num, char_name)
 	$AnyCardEnlarge.steal(char_name)
@@ -614,7 +591,7 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 	$Player.enable_play()
 
 
-func on_sgin_thief_wait():
+func thief_wait():
 	$Employment.hide_discard_hidden()
 	$Player.disable_play()
 	$Employment.wait_thief()
@@ -643,7 +620,7 @@ func on_sgin_merchant_wait():
 
 
 func magician_select_deck() -> void:
-	for c in $Player/HandScript.get_children():
+	for c in $Player.get_handscript_children():
 		TweenMove.animate(
 			[
 				[c, "global_position", c.global_position, deck_position, 1],
@@ -670,7 +647,11 @@ func magician_select_deck() -> void:
 
 
 func magician_select_player() -> void:
-	var xrange = range(first_person_num, opponent_length + 1) + range(0,  opponent_length + 1) + range(0, first_person_num)
+	var xrange = (
+		range(first_person_num, opponent_length + 1)
+		+ range(0, opponent_length + 1)
+		+ range(0, first_person_num)
+	)
 	for i in range(1, opponent_length + 1):
 		var opponent = select_obj_by_player_num(xrange[i])
 		opponent.set_opponent_state(opponent.OpponentState.MAGICIAN_CLICKABLE)
@@ -684,7 +665,7 @@ func magician_select_player() -> void:
 		opponent.set_opponent_state(opponent.OpponentState.IDLE)
 
 	var switch_opponent = select_obj_by_player_num(player_num)
-	var player_hands_obj = $Player/HandScript.get_children().duplicate()
+	var player_hands_obj = $Player.get_handscript_children().duplicate()
 	var switch_hands_name = switch_opponent.hands.duplicate()
 
 	for card_obj in player_hands_obj:
@@ -828,19 +809,29 @@ func on_sgin_show_built(player_num: int) -> void:
 		var name = player_obj.username
 		$Player.show_opponent_built(name, built)
 
+
 func on_sgin_hide_built() -> void:
 	$Player.hide_opponent_built()
 
 
-func on_input_event(viewport, event, shape_idx):
-	if (
-		event is InputEventMouseButton
-		and event.button_index == BUTTON_LEFT
-		and event.pressed
-		
-	):
+func on_input_event(_viewport, event, _shape_idx):
+	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT and event.pressed:
 		if not started:
 			start_game()
 			started = true
 		$Player.hide_opponent_built()
 
+
+func on_sgin_skill(skill_name: String) -> void:
+	if skill_name == "assassin":
+		assassin_wait()
+	elif skill_name == "thief":
+		thief_wait()
+
+
+func on_sgin_cancel_skill(component: String, activate_mode: int) -> void:
+	if component == "employment":
+		$Employment.hide()
+		$Player.set_employee_can_skill(true)
+		$Player.set_employee_activated_this_turn(activate_mode, false)
+		$Player.enable_play()

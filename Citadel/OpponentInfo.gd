@@ -48,7 +48,7 @@ func draw(
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
 	add_child(incoming_card)
-	incoming_card.init_card("Unknown", 0, start_scale, from_pos, false, false)
+	incoming_card.init_card("Unknown", 0, start_scale, from_pos, false, incoming_card.CardMode.ENLARGE)
 	TweenMove.animate(
 		[
 			[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time],
@@ -190,7 +190,7 @@ func on_Built_mouse_exited():
 	print("sgin_hide_built" )
 
 
-func on_Built_input_event(viewport, event, shape_idx):
+func on_Built_input_event(_viewport, event, _shape_idx):
 	if opponent_state == OpponentState.IDLE and event is InputEventMouseButton:
 		Signal.emit_signal("sgin_show_built", player_num)
 		print("sgin_show_built", player_num)

@@ -38,10 +38,12 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 	):
 		match employee:
 			"Assassin":
-				Skill.charskill_play_active_assassin()
+#				Skill.charskill_play_active_assassin()
+				Signal.emit_signal("sgin_skill", "assassin")
 				set_activated_this_turn(ActivateMode.ALL, true)
 			"Thief":
-				Skill.charskill_play_active_thief()
+#				Skill.charskill_play_active_thief()
+				Signal.emit_signal("sgin_skill", "thief")
 				set_activated_this_turn(ActivateMode.ALL, true)
 			"Magician":
 				Skill.charskill_play_active_magician()

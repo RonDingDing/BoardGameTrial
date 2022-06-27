@@ -153,4 +153,5 @@ NOTE_GAIN_GREEN, "Green", "商税"
 NOTE_WARLORD, "Please select whether to 1) destroy a built area, 2) gain gold on red areas.", "请选择 1)拆除1座建筑；2)按红色建筑获得金币。"
 NOTE_WARLORD_DESTROY, "Destroy", "拆毁"
 NOTE_GAIN_RED, "Red", "军饷"
+NOTE_CANCEL, "Cancel", "取消"
 

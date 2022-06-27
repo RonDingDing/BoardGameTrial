@@ -10,7 +10,16 @@ onready var face_up = false
 onready var desc_trans = ""
 onready var name_text = ""
 
-
+func rid_num(name: String) -> String:
+	var regex = RegEx.new()
+	regex.compile("[0-9]")
+	var result = regex.search(name)
+	var new_name = name
+	if result != null:
+		new_name = name.replace(result.get_string(0), "")
+	return new_name
+	
+	
 func init_card(
 	animation_name: String,
 	up_offset: float,
@@ -20,10 +29,11 @@ func init_card(
 	modes: int
 ) -> void:
 	card_name = animation_name
-	var desc = str("DESC_", animation_name.to_upper().replace(" ", "_"))
-	var csde = tr(str("DESC_", animation_name.to_upper().replace(" ", "_")))
+	var new_name = rid_num(animation_name)
+	var desc = str("DESC_", new_name.to_upper().replace(" ", "_"))
+	var csde = tr(str("DESC_", new_name.to_upper().replace(" ", "_")))
 	desc_trans = csde if desc != csde else ""
-	name_text = tr(str("NAME_", animation_name.to_upper().replace(" ", "_")))
+	name_text = tr(str("NAME_", new_name.to_upper().replace(" ", "_")))
 	card_up_offset = up_offset
 	$Face/Description.rect_position.y = 282 - up_offset
 	set_face_up(face_is_up)
@@ -36,9 +46,8 @@ func set_face_up(face_is_up: bool) -> void:
 	var temp_name
 	var temp_text
 	var temp_desc
-
 	if face_is_up:
-		temp_name = card_name
+		temp_name = rid_num(card_name)
 		temp_text = name_text
 		temp_desc = desc_trans
 	else:
