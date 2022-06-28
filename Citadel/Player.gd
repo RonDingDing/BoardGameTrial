@@ -19,13 +19,18 @@ onready var center = get_viewport_rect().size / 2
 enum Need { GOLD, CARD }
 enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
+enum WarlordChoice { DESTROY, RED }
 enum ScriptMode { RESOURCE, PLAYING, NOT_PLAYING, ASSASSIN, THIEF, MAGICIAN, MERCHANT, WARLORD }
-enum OpponentBuiltMode { SHOW, WARLORD_SHOW }
+enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW }
+enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE }
+
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
 onready var end_turn_pos = $Script3.rect_position
+onready var built_script_pos = $BuiltScript.global_position
 onready var script_mode = ScriptMode.RESOURCE
 onready var opponent_built_mode = OpponentBuiltMode.SHOW
+onready var opponent_state = OpponentState.IDLE
 
 # https://colors.artyclick.com/color-name-finder/?color=#162739
 const gray = Color(0.76171875, 0.76171875, 0.76171875)
@@ -58,6 +63,9 @@ func _ready() -> void:
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+
+func set_opponent_state(state: int) -> void:
+	opponent_state = state
 
 
 func set_script_mode(mode: int) -> void:
@@ -205,6 +213,9 @@ func on_script1_pressed() -> void:
 	elif script_mode == ScriptMode.MERCHANT and not $Employee.skill_1_activated_this_turn:
 		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
 		Signal.emit_signal("sgin_merchant_gold", MerchantGold.ONE)
+	elif script_mode == ScriptMode.WARLORD and not $Employee.skill_1_activated_this_turn:
+		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
+		Signal.emit_signal("sgin_warlord_choice", WarlordChoice.DESTROY)
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 
@@ -218,6 +229,9 @@ func on_script2_pressed() -> void:
 	elif script_mode == ScriptMode.MERCHANT and not $Employee.skill_2_activated_this_turn:
 		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
 		Signal.emit_signal("sgin_merchant_gold", MerchantGold.GREEN)
+	elif script_mode == ScriptMode.WARLORD and not $Employee.skill_2_activated_this_turn:
+		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
+		Signal.emit_signal("sgin_warlord_choice", WarlordChoice.RED)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 
@@ -257,10 +271,12 @@ func on_script3_pressed() -> void:
 		ScriptMode.PLAYING:
 			Signal.emit_signal("sgin_end_turn")
 		ScriptMode.ASSASSIN, ScriptMode.THIEF:
-			Signal.emit_signal("sgin_cancel_skill", "employment", $Employee.ActivateMode.ALL)
+			Signal.emit_signal("sgin_cancel_skill", ["employment"], $Employee.ActivateMode.ALL)
 		ScriptMode.MAGICIAN:
-			Signal.emit_signal("sgin_cancel_skill", "opponent", $Employee.ActivateMode.ALL)	
-			
+			Signal.emit_signal("sgin_cancel_skill", ["opponent", "scripts"], $Employee.ActivateMode.ALL)	
+		ScriptMode.WARLORD:
+			Signal.emit_signal("sgin_cancel_skill", ["opponent", "opponent_built"], $Employee.ActivateMode.SKILL1)		
+		
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
@@ -289,6 +305,14 @@ func wait_merchant() -> void:
 	set_script_mode(ScriptMode.MERCHANT)
 	Signal.emit_signal("sgin_set_reminder", "NOTE_MERCHANT")
 	show_scripts()
+
+
+func wait_warlord() -> void:
+	disable_play()
+	set_script_mode(ScriptMode.WARLORD)
+	Signal.emit_signal("sgin_set_reminder", "NOTE_WARLORD")
+	show_scripts()
+
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -409,7 +433,6 @@ func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 		else:
 			each_card.global_position = positions[index] + node.global_position
 
-
 func get_positions_with_new_card(obj: Node) -> Array:
 	var positions = []
 	var start = -200
@@ -494,7 +517,7 @@ func on_player_info(data: Dictionary) -> void:
 		username_shown = username
 	$Username.text = username_shown
 	set_gold(data.get("money", 0))
-	set_employee(data.get("employee", employee))
+	set_employee(data.get("employee_num", employee_num), data.get("employee", employee))
 	set_hide_employee(data.get("hide_employee", hide_employee))
 	has_crown = data.get("has_crown", has_crown)
 	$Crown.set_visible(has_crown)
@@ -530,6 +553,7 @@ func get_my_player_info() -> Dictionary:
 		"username": username,
 		"money": gold,
 		"employee": employee,
+		"employee_num": employee_num,
 		"hands": hands,
 		"built": built,
 		"has_crown": has_crown,
@@ -542,8 +566,9 @@ func set_hide_employee(hide: bool) -> void:
 	$Employee.hide_employee = hide
 
 
-func set_employee(employ: String) -> void:
+func set_employee(num: int, employ: String) -> void:
 	employee = employ
+	employee_num = num
 	$Employee.employee = employ
 	$Employee/Pic.set_animation(employ)
 
@@ -628,8 +653,9 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 
 
 func after_end_turn() -> void:
+	hide_script3()
 	played_this_turn = []
-
+	
 
 func can_end_game() -> bool:
 	return built.size() >= 7
@@ -645,10 +671,25 @@ func shuffle_hands() -> void:
 	hands.shuffle()
 
 
-func remove_hand(card_obj: Node) -> void:
-	$HandScript.remove_child(card_obj)
-	hands.erase(card_obj.card_name)
+func remove_hand(card_name: String) -> void:
+	var card_obj
+	for c in $HandScript.get_children():
+		if c.card_name == card_name:
+			card_obj = c
+			$HandScript.remove_child(card_obj)
+	if card_obj == null:
+		return
+	hands.erase(card_name)
 
+func remove_built(card_name: String) -> void:
+	var card_obj
+	for c in $BuiltScript.get_children():
+		if c.card_name == card_name:
+			card_obj = c
+			$BuiltScript.remove_child(card_obj)
+	if card_obj == null:
+		return
+	built.erase(card_name)
 
 
 
@@ -665,38 +706,43 @@ func built_color_num(color: String) -> int:
 			number += 1
 	return number
 
+func set_opponent_built_mode(mod: int) -> void:
+	opponent_built_mode = mod
 
 func show_opponent_built(name: String, cards: Array) -> void:
-	for c in $OpponentBuilt.get_children():
-		$OpponentBuilt.remove_child(c)
-	var start_scale = Vector2(0.175, 0.175)
-	var from_pos = Vector2(0, 0)
+	if opponent_built_mode in [OpponentBuiltMode.SHOW, OpponentBuiltMode.WARLORD_SHOW]:
+		for c in $OpponentBuilt.get_children():
+			$OpponentBuilt.remove_child(c)
+		var start_scale = Vector2(0.175, 0.175)
+		var from_pos = Vector2(0, 0)
 
-	for card_name in cards:
-		var card_info = Data.get_card_info(card_name)
-		var incoming_card = Card.instance()
-		$OpponentBuilt.add_child(incoming_card)
-		incoming_card.init_card(
-			card_name,
-			card_info["up_offset"],
-			start_scale,
-			from_pos,
-			true,
-			incoming_card.CardMode.ENLARGE
-		)
-	var positions = get_positions_with_new_card($OpponentBuilt)
-	rearrange($OpponentBuilt, positions, 0)
+		for card_name in cards:
+			var card_info = Data.get_card_info(card_name)
+			var incoming_card = Card.instance()
+			var card_mode = incoming_card.CardMode.ENLARGE if opponent_built_mode == OpponentBuiltMode.SHOW else incoming_card.CardMode.WARLORD_SELECT
+			$OpponentBuilt.add_child(incoming_card)
+			incoming_card.init_card(
+				card_name,
+				card_info["up_offset"],
+				start_scale,
+				from_pos,
+				true,
+				card_mode
+			)
+		var positions = get_positions_with_new_card($OpponentBuilt)
+		rearrange($OpponentBuilt, positions, 0)
 
-	$OpponentBuilt.show()
-	$OpponentBuiltName.show()
-	$OpponentBuiltNameText.text = name
-	$OpponentBuiltNameText.show()
+		$OpponentBuilt.show()
+		$OpponentBuiltName.show()
+		$OpponentBuiltNameText.text = name
+		$OpponentBuiltNameText.show()
 
 
 func hide_opponent_built() -> void:
-	$OpponentBuilt.hide()
-	$OpponentBuiltName.hide()
-	$OpponentBuiltNameText.hide()
+	if opponent_built_mode in [OpponentBuiltMode.SHOW]:
+		$OpponentBuilt.hide()
+		$OpponentBuiltName.hide()
+		$OpponentBuiltNameText.hide()
 
 
 func get_employee_global_position() -> Vector2:
@@ -713,3 +759,22 @@ func set_employee_activated_this_turn(mode: int, can: bool) -> void:
 
 func set_employee_can_skill(can: bool) -> void:
 	$Employee.set_can_skill(can)
+
+
+func on_FakeBulitScriptCollision_input_event(viewport, event, shape_idx):
+	if event is InputEventMouseButton:
+		if opponent_state == OpponentState.WARLORD_CLICKABLE: 
+			on_FakeBulitScriptCollision_mouse_exited()
+			Signal.emit_signal("sgin_warlord_opponent_selected", player_num, employee, username, built)
+
+
+func on_FakeBulitScriptCollision_mouse_entered():
+	if opponent_state == OpponentState.WARLORD_CLICKABLE: 
+		$BuiltScript.global_position = Vector2(built_script_pos.x, built_script_pos.y - 20)
+
+
+func on_FakeBulitScriptCollision_mouse_exited():
+	if opponent_state == OpponentState.WARLORD_CLICKABLE: 
+		$BuiltScript.global_position = built_script_pos
+
+

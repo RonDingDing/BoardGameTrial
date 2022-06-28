@@ -154,7 +154,7 @@ func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 	if mode == State.SELECTING:
 		incoming_char.global_position = Vector2(9999, 9999)
 #		sub_node.store.erase(char_name)
-	Signal.emit_signal(emite, char_name)
+	Signal.emit_signal(emite, number, char_name)
 	Signal.emit_signal("sgin_char_ready", incoming_char)
 
 

@@ -53,17 +53,17 @@ signal sgin_set_reminder(text)
 #warning-ignore:unused_signal
 
 #warning-ignore:unused_signal
-signal sgin_discarded_once_finished(char_name)
+signal sgin_discarded_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
 signal sgin_discarded_all_finished
 #warning-ignore:unused_signal
-signal sgin_hidden_once_finished(char_name)
+signal sgin_hidden_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
 signal sgin_hidden_all_finished
 #warning-ignore:unused_signal
 signal sgin_character_selection
 #warning-ignore:unused_signal
-signal sgin_selected_char_once_finished(char_name)
+signal sgin_selected_char_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
 signal sgin_selected_char_all_finished
 #warning-ignore:unused_signal
@@ -114,7 +114,7 @@ signal sgin_thief_done
 #warning-ignore:unused_signal
 signal sgin_magician_switch(switch)
 #warning-ignore:unused_signal
-signal sgin_magician_opponent_selected
+signal sgin_magician_opponent_selected(player_num)
 #warning-ignore:unused_signal
 #signal sgin_king_move_crown(player_num)
 #warning-ignore:unused_signal
@@ -136,13 +136,22 @@ signal sgin_show_built(player_num)
 signal sgin_hide_built
 
 #warning-ignore:unused_signal
+signal sgin_warlord_choice(mode)
+
+#warning-ignore:unused_signal
+signal sgin_warlord_opponent_selected(player_num, player_employee, opponent_name, built)
+
+#warning-ignore:unused_signal
 signal sgin_card_warlord_selected(card_name, global_position)
 
 #warning-ignore:unused_signal
 signal sgin_skill(skill_name)
 
 #warning-ignore:unused_signal
-signal sgin_cancel_skill(component, reset)
+signal sgin_cancel_skill(components, reset)
+
+#warning-ignore:unused_signal
+signal sgin_queen_done
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:
@@ -160,3 +169,6 @@ func on_sgin_player_draw_ready(_card: Node) -> void:
 
 func on_sgin_player_draw_not_ready(card: Node) -> void:
 	card.set_card_mode(card.CardMode.STATIC)
+
+
+ 

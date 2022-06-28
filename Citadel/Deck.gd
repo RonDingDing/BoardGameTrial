@@ -92,3 +92,7 @@ func pop() -> String:
 
 func extend(card_names: Array) -> void:
 	deck.append_array(card_names)
+
+
+func append(card_name: String) -> void:
+	deck.append(card_name)

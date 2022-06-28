@@ -1,5 +1,5 @@
 extends "res://BasePlayer.gd"
-enum OpponentState { IDLE, MAGICIAN_CLICKABLE }
+enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE }
 
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
@@ -29,8 +29,12 @@ func set_deck_position(pos: Vector2) -> void:
 
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
+func remove_built(card_name: String) -> void:
+	built.erase(card_name)
+	$Built/BuiltNum.text = str(built.size())
+	
 
-func remove_hand_name(card_name: String) -> void:
+func remove_hand(card_name: String) -> void:
 	hands.erase(card_name)
 	$HandsInfo/HandNum.text = str(hands.size())
 
@@ -112,7 +116,7 @@ func on_player_info(data: Dictionary) -> void:
 	set_gold(data.get("money", 0))
 	hands = data.get("hands", hands)
 	$HandsInfo/HandNum.text = str(data.get("hand_num", hands.size()))
-	set_employee(data.get("employee", employee))
+	set_employee(data.get("employee_num", employee_num), data.get("employee", employee))
 	set_hide_employee(data.get("hide_employee", hide_employee))
 	var shown_employee = "Chosen" if hide_employee and employee != "Unchosen" else employee
 	$Employee/Pic.animation = shown_employee
@@ -129,8 +133,9 @@ func set_hide_employee(hide: bool) -> void:
 	$Employee.hide_employee = hide
 
 
-func set_employee(employ: String) -> void:
+func set_employee(num: int, employ: String) -> void:
 	employee = employ
+	employee_num = num
 	$Employee.employee = employ
 
 
@@ -145,6 +150,7 @@ func get_my_player_info() -> Dictionary:
 		"username": username,
 		"money": gold,
 		"employee": employee,
+		"employee_num": employee_num,
 		"hands": hands,
 		"built": built,
 		"has_crown": has_crown,
@@ -163,19 +169,23 @@ func can_end_game() -> bool:
 
 
 func on_mouse_entered() -> void:
-	if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
+	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE]:
 		set_position(Vector2(original_position.x, original_position.y - 20))
 
 
 func on_mouse_exited() -> void:
-	if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
+	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE]:
 		set_position(original_position)
 
 
 func on_input_event(_viewport, event, _shape_idx):
-	if opponent_state == OpponentState.MAGICIAN_CLICKABLE and event is InputEventMouseButton:
-		on_mouse_exited()
-		Signal.emit_signal("sgin_magician_opponent_selected", player_num)
+	if event is InputEventMouseButton:
+		if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
+			on_mouse_exited()
+			Signal.emit_signal("sgin_magician_opponent_selected", player_num)
+		elif opponent_state == OpponentState.WARLORD_CLICKABLE: 
+			on_mouse_exited()
+			Signal.emit_signal("sgin_warlord_opponent_selected", player_num, employee, username, built)
 
 func add_gold(num: int) -> void:
 	gold += num

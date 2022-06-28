@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=2]
+[gd_scene load_steps=30 format=2]
 
 [ext_resource path="res://EmployeePlayer.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Player.gd" type="Script" id=2]
@@ -25,6 +25,9 @@
 [ext_resource path="res://images/OpponentName.png" type="Texture" id=23]
 [ext_resource path="res://images/BuiltOpponent.png" type="Texture" id=24]
 
+[sub_resource type="RectangleShape2D" id=5]
+extents = Vector2( 292.25, 110.5 )
+
 [sub_resource type="DynamicFont" id=1]
 size = 40
 font_data = ExtResource( 3 )
@@ -36,24 +39,9 @@ animations = [ {
 "name": "Player6",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 10 ) ],
-"loop": true,
-"name": "Player5",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 8 ) ],
 "loop": true,
 "name": "Player0",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 12 ) ],
-"loop": true,
-"name": "Player4",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 14 ) ],
-"loop": true,
-"name": "Player2",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 13 ) ],
@@ -61,14 +49,29 @@ animations = [ {
 "name": "Player7",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 11 ) ],
+"frames": [ ExtResource( 14 ) ],
 "loop": true,
-"name": "Player3",
+"name": "Player2",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 15 ) ],
 "loop": true,
 "name": "Player1",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 10 ) ],
+"loop": true,
+"name": "Player5",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 12 ) ],
+"loop": true,
+"name": "Player4",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 11 ) ],
+"loop": true,
+"name": "Player3",
 "speed": 5.0
 } ]
 
@@ -88,6 +91,12 @@ script = ExtResource( 2 )
 [node name="BuiltScript" type="Sprite" parent="."]
 position = Vector2( 925, 741 )
 texture = ExtResource( 5 )
+
+[node name="FakeBulitScriptCollision" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FakeBulitScriptCollision"]
+position = Vector2( 933.75, 742.5 )
+shape = SubResource( 5 )
 
 [node name="HandScript" type="Sprite" parent="."]
 position = Vector2( 330, 741 )
@@ -267,6 +276,9 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[connection signal="input_event" from="FakeBulitScriptCollision" to="." method="on_FakeBulitScriptCollision_input_event"]
+[connection signal="mouse_entered" from="FakeBulitScriptCollision" to="." method="on_FakeBulitScriptCollision_mouse_entered"]
+[connection signal="mouse_exited" from="FakeBulitScriptCollision" to="." method="on_FakeBulitScriptCollision_mouse_exited"]
 [connection signal="input_event" from="Employee" to="Employee" method="on_input_event"]
 [connection signal="mouse_entered" from="Script1" to="." method="on_script1_mouse_entered"]
 [connection signal="mouse_exited" from="Script1" to="." method="on_script1_mouse_exited"]
