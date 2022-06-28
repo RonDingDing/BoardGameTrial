@@ -452,9 +452,7 @@ func on_start_turn() -> void:
 			)
 		print()
 		$Player.disable_play()
-		var wait_signal = check_reveal(employee_num, employee_name, player_obj.player_num)
-		if wait_signal:
-			yield(Signal, wait_signal)
+		check_reveal(employee_num, employee_name, player_obj.player_num)
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
 		on_sgin_set_reminder("NOTE_CHOOSE_RESOURCE")
 		$Player.set_script_mode($Player.ScriptMode.RESOURCE)
@@ -490,12 +488,8 @@ func on_start_turn() -> void:
 	if is_assassinated(employee_4_player.employee_num, employee_4_player.employee):
 		charskill_play_passive_king()
 		charskill_play_passive_queen(false)
-	current_turn_num += 1
-	for i in range(0, opponent_length + 1):
-		var player_obj = select_obj_by_relative_to_first_person(i)
-		player_obj.set_employee (-1,  "Unchosen")
-		player_obj.set_hide_employee(true)
-	Signal.emit_signal("sgin_one_round_finished")
+	
+	on_sgin_one_round_finished()
 
 
 func on_sgin_selected_char_once_finished(char_num: int, char_name: String) -> void:
@@ -576,6 +570,7 @@ func is_game_over() -> bool:
 func on_sgin_one_round_finished() -> void:
 	
 	if not is_game_over():
+		current_turn_num += 1
 		var crown_player_num = find_employee_4_pnum()
 		$Employment.reset_available()
 		character_reset()
@@ -916,17 +911,13 @@ func is_stolen(employee_num: int, employee_name: String) -> bool:
 	return [employee_num, employee_name] == stolen
 
 
-func check_reveal(employee_num: int, employee_name: String, _player_num: int) -> String:
+func check_reveal(employee_num: int, employee_name: String, _player_num: int) -> void:
 	if is_stolen(employee_num, employee_name):
 		on_sgin_thief_stolen()
-		return "sgin_thief_done"
 	elif is_number_four(employee_num) and (not is_assassinated(employee_num, employee_name)):
 		charskill_play_passive_king()
-		return ""
 	elif employee_name == "Queen" and (not is_assassinated(employee_num, employee_name)):
 		charskill_play_passive_queen(true)
-		return ""
-	return ""
 
 
 func check_continue(employee_num: int, employee_name: String, player_is_null: int) -> bool:

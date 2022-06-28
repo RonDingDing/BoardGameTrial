@@ -272,10 +272,12 @@ func on_script3_pressed() -> void:
 			Signal.emit_signal("sgin_end_turn")
 		ScriptMode.ASSASSIN, ScriptMode.THIEF:
 			Signal.emit_signal("sgin_cancel_skill", ["employment"], $Employee.ActivateMode.ALL)
+		ScriptMode.MERCHANT:		
+			Signal.emit_signal("sgin_cancel_skill", ["scripts"], $Employee.ActivateMode.SKILL2)	
 		ScriptMode.MAGICIAN:
 			Signal.emit_signal("sgin_cancel_skill", ["opponent", "scripts"], $Employee.ActivateMode.ALL)	
 		ScriptMode.WARLORD:
-			Signal.emit_signal("sgin_cancel_skill", ["opponent", "opponent_built"], $Employee.ActivateMode.SKILL1)		
+			Signal.emit_signal("sgin_cancel_skill", ["opponent", "scripts", "opponent_built"], $Employee.ActivateMode.SKILL1)		
 		
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
