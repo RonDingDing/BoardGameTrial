@@ -105,7 +105,7 @@ signal sgin_thief_once_finished(char_num, char_name)
 #warning-ignore:unused_signal
 signal sgin_thief_all_finished
 #warning-ignore:unused_signal
-signal sgin_thief_stolen
+#signal sgin_thief_stolen
 #warning-ignore:unused_signal
 signal sgin_thief_done
 
@@ -116,7 +116,7 @@ signal sgin_magician_switch(switch)
 #warning-ignore:unused_signal
 signal sgin_magician_opponent_selected
 #warning-ignore:unused_signal
-signal sgin_king_move_crown(player_num)
+#signal sgin_king_move_crown(player_num)
 #warning-ignore:unused_signal
 signal sgin_4_done
 

@@ -187,11 +187,9 @@ func add_gold(num: int) -> void:
 
 func on_Built_mouse_exited():
 	Signal.emit_signal("sgin_hide_built" )
-	print("sgin_hide_built" )
 
 
 func on_Built_input_event(_viewport, event, _shape_idx):
 	if opponent_state == OpponentState.IDLE and event is InputEventMouseButton:
 		Signal.emit_signal("sgin_show_built", player_num)
-		print("sgin_show_built", player_num)
 

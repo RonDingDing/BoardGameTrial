@@ -27,36 +27,34 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 		print(can_skill)
 		print(not skill_1_activated_this_turn)
 		print(not skill_2_activated_this_turn)
-		print(not skill_1_activated_this_turn or (not skill_2_activated_this_turn))
+		print((not skill_1_activated_this_turn) or (not skill_2_activated_this_turn))
 		print()
 	if (
 		event.is_pressed()
 		and event is InputEventMouseButton
-		#		and event.doubleclick
 		and can_skill
-		and (not skill_1_activated_this_turn or (not skill_2_activated_this_turn))
+		and ((not skill_1_activated_this_turn) or (not skill_2_activated_this_turn))
 	):
 		match employee:
 			"Assassin":
+				set_activated_this_turn(ActivateMode.ALL, true)
 				Signal.emit_signal("sgin_skill", "assassin")
-				set_activated_this_turn(ActivateMode.ALL, true)
 			"Thief":
+				set_activated_this_turn(ActivateMode.ALL, true)
 				Signal.emit_signal("sgin_skill", "thief")
-				set_activated_this_turn(ActivateMode.ALL, true)
 			"Magician":
+				set_activated_this_turn(ActivateMode.ALL, true)
 				Signal.emit_signal("sgin_skill", "magician")
-				set_activated_this_turn(ActivateMode.ALL, true)
 			"King":
+				set_activated_this_turn(ActivateMode.ALL, true)
 				Signal.emit_signal("sgin_skill", "king")
-				set_activated_this_turn(ActivateMode.ALL, true)
 			"Bishop":
+				set_activated_this_turn(ActivateMode.ALL, true)
 				Signal.emit_signal("sgin_skill", "bishop")
-				set_activated_this_turn(ActivateMode.ALL, true)
 			"Merchant":
-				Signal.emit_signal("sgin_skill", "merchant")
-			
+				Signal.emit_signal("sgin_skill", "merchant")			
 			"Architect":
-				Signal.emit_signal("sgin_skill", "architect")
 				set_activated_this_turn(ActivateMode.ALL, true)
+				Signal.emit_signal("sgin_skill", "architect")
 			"Warlord":
 				Signal.emit_signal("sgin_skill", "warlord")

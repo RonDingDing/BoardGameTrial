@@ -16,14 +16,9 @@
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
-"frames": [ ExtResource( 5 ) ],
+"frames": [ ExtResource( 10 ) ],
 "loop": true,
-"name": "Assassin",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 6 ) ],
-"loop": true,
-"name": "Merchant",
+"name": "Chosen",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 2 ) ],
@@ -31,9 +26,9 @@ animations = [ {
 "name": "Architect",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 7 ) ],
+"frames": [ ExtResource( 6 ) ],
 "loop": true,
-"name": "Warlord",
+"name": "Merchant",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 11 ) ],
@@ -51,19 +46,14 @@ animations = [ {
 "name": "Wizard",
 "speed": 5.0
 }, {
+"frames": [ ExtResource( 7 ) ],
+"loop": true,
+"name": "Warlord",
+"speed": 5.0
+}, {
 "frames": [ ExtResource( 13 ) ],
 "loop": true,
 "name": "Magician",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 3 ) ],
-"loop": true,
-"name": "Thief",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 8 ) ],
-"loop": true,
-"name": "Bishop",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 1 ) ],
@@ -71,9 +61,19 @@ animations = [ {
 "name": "Unchosen",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 10 ) ],
+"frames": [ ExtResource( 3 ) ],
 "loop": true,
-"name": "Chosen",
+"name": "Thief",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 5 ) ],
+"loop": true,
+"name": "Assassin",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 8 ) ],
+"loop": true,
+"name": "Bishop",
 "speed": 5.0
 } ]
 

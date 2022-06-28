@@ -49,7 +49,7 @@ const venetian_red = Color(0.78125, 0.03125, 0.08203125)
 
 func _ready() -> void:
 	hide_scripts()
-	hide_end_turn()
+	hide_script3()
 	hide_kill_steal_info()
 	hide_opponent_built()
 	$Script1.rect_position = script1_pos
@@ -172,12 +172,12 @@ func hide_reminder() -> void:
 	$ReminderLabel.hide()
 
 
-func show_end_turn() -> void:
+func show_script3() -> void:
 	$Script3.show()
 	$Script3Label.show()
 
 
-func hide_end_turn() -> void:
+func hide_script3() -> void:
 	$Script3.hide()
 	$Script3Label.hide()
 
@@ -197,26 +197,27 @@ func hide_scripts() -> void:
 
 
 func on_script1_pressed() -> void:
-	print(script_mode)
+	hide_opponent_built()
 	if script_mode == ScriptMode.RESOURCE:
 		Signal.emit_signal("sgin_resource_need", Need.GOLD)
 	elif script_mode == ScriptMode.MAGICIAN:
 		Signal.emit_signal("sgin_magician_switch", MagicianSwitch.DECK)
 	elif script_mode == ScriptMode.MERCHANT and not $Employee.skill_1_activated_this_turn:
-		Signal.emit_signal("sgin_merchant_gold", MerchantGold.ONE)
 		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
+		Signal.emit_signal("sgin_merchant_gold", MerchantGold.ONE)
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 
 
 func on_script2_pressed() -> void:
+	hide_opponent_built()
 	if script_mode == ScriptMode.RESOURCE:
 		Signal.emit_signal("sgin_resource_need", Need.CARD)
 	elif script_mode == ScriptMode.MAGICIAN:
 		Signal.emit_signal("sgin_magician_switch", MagicianSwitch.PLAYER)
 	elif script_mode == ScriptMode.MERCHANT and not $Employee.skill_2_activated_this_turn:
-		Signal.emit_signal("sgin_merchant_gold", MerchantGold.GREEN)
 		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
+		Signal.emit_signal("sgin_merchant_gold", MerchantGold.GREEN)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 
@@ -251,6 +252,7 @@ func on_script2_mouse_exited() -> void:
 
 
 func on_script3_pressed() -> void:
+	hide_opponent_built()
 	match script_mode:
 		ScriptMode.PLAYING:
 			Signal.emit_signal("sgin_end_turn")
@@ -590,8 +592,6 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 
 	hands.erase(card_name)
 	built.append(card_name)
-	$HandScript.remove_child(card_obj)
-	$BuiltScript.add_child(card_obj)
 	card_obj.on_mouse_exited()
 	var z_index = card_obj.z_index
 	card_obj.z_index = 4096
@@ -604,6 +604,9 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 		]
 	)
 	yield(TweenMove, "tween_all_completed")
+	$HandScript.remove_child(card_obj)
+	$BuiltScript.add_child(card_obj)
+	card_obj.global_position = center
 	TweenMove.animate(
 		[
 			[
@@ -647,8 +650,7 @@ func remove_hand(card_obj: Node) -> void:
 	hands.erase(card_obj.card_name)
 
 
-func set_all_activated_this_turn(can: bool) -> void:
-	$Employee.set_activated_this_turn($Employee.ActivateMode.ALL, can)
+
 
 
 func add_gold(num: int) -> void:
@@ -657,11 +659,11 @@ func add_gold(num: int) -> void:
 
 
 func built_color_num(color: String) -> int:
-	var num = 0
+	var number = 0
 	for card_name in built:
 		if color == Data.get_card_info(card_name)["kind"]:
-			num += 1
-	return num
+			number += 1
+	return number
 
 
 func show_opponent_built(name: String, cards: Array) -> void:
