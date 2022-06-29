@@ -107,7 +107,7 @@ signal sgin_thief_all_finished
 #warning-ignore:unused_signal
 #signal sgin_thief_stolen
 #warning-ignore:unused_signal
-signal sgin_thief_done
+#signal sgin_thief_done
 
 #warning-ignore:unused_signal
 #signal sgin_magician_wait
@@ -118,7 +118,7 @@ signal sgin_magician_opponent_selected(player_num)
 #warning-ignore:unused_signal
 #signal sgin_king_move_crown(player_num)
 #warning-ignore:unused_signal
-signal sgin_4_done
+#signal sgin_4_done
 
 #warning-ignore:unused_signal
 #signal sgin_ask_built_num(color)
@@ -151,7 +151,8 @@ signal sgin_skill(skill_name)
 signal sgin_cancel_skill(components, reset)
 
 #warning-ignore:unused_signal
-signal sgin_queen_done
+#signal sgin_queen_done
+signal sgin_reveal_done
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:

@@ -87,7 +87,10 @@ func shuffle():
 
 
 func pop() -> String:
-	return deck.pop_front()
+	var card_name = deck.pop_front()
+	if card_name == null:
+		return ""
+	return card_name
 
 
 func extend(card_names: Array) -> void:

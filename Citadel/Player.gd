@@ -148,16 +148,26 @@ func set_script_mode(mode: int) -> void:
 
 func set_assassinated(char_name: String) -> void:
 	$KillStealInfo/KillChar/Pic.animation = char_name
-	$KillStealInfo.show()
-	$KillStealInfo/KillChar.show()
-	$KillStealInfo/KillSword.show()
+	if char_name == "Unchosen":
+		$KillStealInfo.hide()
+		$KillStealInfo/KillChar.hide()
+		$KillStealInfo/KillSword.hide()
+	else:
+		$KillStealInfo.show()
+		$KillStealInfo/KillChar.show()
+		$KillStealInfo/KillSword.show()
 
 
 func set_stolen(char_name: String) -> void:
 	$KillStealInfo/StealChar/Pic.animation = char_name
-	$KillStealInfo.show()
-	$KillStealInfo/StealChar.show()
-	$KillStealInfo/StealPocket.show()
+	if char_name == "Unchosen":
+		$KillStealInfo.hide()
+		$KillStealInfo/KillChar.hide()
+		$KillStealInfo/KillSword.hide()
+	else:
+		$KillStealInfo.show()
+		$KillStealInfo/StealChar.show()
+		$KillStealInfo/StealPocket.show()
 
 
 func set_reminder_text(string: String) -> void:
@@ -614,9 +624,12 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 		return false
 
 	for _i in range(price):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
 		Signal.emit_signal("sgin_gold_transfer", player_num, bank_num, "sgin_player_pay_ready")
-		yield(Signal, "sgin_player_pay_ready")
-
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	hands.erase(card_name)
 	built.append(card_name)
 	card_obj.on_mouse_exited()
@@ -763,7 +776,7 @@ func set_employee_can_skill(can: bool) -> void:
 	$Employee.set_can_skill(can)
 
 
-func on_FakeBulitScriptCollision_input_event(viewport, event, shape_idx):
+func on_FakeBulitScriptCollision_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
 		if opponent_state == OpponentState.WARLORD_CLICKABLE: 
 			on_FakeBulitScriptCollision_mouse_exited()

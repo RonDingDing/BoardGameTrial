@@ -22,6 +22,10 @@ const bank_num = -2
 const unfound = -3
 onready var center = get_viewport_rect().size / 2
 
+#Game
+onready var city_finished = []
+
+
 #Skill
 onready var stolen = [0, "Unchosen"]
 onready var assassinated = [0, "Unchosen"]
@@ -186,8 +190,9 @@ func on_sgin_draw_card(player_num: int, face_is_up: bool, from_pos: Vector2 = de
 	if from_pos == null:
 		from_pos = deck_position
 	var card_name = $Deck.pop()
-	var player_obj = select_obj_by_player_num(player_num)
-	player_obj.draw(card_name, face_is_up, from_pos, 1)
+	if card_name != "":
+		var player_obj = select_obj_by_player_num(player_num)
+		player_obj.draw(card_name, face_is_up, from_pos, 1)
 
 
 func start_game():
@@ -226,7 +231,8 @@ func on_sgin_card_dealt(all_player_length: int) -> void:
 				else "sgin_opponent_gold_ready"
 			)
 			on_sgin_gold_transfer(bank_num, p_num, done_signal)
-	yield(TweenMove, "tween_all_completed")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_ready_game")
 
 
@@ -452,7 +458,9 @@ func on_start_turn() -> void:
 			)
 		print()
 		$Player.disable_play()
-		check_reveal(employee_num, employee_name, player_obj.player_num)
+		var sig = check_reveal(employee_num, employee_name, player_obj.player_num)
+		if sig == "sgin_reveal_done":
+			yield(Signal, "sgin_reveal_done")
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
 		on_sgin_set_reminder("NOTE_CHOOSE_RESOURCE")
 		$Player.set_script_mode($Player.ScriptMode.RESOURCE)
@@ -488,7 +496,8 @@ func on_start_turn() -> void:
 	if is_assassinated(employee_4_player.employee_num, employee_4_player.employee):
 		charskill_play_passive_king()
 		charskill_play_passive_queen(false)
-	
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	on_sgin_one_round_finished()
 
 
@@ -512,7 +521,10 @@ func gain_gold() -> void:
 		yield(TimerGlobal, "timeout")
 		var done_signal = "sgin_player_gold_ready"
 		on_sgin_gold_transfer(bank_num, $Player.player_num, done_signal)
-		yield(Signal, done_signal)
+
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
+
 	Signal.emit_signal("sgin_resource_end")
 
 
@@ -521,12 +533,15 @@ func gain_card() -> void:
 	var card_to_click = 1
 	var to_select = []
 	for _i in range(card_to_gain):
-		to_select.append($Deck.pop())
+		var card_name = $Deck.pop()
+		if card_name != "":
+			to_select.append(card_name)
 	$AnyCardEnlarge.selectable_cards(to_select)
-	for _i in range(card_to_click):
-		var sig = yield(Signal, "sgin_card_selected")
-		yield(Signal, "sgin_player_draw_ready")
-		to_select.erase(sig[0])  #.card_name
+	if to_select.size() > 0:
+		for _i in range(card_to_click):
+			var sig = yield(Signal, "sgin_card_selected")
+			yield(Signal, "sgin_player_draw_ready")
+			to_select.erase(sig[0])  #.card_name
 
 	$Deck.extend(to_select)
 	Signal.emit_signal("sgin_resource_end")
@@ -555,6 +570,8 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 		var success_play = $Player.card_played(card_name, price, from_pos)
 		if success_play:
 			yield(Signal, "sgin_card_played_finished")
+		if $Player.built.size() == 7:
+			city_finished.append($Player.player_num)
 		$Player.enable_play()
 
 
@@ -573,20 +590,23 @@ func on_sgin_one_round_finished() -> void:
 		current_turn_num += 1
 		var crown_player_num = find_employee_4_pnum()
 		$Employment.reset_available()
-		character_reset()
+		employee_reset()
+		$Player.set_assassinated("Unchosen")
+		$Player.set_stolen("Unchosen")
 		character_selection(crown_player_num)
 	else:
 		game_over()
 
 
-func character_reset() -> void:
+func employee_reset() -> void:
 	for i in range(opponent_length + 1):
 		var player_obj = select_obj_by_player_num(i)
-		player_obj.set_employee(-1,"Unchosen")
+		player_obj.set_employee(-1, "Unchosen")
+		player_obj.set_hide_employee(true)
 
 
 func game_over() -> void:
-	pass
+	print("game over")
 
 
 # Skill
@@ -631,13 +651,14 @@ func thief_wait():
 
 
 func on_sgin_thief_stolen():
-	$Player.disable_play()
 	var thief_obj = select_player_obj_by(FindPlayerObjBy.EMPLOYEE, "Thief")
 	for _i in range($Player.gold):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
 		on_sgin_gold_transfer($Player.player_num, thief_obj.player_num, "sgin_player_gold_ready")
-		yield(Signal, "sgin_player_gold_ready")
-	$Player.enable_play()
-	Signal.emit_signal("sgin_thief_done")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 
 
 func magician_wait():
@@ -737,13 +758,13 @@ func charskill_play_passive_queen(in_turn: bool=true) -> void:
 		caught_king = true
 	if caught_king:
 		for _i in range(3):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()
+			yield(TimerGlobal, "timeout")
 			on_sgin_gold_transfer(bank_num, first_person_num, "sgin_player_gold_ready")
-			yield(Signal, "sgin_player_gold_ready")
-	else:
-		TimerGlobal.set_wait_time(1)
-		TimerGlobal.start()
-		yield(TimerGlobal, "timeout")
-	Signal.emit_signal("sgin_queen_done")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
+ 
 	
 
 func charskill_play_passive_king() -> void:
@@ -788,7 +809,6 @@ func charskill_play_passive_king() -> void:
 	original_crown_owner.set_crown(false)
 	emoloyee_4.set_crown(true)
 	$Player.remove_child(crown)
-	Signal.emit_signal("sgin_4_done")
 
 
 func on_sgin_gold_transfer(from_pnum: int, to_pnum: int, done_signal: String) -> void:
@@ -837,12 +857,17 @@ func on_sgin_merchant_gold(mode: int) -> void:
 	$Player.hide_scripts()
 	if mode == $Player.MerchantGold.ONE:
 		on_sgin_gold_transfer(bank_num, $Player.player_num, "sgin_player_gold_ready")
-		yield(Signal, "sgin_player_gold_ready")
+		if TweenMove.is_active():
+			yield(TweenMove, "tween_all_completed")
 	else:
 		var gained = gain_gold_by_color("green")
 		for _i in range(gained):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()
+			yield(TimerGlobal, "timeout")
 			on_sgin_gold_transfer(bank_num, first_person_num, "sgin_player_gold_ready")
-			yield(Signal, "sgin_player_gold_ready")
+		if TweenMove.is_active():
+			yield(TweenMove, "tween_all_completed")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.SKILL2, false)
 	on_sgin_set_reminder("NOTE_PLAY")		
@@ -911,15 +936,20 @@ func is_stolen(employee_num: int, employee_name: String) -> bool:
 	return [employee_num, employee_name] == stolen
 
 
-func check_reveal(employee_num: int, employee_name: String, _player_num: int) -> void:
+func check_reveal(employee_num: int, employee_name: String, _player_num: int) -> String:
+	var sig = ""
 	if is_stolen(employee_num, employee_name):
 		on_sgin_thief_stolen()
-	elif is_number_four(employee_num) and (not is_assassinated(employee_num, employee_name)):
+		sig = "sgin_reveal_done"
+	if is_number_four(employee_num) and (not is_assassinated(employee_num, employee_name)):
 		charskill_play_passive_king()
-	elif employee_name == "Queen" and (not is_assassinated(employee_num, employee_name)):
+		sig = "sgin_reveal_done"
+	if employee_name == "Queen" and (not is_assassinated(employee_num, employee_name)):
 		charskill_play_passive_queen(true)
-
-
+		sig = "sgin_reveal_done"
+	Signal.call_deferred("emit_signal", "sgin_reveal_done")
+	return sig
+	
 func check_continue(employee_num: int, employee_name: String, player_is_null: int) -> bool:
 	if player_is_null:
 		return true
@@ -935,8 +965,12 @@ func is_number_four(employee_num: int) -> bool:
 func charskill_play_active_king() -> void:
 	var gained = gain_gold_by_color("yellow")
 	for _i in range(gained):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
 		on_sgin_gold_transfer(bank_num, first_person_num, "sgin_player_gold_ready")
-		yield(Signal, "sgin_player_gold_ready")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
 
@@ -944,8 +978,12 @@ func charskill_play_active_king() -> void:
 func charskill_play_active_bishop() -> void:
 	var gained = gain_gold_by_color("blue")
 	for _i in range(gained):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
 		on_sgin_gold_transfer(bank_num, first_person_num, "sgin_player_gold_ready")
-		yield(Signal, "sgin_player_gold_ready")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
 	
@@ -1146,12 +1184,14 @@ func charskill_play_active_warlord() -> void:
 	$Player.wait_warlord()
 
 
-func warlord_destructable(employee_name: String) -> bool:
+func warlord_destructable(player_num: int, employee_name: String) -> bool:
 	if employee_name == "Bishop":
 		if assassinated[1] == employee_name:
 			return true
 		else:
 			return false
+	if player_num in city_finished:
+		return false
 	return true
 	
 	
@@ -1164,15 +1204,20 @@ func on_sgin_warlord_choice(mode: int) -> void:
 	if mode == $Player.WarlordChoice.DESTROY:
 		for p in range(opponent_length + 1):
 			var opponent = select_obj_by_relative_to_first_person(p)
-			if warlord_destructable(opponent.employee):
+			if warlord_destructable(opponent.player_num, opponent.employee):
 				opponent.set_opponent_state(opponent.OpponentState.WARLORD_CLICKABLE)
 			else:
 				opponent.set_opponent_state(opponent.OpponentState.SILENT)
 	else:
 		var gained = gain_gold_by_color("red")
 		for _i in range(gained):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()
+			yield(TimerGlobal, "timeout")
 			on_sgin_gold_transfer(bank_num, first_person_num, "sgin_player_gold_ready")
 			yield(Signal, "sgin_player_gold_ready")
+		if TweenMove.is_active():
+			yield(TweenMove, "tween_all_completed")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.SKILL2, false)
 		on_sgin_set_reminder("NOTE_PLAY")		
@@ -1210,9 +1255,12 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 	
 	
 	for _i in range(price):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
 		on_sgin_gold_transfer(first_person_num, bank_num, "sgin_player_gold_ready")
-		yield(Signal, "sgin_player_gold_ready")
-	
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	
 	card_obj.on_mouse_exited()
 	var z_index = card_obj.z_index

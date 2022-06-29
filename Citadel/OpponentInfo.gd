@@ -7,17 +7,19 @@ onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
 onready var Data = get_node("/root/Main/Data")
 
- 
 onready var opponent_state = OpponentState.IDLE
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
 onready var original_position = Vector2(-9999, -9999)
 
+
 func _ready() -> void:
 	$Crown.hide()
 
+
 func set_opponent_state(state: int) -> void:
 	opponent_state = state
+
 
 func set_bank_position(pos: Vector2) -> void:
 	bank_position = pos
@@ -29,10 +31,11 @@ func set_deck_position(pos: Vector2) -> void:
 
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
 
+
 func remove_built(card_name: String) -> void:
 	built.erase(card_name)
 	$Built/BuiltNum.text = str(built.size())
-	
+
 
 func remove_hand(card_name: String) -> void:
 	hands.erase(card_name)
@@ -52,7 +55,9 @@ func draw(
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
 	add_child(incoming_card)
-	incoming_card.init_card("Unknown", 0, start_scale, from_pos, false, incoming_card.CardMode.ENLARGE)
+	incoming_card.init_card(
+		"Unknown", 0, start_scale, from_pos, false, incoming_card.CardMode.ENLARGE
+	)
 	TweenMove.animate(
 		[
 			[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time],
@@ -65,6 +70,7 @@ func draw(
 	remove_child(incoming_card)
 	incoming_card.queue_free()
 	Signal.emit_signal("sgin_opponent_draw_ready", incoming_card)
+
 
 #
 #func on_draw_gold(from_pos: Vector2) -> void:
@@ -183,23 +189,22 @@ func on_input_event(_viewport, event, _shape_idx):
 		if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
 			on_mouse_exited()
 			Signal.emit_signal("sgin_magician_opponent_selected", player_num)
-		elif opponent_state == OpponentState.WARLORD_CLICKABLE: 
+		elif opponent_state == OpponentState.WARLORD_CLICKABLE:
 			on_mouse_exited()
-			Signal.emit_signal("sgin_warlord_opponent_selected", player_num, employee, username, built)
+			Signal.emit_signal(
+				"sgin_warlord_opponent_selected", player_num, employee, username, built
+			)
+
 
 func add_gold(num: int) -> void:
 	gold += num
 	$MoneyIcon/MoneyNum.text = str(gold)
 
 
-	
-
-
 func on_Built_mouse_exited():
-	Signal.emit_signal("sgin_hide_built" )
+	Signal.emit_signal("sgin_hide_built")
 
 
 func on_Built_input_event(_viewport, event, _shape_idx):
 	if opponent_state == OpponentState.IDLE and event is InputEventMouseButton:
 		Signal.emit_signal("sgin_show_built", player_num)
-
