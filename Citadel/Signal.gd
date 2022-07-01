@@ -154,6 +154,9 @@ signal sgin_cancel_skill(components, reset)
 #signal sgin_queen_done
 signal sgin_reveal_done
 
+#warning-ignore:unused_signal
+signal sgin_check_skill_end_turn_done
+
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)

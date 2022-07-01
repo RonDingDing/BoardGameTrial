@@ -602,7 +602,7 @@ func has_enough_money(price: int) -> bool:
 
 
 func has_not_played_same(card_name: String) -> bool:
-	var not_played = not card_name in played_this_turn
+	var not_played = not card_name in built
 	return not_played
 
 

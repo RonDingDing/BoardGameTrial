@@ -60,12 +60,14 @@ func to_be_delete():
 			"money": 9,
 			#			"employee": "Architect",
 			#			"hand_num": 8,
-			#			"built": ["Market", "Apothery"]
+			# "hands":["Tavern", "Tavern"],
+			# "built": ["Quarry"]
 		},
 		{
 			"player_num": 1,
 			"username": "one",
 			"money": 9,
+			# "hands":["Tavern", "Tavern"],
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			#			"built": ["Market", "Apothery"]
@@ -238,6 +240,8 @@ func on_sgin_card_dealt(all_player_length: int) -> void:
 
 func first_player() -> int:
 	var player_num = randi() % (opponent_length + 1)
+	# TODO Remove the next line
+	player_num = 0
 	return player_num
 
 
@@ -462,7 +466,10 @@ func on_start_turn() -> void:
 		if sig == "sgin_reveal_done":
 			yield(Signal, "sgin_reveal_done")
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
-		on_sgin_set_reminder("NOTE_CHOOSE_RESOURCE")
+		var gold_to_draw = check_skill_resource_draw_gold()
+		var cards_to_select = check_skill_resource_cards_to_select()
+		var cards_to_draw = check_skill_resource_draw_card($Player.built, cards_to_select)
+		on_sgin_set_reminder(tr("NOTE_CHOOSE_RESOURCE").replace("XXX", str(gold_to_draw)).replace("YYY",str(cards_to_select)).replace("ZZZ", str(cards_to_select-cards_to_draw)))
 		$Player.set_script_mode($Player.ScriptMode.RESOURCE)
 		$Player.show_scripts()
 		yield(Signal, "sgin_resource_need")
@@ -472,7 +479,9 @@ func on_start_turn() -> void:
 		$Player.enable_play()
 		$Player.show_script3()
 		yield(Signal, "sgin_end_turn")
-
+		var sig2 = check_skill_end_turn($Player.hands, $Player.built)
+		if sig2 == "sgin_check_skill_end_turn_done":
+			yield(Signal, "sgin_check_skill_end_turn_done")
 		$Player.after_end_turn()
 		print("end turn: ")
 		for n in range(opponent_length + 1):
@@ -527,18 +536,46 @@ func gain_gold() -> void:
 
 	Signal.emit_signal("sgin_resource_end")
 
+func check_skill_resource_draw_card(player_built: Array, card_to_select: int) -> int:
+	for card_name in player_built:
+		if "Library" in card_name:
+			return card_skill_resource_draw_library(card_to_select)
+	
+	return 1
+
+func check_skill_resource_draw_gold() -> int:
+	return 2
+	
+func check_skill_resource_cards_to_select() -> int:
+	return 2
+	
+func check_skill_not_played_same(player_built: Array) -> bool:
+	for card_name in player_built:
+		if "Quarry" in card_name:
+			return card_skill_play_quarry()
+	return false
+	
+func check_skill_end_turn(player_hand: Array, player_built: Array) -> String:
+	var sig = ""
+	for card_name in player_built:
+		if "Park" in card_name:
+			card_skill_end_turn_park(player_hand.size())
+			sig = "sgin_check_skill_end_turn_done"
+	Signal.call_deferred("emit_signal", "sgin_check_skill_end_turn_done")
+	return sig
 
 func gain_card() -> void:
-	var card_to_gain = 2
-	var card_to_click = 1
+	var card_to_select = 2
+	var card_to_click = check_skill_resource_draw_card($Player.built, card_to_select)
 	var to_select = []
-	for _i in range(card_to_gain):
+	for _i in range(card_to_select):
 		var card_name = $Deck.pop()
 		if card_name != "":
 			to_select.append(card_name)
-	$AnyCardEnlarge.selectable_cards(to_select)
-	if to_select.size() > 0:
-		for _i in range(card_to_click):
+	
+	for _i in range(card_to_click):
+		if to_select.size() > 0:
+			$AnyCardEnlarge.selectable_cards(to_select)
 			var sig = yield(Signal, "sgin_card_selected")
 			yield(Signal, "sgin_player_draw_ready")
 			to_select.erase(sig[0])  #.card_name
@@ -559,7 +596,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 		var card_info = Data.get_card_info(card_name)
 		var price = card_info["star"]
 		var enough_money = $Player.has_enough_money(price)
-		var not_played_same = $Player.has_not_played_same(card_name)
+		var not_played_same = check_skill_not_played_same($Player.built) or $Player.has_not_played_same(card_name)
 		var not_ever_played = (
 			has_ever_played($Player.employee, $Player.played_this_turn)
 			or $Player.has_ever_played()
@@ -1003,19 +1040,23 @@ func card_type_change(_color: String) -> int:
 	return 0
 
 
-func cardskill_resourcedraw_library(card_to_gain: int) -> int:
+func card_skill_resource_draw_library(card_to_gain: int) -> int:
 	return card_to_gain
 
 
-func cardskill_end_park(hand_size: int) -> void:
+func card_skill_end_turn_park(hand_size: int) -> void:
 	if hand_size == 0:
 		for _i in range(2):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()
+			yield(TimerGlobal, "timeout")
 			on_sgin_draw_card($Player.player_num, true)
-			yield(Signal, "sgin_player_draw_ready")
+		if TweenMove.is_active():
+			yield(TweenMove, "tween_all_completed")
 
 
-func cardskill_play_quarry() -> bool:
-	return false
+func card_skill_play_quarry() -> bool:
+	return true
 
 
 func armory() -> void:

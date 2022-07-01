@@ -137,7 +137,7 @@ NOTE_SELECT,"Please select your character of this turn.", "请选择本回合你
 PHASE_CHARACTER_SELECTION, "Selection Phase", "雇佣阶段"
 PHASE_TURN_START, "Turn Phase", "回合阶段"
 PHASE_TURN_NUM, "Round X", "第X回合"
-NOTE_CHOOSE_RESOURCE, "Please select: 1) Gain 2 gold. 2) Draw 2 cards and discard 1 card. ", "请选择：1)获得2个金币；2)摸2张牌，弃1张牌。"
+NOTE_CHOOSE_RESOURCE, "Please select: 1) Gain XXX gold. 2) Draw YYY cards and discard ZZZ card. ", "请选择：1)获得XXX个金币；2)摸YYY张牌，弃ZZZ张牌。"
 NOTE_NEED_CARD, "Card", "摸牌"
 NOTE_NEED_GOLD, "Gold", "淘金"
 NOTE_END_TURN, "End", "结束"
