@@ -27,7 +27,6 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 		print(can_skill)
 		print(not skill_1_activated_this_turn)
 		print(not skill_2_activated_this_turn)
-		print((not skill_1_activated_this_turn) or (not skill_2_activated_this_turn))
 		print()
 	if (
 		event.is_pressed()

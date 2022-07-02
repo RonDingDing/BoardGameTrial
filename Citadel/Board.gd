@@ -61,7 +61,7 @@ func to_be_delete():
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			# "hands":["Tavern", "Tavern"],
-			"built": ["Keep"]
+			"built": ["Library", "Observatory"]
 		},
 		{
 			"player_num": 1,
@@ -70,7 +70,7 @@ func to_be_delete():
 			# "hands":["Tavern", "Tavern"],
 			#			"employee": "Architect",
 			#			"hand_num": 8,
-			#			"built": ["Market", "Apothery"]
+			"built": []
 		},
 		{
 			"player_num": 2,
@@ -467,8 +467,8 @@ func on_start_turn() -> void:
 			yield(Signal, "sgin_reveal_done")
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
 		var gold_to_draw = check_skill_resource_draw_gold()
-		var cards_to_select = check_skill_resource_cards_to_select()
-		var cards_to_draw = check_skill_resource_draw_card($Player.built, cards_to_select)
+		var cards_to_select = check_skill_resource_draw_card_to_select($Player.built)
+		var cards_to_draw = check_skill_resource_draw_card_to_click($Player.built, cards_to_select)
 		on_sgin_set_reminder(tr("NOTE_CHOOSE_RESOURCE").replace("XXX", str(gold_to_draw)).replace("YYY",str(cards_to_select)).replace("ZZZ", str(cards_to_select-cards_to_draw)))
 		$Player.set_script_mode($Player.ScriptMode.RESOURCE)
 		$Player.show_scripts()
@@ -536,18 +536,23 @@ func gain_gold() -> void:
 
 	Signal.emit_signal("sgin_resource_end")
 
-func check_skill_resource_draw_card(player_built: Array, card_to_select: int) -> int:
+func check_skill_resource_draw_card_to_click(player_built: Array, card_to_select: int) -> int:
 	for card_name in player_built:
 		if "Library" in card_name:
-			return card_skill_resource_draw_library(card_to_select)
-	
+			return card_skill_resource_draw_library(card_to_select)	
 	return 1
+
+
+func check_skill_resource_draw_card_to_select(player_built: Array) -> int:
+	for card_name in player_built:
+		if "Observatory" in card_name:
+			return card_skill_resource_draw_observatory()	
+	return 2
+
 
 func check_skill_resource_draw_gold() -> int:
 	return 2
 	
-func check_skill_resource_cards_to_select() -> int:
-	return 2
 	
 func check_skill_not_played_same(player_built: Array) -> bool:
 	for card_name in player_built:
@@ -565,8 +570,8 @@ func check_skill_end_turn(player_hand: Array, player_built: Array) -> String:
 	return sig
 
 func gain_card() -> void:
-	var card_to_select = 2
-	var card_to_click = check_skill_resource_draw_card($Player.built, card_to_select)
+	var card_to_select = check_skill_resource_draw_card_to_select($Player.built)
+	var card_to_click = check_skill_resource_draw_card_to_click($Player.built, card_to_select)
 	var to_select = []
 	for _i in range(card_to_select):
 		var card_name = $Deck.pop()
@@ -611,12 +616,12 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 
 
 func is_game_over() -> bool:
-	var game_over = false
+	var over = false
 	for p in range(opponent_length + 1):
 		var player_obj = select_obj_by_player_num(p)
 		if player_obj.can_end_game():
-			game_over = true
-	return game_over
+			over = true
+	return over
 
 
 func on_sgin_one_round_finished() -> void:
@@ -641,9 +646,77 @@ func employee_reset() -> void:
 
 
 func game_over() -> void:
-	print("game over")
-
-
+	var score_dic = {}
+	for player_num in range(opponent_length + 1):
+		score_dic[player_num] = calculate_score(player_num)
+		
+	print(score_dic)
+		
+func calculate_score(player_num: int) -> Array:
+	var score = 0
+	var player_obj = select_obj_by_player_num(player_num)
+	var _player_hands = player_obj.hands
+	var player_built = player_obj.built
+	var score_coins = 0
+	var score_color = 0
+	var score_hand = 0
+	var score_built = 0
+	var hands_effect = []
+	var built_effect = []
+	var score_finished_7 = 0
+	var has_red = 0
+	var has_yellow = 0
+	var has_blue = 0
+	var has_green = 0
+	var has_purple = 0
+	
+	var score_card = []
+	
+	for b in player_obj.built:
+		var data = Data.get_card_info(b)
+		score_coins += data['star']
+		score_card.append(data['star'])
+		var color = data['kind']
+		match color:
+			"red":
+				has_red += 1
+			"yellow":
+				has_yellow += 1
+			"blue":
+				has_blue += 1
+			"green":
+				has_green += 1
+			"purple":
+				has_purple += 1
+	if has_red > 0 and has_yellow > 0 and has_blue > 0 and has_green > 0 and has_purple > 0:
+		score_color = 3
+	var finished_found = city_finished.find(player_num) 
+	if finished_found == 0:
+		score_finished_7 = 4
+	elif finished_found == 1:
+		score_finished_7 = 2
+	
+	for b in player_built:
+		if "Ivory Tower" in b:
+			var score_ivory = card_skill_game_over_ivory_tower(has_purple)
+			if score_ivory > 0:
+				built_effect.append("Ivory Tower")
+				score_built += score_ivory
+	score = score_coins +  score_color + score_finished_7 + score_hand + score_built
+	print()
+	print(player_num)
+	print(player_obj.username)
+	print(player_built)
+	print("score_cards: ", score_card)
+	print("score_coins: ", score_coins)
+	print("score_color: ", score_color)
+	print("score_finished_7: ", score_finished_7)
+	print("score_hand: ", score_hand)
+	print("score_built: ", score_built)
+	print("total_score: ", score)
+	print()
+	return [score, score_hand, score_built]
+	
 # Skill
 func has_ever_played(employee_name: String, built: Array) -> bool:
 	if employee_name == "Architect":
@@ -1065,20 +1138,24 @@ func card_skill_play_quarry() -> bool:
 func card_skill_play_armory() -> void:
 	for p in range(opponent_length + 1):
 		var opponent = select_obj_by_relative_to_first_person(p)
-		opponent.set_opponent_state(opponent.OpponentState.ARMORY_CLICKABLE)
+		if armory_destructable(opponent.player_num):
+			opponent.set_opponent_state(opponent.OpponentState.ARMORY_CLICKABLE)
+		else:
+			opponent.set_opponent_state(opponent.OpponentState.SILENT)
 	$Player.wait_armory()
 
 
-func card_skill_outturn_keep() -> bool:
+func card_skill_out_turn_keep() -> bool:
 	return false
 
 
-func cardskill_gameover_ivory_tower(unique_size: int) -> void:
-	if unique_size == 1:
-		Signal.emit_signal("sgin_add_point", 5)
+func card_skill_game_over_ivory_tower(purple_size: int) -> int:
+	if purple_size == 1:
+		return 5
+	return 0
 
 
-func cardskill_resourcedraw_observatory() -> int:
+func card_skill_resource_draw_observatory() -> int:
 	return 3
 
 
@@ -1240,11 +1317,14 @@ func warlord_destructable(player_num: int, employee_name: String) -> bool:
 	if player_num in city_finished:
 		return false
 	return true
-	
+
+
+func armory_destructable(player_num: int) -> bool:
+	return not player_num in city_finished
 	
 func warlord_destructable_card(warlord_gold: int, card_name: String) -> bool:
 	if card_name == "Keep":
-		return card_skill_outturn_keep()
+		return card_skill_out_turn_keep()
 	return warlord_gold >= Data.get_card_info(card_name)['star'] - 1
 
 func armory_destructable_card(card_name: String) -> bool:
@@ -1284,7 +1364,6 @@ func on_sgin_warlord_opponent_selected(player_num: int, player_employee: String,
 	for card_name in built:
 		if warlord_destructable_card(warlord_gold, card_name):
 			shown.append(card_name)
-	print("Player: "+ opponent_name + str(built) + str(shown))
 	destroyed = [player_num, player_employee]
 	$Player.show_opponent_built(opponent_name, shown)
 	
@@ -1295,7 +1374,6 @@ func on_sgin_armory_opponent_selected(player_num: int, player_employee: String, 
 	for card_name in built:
 		if armory_destructable_card(card_name):
 			shown.append(card_name)
-	print("Player: "+ opponent_name + str(built) + str(shown))
 	destroyed = [player_num, player_employee]
 	$Player.show_opponent_built(opponent_name, shown)
 

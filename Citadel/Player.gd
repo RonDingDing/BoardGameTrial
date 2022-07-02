@@ -551,7 +551,6 @@ func enable_play() -> void:
 			a.set_card_mode(a.CardMode.BUILT_CLICKABLE)
 		else:
 			a.set_card_mode(a.CardMode.ENLARGE)
-		print(a.card_name, " ", a.mode)
 	$Employee.set_employee_mode($Employee.EmployeeMode.PLAYING)
 	set_script_mode(ScriptMode.PLAYING)
 
