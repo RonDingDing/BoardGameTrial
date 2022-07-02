@@ -4,7 +4,7 @@ onready var Skill = get_node("/root/Main/Game/Board/Skill")
 onready var can_skill = false
 onready var skill_1_activated_this_turn = true
 onready var skill_2_activated_this_turn = true
-enum ActivateMode { ALL, SKILL1, SKILL2 }
+enum ActivateMode { ALL, SKILL1, SKILL2, NONE }
 
 
 func set_activated_this_turn(mode: int, can: bool) -> void:

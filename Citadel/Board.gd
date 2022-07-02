@@ -27,9 +27,9 @@ onready var city_finished = []
 
 
 #Skill
-onready var stolen = [0, "Unchosen"]
-onready var assassinated = [0, "Unchosen"]
-onready var destroyed = [0, "Unchosen"]
+onready var stolen = [unfound, "Unchosen"]
+onready var assassinated = [unfound, "Unchosen"]
+onready var destroyed = [unfound, "Unchosen"]
 
 
 func _ready() -> void:
@@ -61,7 +61,7 @@ func to_be_delete():
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			# "hands":["Tavern", "Tavern"],
-			# "built": ["Quarry"]
+			"built": ["Armory"]
 		},
 		{
 			"player_num": 1,
@@ -461,7 +461,7 @@ func on_start_turn() -> void:
 				player_objs.gold
 			)
 		print()
-		$Player.disable_play()
+		disable_player_play()
 		var sig = check_reveal(employee_num, employee_name, player_obj.player_num)
 		if sig == "sgin_reveal_done":
 			yield(Signal, "sgin_reveal_done")
@@ -590,9 +590,7 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
-	if $Player.script_mode == $Player.ScriptMode.PLAYING:
-		$AnyCardEnlarge.reset_characters()
-		$AnyCardEnlarge.reset_cards()
+	if $Player.script_mode == $Player.ScriptMode.PLAYING:		
 		var card_info = Data.get_card_info(card_name)
 		var price = card_info["star"]
 		var enough_money = $Player.has_enough_money(price)
@@ -603,7 +601,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 		)
 		if not (enough_money and not_played_same and not_ever_played):
 			return
-		$Player.disable_play()
+		disable_player_play()
 		var success_play = $Player.card_played(card_name, price, from_pos)
 		if success_play:
 			yield(Signal, "sgin_card_played_finished")
@@ -652,16 +650,22 @@ func has_ever_played(employee_name: String, built: Array) -> bool:
 		return built.size() < 3
 	return false
 
+func disable_player_play() -> void:
+	$Employment.hide_discard_hidden()
+	$AnyCardEnlarge.reset_cards()
+	$AnyCardEnlarge.reset_characters()
+	$Player.hide_scripts()
+	$Player.disable_play()
+
 
 func assassin_wait() -> void:
-	$Employment.hide_discard_hidden()
-	$Player.disable_play()
+	disable_player_play()	
 	$Player.set_script_mode($Player.ScriptMode.ASSASSIN)
 	$Employment.wait_assassin(get_assassinable_characters())
 
 
 func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
-	$Player.disable_play()
+	disable_player_play()
 	on_sgin_set_reminder("NOTE_PLAY")
 	assassinate(char_num, char_name)
 	$AnyCardEnlarge.assassinate(char_name)
@@ -671,7 +675,7 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 
 
 func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
-	$Player.disable_play()
+	disable_player_play()
 	on_sgin_set_reminder("NOTE_PLAY")
 	steal(char_num, char_name)
 	$AnyCardEnlarge.steal(char_name)
@@ -681,8 +685,7 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 
 
 func thief_wait():
-	$Employment.hide_discard_hidden()
-	$Player.disable_play()
+	disable_player_play()
 	$Player.set_script_mode($Player.ScriptMode.THIEF)
 	$Employment.wait_thief(get_stealable_characters())
 
@@ -703,8 +706,7 @@ func magician_wait():
 
 
 func magician_select_deck() -> void:
-	$Player.hide_scripts()
-	$Player.disable_play()
+	disable_player_play()
 	for c in $Player.get_handscript_children():
 		TweenMove.animate(
 			[
@@ -747,7 +749,7 @@ func on_sgin_magician_switch(switch):
 
 
 func on_sgin_magician_opponent_selected(player_num: int) -> void:
-	$Player.disable_play()
+	disable_player_play()
 	for i in range(1, opponent_length + 1):
 		var opponent = select_obj_by_relative_to_first_person(i)
 		opponent.set_opponent_state(opponent.OpponentState.IDLE)
@@ -846,6 +848,7 @@ func charskill_play_passive_king() -> void:
 	original_crown_owner.set_crown(false)
 	emoloyee_4.set_crown(true)
 	$Player.remove_child(crown)
+	crown.queue_free()
 
 
 func on_sgin_gold_transfer(from_pnum: int, to_pnum: int, done_signal: String) -> void:
@@ -879,6 +882,7 @@ func on_sgin_gold_transfer(from_pnum: int, to_pnum: int, done_signal: String) ->
 	to_player.add_gold(1)
 	yield(TweenMove, "tween_all_completed")
 	$Bank.remove_child(money)
+	money.queue_free()
 	Signal.emit_signal(done_signal)
 
 
@@ -963,7 +967,7 @@ func on_sgin_cancel_skill(components: Array, activate_mode: int) -> void:
 		elif component == "opponent_built":
 			$Player.set_opponent_built_mode($Player.OpponentBuiltMode.SHOW)
 			$Player.hide_opponent_built()
-		$Player.set_employee_can_skill(true)
+#		$Player.set_employee_can_skill(true)
 		$Player.set_employee_activated_this_turn(activate_mode, false)
 		on_sgin_set_reminder("NOTE_PLAY")
 		$Player.enable_play()
@@ -1239,6 +1243,9 @@ func warlord_destructable(player_num: int, employee_name: String) -> bool:
 func warlord_destructable_card(warlord_gold: int, card_name: String) -> bool:
 	return warlord_gold >= Data.get_card_info(card_name)['star'] - 1
 
+func armory_destructable_card(card_name: String) -> bool:
+	return card_name != "Armory"
+
 
 func on_sgin_warlord_choice(mode: int) -> void:
 	$Player.hide_scripts()
@@ -1276,7 +1283,17 @@ func on_sgin_warlord_opponent_selected(player_num: int, player_employee: String,
 	print("Player: "+ opponent_name + str(built) + str(shown))
 	destroyed = [player_num, player_employee]
 	$Player.show_opponent_built(opponent_name, shown)
-
+	
+func on_sgin_armory_opponent_selected(player_num: int, player_employee: String, opponent_name: String, built: Array) -> void:
+	$Player.set_opponent_built_mode($Player.OpponentBuiltMode.ARMORY_SHOW)
+	var shown = []
+	
+	for card_name in built:
+		if armory_destructable_card(card_name):
+			shown.append(card_name)
+	print("Player: "+ opponent_name + str(built) + str(shown))
+	destroyed = [player_num, player_employee]
+	$Player.show_opponent_built(opponent_name, shown)
 
 func cal_price_discount(price: int) -> int:
 	return price
@@ -1295,6 +1312,7 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 		return
 	
 	
+	disable_player_play()
 	for _i in range(price):
 		TimerGlobal.set_wait_time(0.1)
 		TimerGlobal.start()
@@ -1308,7 +1326,6 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 	card_obj.z_index = 4096
 	var original_scale = card_obj.scale
 	var war_opponent = select_obj_by_player_num(destroyed[0])
-	$Player.disable_enlarge()
 	if destroyed[0] == first_person_num:
 		for c in $Player/BuiltScript.get_children():
 			if c.card_name == card_name:
@@ -1356,4 +1373,116 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 	$Player.set_opponent_built_mode($Player.OpponentBuiltMode.SHOW)
 	$Player.hide_opponent_built()
 	on_sgin_set_reminder("NOTE_PLAY")
+	destroyed = [unfound, "Unchosen"]
+	$Player.enable_play()
+
+
+func on_sgin_card_clickable_clicked(card_name: String, _global_position: Vector2) -> void:
+	if card_name == "Armory":
+		$Player.wait_armory()
+		for p in range(opponent_length + 1):
+			var opponent = select_obj_by_relative_to_first_person(p)
+			opponent.set_opponent_state(opponent.OpponentState.ARMORY_CLICKABLE)
+		
+
+
+func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
+	var card_obj
+	for c in $Player/OpponentBuilt.get_children():
+		if c.card_name == card_name:
+			card_obj = c
+			break
+			
+	if card_obj == null:
+		return
+	disable_player_play()
+	card_obj.on_mouse_exited()
+	var z_index = card_obj.z_index
+	card_obj.z_index = 4096
+	var original_scale = card_obj.scale
+	var war_opponent = select_obj_by_player_num(destroyed[0])
+	if destroyed[0] == first_person_num:
+		# my built to center
+		for c in $Player/BuiltScript.get_children():
+			if c.card_name == card_name:
+				c.z_index = 4096
+				TweenMove.animate(
+					[
+						[c, "global_position", c.global_position, from_pos],
+						[c, "scale", c.scale, original_scale],
+					]
+				)
+				TweenMove.start()
+				yield(TweenMove, "tween_all_completed")
+				c.set_visible(false)				
+				break
+	
+	TweenMove.animate(
+		[
+			[card_obj, "global_position", from_pos, center],
+			[card_obj, "scale", original_scale, Vector2(0.6, 0.6)],
+		]
+	)
+	TweenMove.start()
+	yield(TweenMove, "tween_all_completed")
+	card_obj.global_position = center
+	TweenMove.animate(
+		[
+			[
+				card_obj,
+				"global_position",
+				center,
+				Vector2(3000, center.y)
+			],
+			[card_obj, "scale", Vector2(0.6, 0.6), original_scale],
+		]
+	)
+	TweenMove.start()
+	yield(TweenMove, "tween_all_completed")
+	card_obj.z_index = z_index
+	war_opponent.remove_built(card_name)
+	$Deck.append(card_name)
+	
+	# remove armory
+	var armory_obj
+	for ca in $Player/BuiltScript.get_children():
+		if ca.card_name == "Armory":
+			armory_obj = ca
+			
+			break
+	armory_obj.z_index = 4096	
+	TweenMove.animate(
+		[
+			[armory_obj, "global_position", armory_obj.global_position, center],
+			[armory_obj, "scale", original_scale, Vector2(0.6, 0.6)],
+		]
+	)
+	TweenMove.start()
+	yield(TweenMove, "tween_all_completed")
+	armory_obj.global_position = center
+	TweenMove.animate(
+		[
+			[
+				armory_obj,
+				"global_position",
+				center,
+				Vector2(3000, center.y)
+			],
+			[armory_obj, "scale", Vector2(0.6, 0.6), original_scale],
+		]
+	)
+	TweenMove.start()
+	yield(TweenMove, "tween_all_completed")
+	$Player.remove_built("Armory")
+	$Player.rearrange_built()
+	yield(TweenMove, "tween_all_completed")
+	
+	# reset
+	for p in range(opponent_length + 1):
+		var opponent = select_obj_by_relative_to_first_person(p)
+		opponent.set_opponent_state(opponent.OpponentState.IDLE)			
+	$Player.set_opponent_built_mode($Player.OpponentBuiltMode.SHOW)
+	$Player.hide_opponent_built()
+	on_sgin_set_reminder("NOTE_PLAY")
+	destroyed = [unfound, "Unchosen"]
 	$Player.enable_play()

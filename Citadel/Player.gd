@@ -20,9 +20,19 @@ enum Need { GOLD, CARD }
 enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
 enum WarlordChoice { DESTROY, RED }
-enum ScriptMode { RESOURCE, PLAYING, NOT_PLAYING, ASSASSIN, THIEF, MAGICIAN, MERCHANT, WARLORD }
-enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW }
-enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE }
+enum ScriptMode {
+	RESOURCE,
+	PLAYING,
+	NOT_PLAYING,
+	ASSASSIN,
+	THIEF,
+	MAGICIAN,
+	MERCHANT,
+	WARLORD,
+	ARMORY
+}
+enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
+enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
 
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
@@ -63,6 +73,7 @@ func _ready() -> void:
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+
 
 func set_opponent_state(state: int) -> void:
 	opponent_state = state
@@ -134,13 +145,21 @@ func set_script_mode(mode: int) -> void:
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = white_lilac
-	else:  # mode == ScriptMode.NOT_PLAYING
+	elif mode == ScriptMode.NOT_PLAYING:
 		$Script1Label.text = "NOTE_NEED_GOLD"
 		$Script2Label.text = "NOTE_NEED_CARD"
 		$Script3Label.text = "NOTE_END_TURN"
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = gray
+	else:  #mode == ScriptMode.ARMORY:
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = white_lilac
+		color2 = white_lilac
+		color3 = red
+
 	$Script1Label.set("custom_colors/font_color", color1)
 	$Script2Label.set("custom_colors/font_color", color2)
 	$Script3Label.set("custom_colors/font_color", color3)
@@ -282,13 +301,25 @@ func on_script3_pressed() -> void:
 			Signal.emit_signal("sgin_end_turn")
 		ScriptMode.ASSASSIN, ScriptMode.THIEF:
 			Signal.emit_signal("sgin_cancel_skill", ["employment"], $Employee.ActivateMode.ALL)
-		ScriptMode.MERCHANT:		
-			Signal.emit_signal("sgin_cancel_skill", ["scripts"], $Employee.ActivateMode.SKILL2)	
+		ScriptMode.MERCHANT:
+			Signal.emit_signal("sgin_cancel_skill", ["scripts"], $Employee.ActivateMode.SKILL2)
 		ScriptMode.MAGICIAN:
-			Signal.emit_signal("sgin_cancel_skill", ["opponent", "scripts"], $Employee.ActivateMode.ALL)	
+			Signal.emit_signal(
+				"sgin_cancel_skill", ["opponent", "scripts"], $Employee.ActivateMode.ALL
+			)
 		ScriptMode.WARLORD:
-			Signal.emit_signal("sgin_cancel_skill", ["opponent", "scripts", "opponent_built"], $Employee.ActivateMode.SKILL1)		
-		
+			Signal.emit_signal(
+				"sgin_cancel_skill",
+				["opponent", "scripts", "opponent_built"],
+				$Employee.ActivateMode.SKILL1
+			)
+		ScriptMode.ARMORY:
+			Signal.emit_signal(
+				"sgin_cancel_skill",
+				["opponent", "scripts", "opponent_built"],
+				$Employee.ActivateMode.NONE
+			)
+
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
@@ -325,6 +356,11 @@ func wait_warlord() -> void:
 	Signal.emit_signal("sgin_set_reminder", "NOTE_WARLORD")
 	show_scripts()
 
+
+func wait_armory() -> void:
+	disable_play()
+	set_script_mode(ScriptMode.ARMORY)
+	Signal.emit_signal("sgin_set_reminder", "NOTE_ARMORY")
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -445,6 +481,7 @@ func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 		else:
 			each_card.global_position = positions[index] + node.global_position
 
+
 func get_positions_with_new_card(obj: Node) -> Array:
 	var positions = []
 	var start = -200
@@ -497,10 +534,11 @@ func enable_enlarge() -> void:
 func disable_play() -> void:
 	$Employee.set_can_skill(false)
 	for a in $HandScript.get_children():
-		a.set_card_mode(a.CardMode.ENLARGE)
+		a.set_card_mode(a.CardMode.STATIC)
 	for a in $BuiltScript.get_children():
-		a.set_card_mode(a.CardMode.ENLARGE)
+		a.set_card_mode(a.CardMode.STATIC)
 	set_script_mode(ScriptMode.NOT_PLAYING)
+	$Employee.set_employee_mode($Employee.EmployeeMode.NOT_PLAYING)
 	$Script3Label.set("custom_colors/font_color", gray)
 
 
@@ -509,7 +547,12 @@ func enable_play() -> void:
 	for a in $HandScript.get_children():
 		a.set_card_mode(a.CardMode.PLAY)
 	for a in $BuiltScript.get_children():
-		a.set_card_mode(a.CardMode.ENLARGE)
+		if a.card_name == "Armory":
+			a.set_card_mode(a.CardMode.BUILT_CLICKABLE)
+		else:
+			a.set_card_mode(a.CardMode.ENLARGE)
+		print(a.card_name, " ", a.mode)
+	$Employee.set_employee_mode($Employee.EmployeeMode.PLAYING)
 	set_script_mode(ScriptMode.PLAYING)
 
 
@@ -666,11 +709,14 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 	enable_play()
 	Signal.emit_signal("sgin_card_played_finished", card_name)
 
-
+func rearrange_built() -> void:
+	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
+	yield(TweenMove, "tween_all_completed")
+	
 func after_end_turn() -> void:
 	hide_script3()
 	played_this_turn = []
-	
+
 
 func can_end_game() -> bool:
 	return built.size() >= 7
@@ -680,6 +726,7 @@ func clear_hands() -> void:
 	hands = []
 	for c in $HandScript.get_children():
 		$HandScript.remove_child(c)
+		c.queue_free()
 
 
 func shuffle_hands() -> void:
@@ -694,7 +741,9 @@ func remove_hand(card_name: String) -> void:
 			$HandScript.remove_child(card_obj)
 	if card_obj == null:
 		return
+	card_obj.queue_free()
 	hands.erase(card_name)
+
 
 func remove_built(card_name: String) -> void:
 	var card_obj
@@ -704,9 +753,8 @@ func remove_built(card_name: String) -> void:
 			$BuiltScript.remove_child(card_obj)
 	if card_obj == null:
 		return
+	card_obj.queue_free()
 	built.erase(card_name)
-
-
 
 
 func add_gold(num: int) -> void:
@@ -721,28 +769,35 @@ func built_color_num(color: String) -> int:
 			number += 1
 	return number
 
+
 func set_opponent_built_mode(mod: int) -> void:
 	opponent_built_mode = mod
 
+
 func show_opponent_built(name: String, cards: Array) -> void:
-	if opponent_built_mode in [OpponentBuiltMode.SHOW, OpponentBuiltMode.WARLORD_SHOW]:
+	if (
+		opponent_built_mode
+		in [OpponentBuiltMode.SHOW, OpponentBuiltMode.WARLORD_SHOW, OpponentBuiltMode.ARMORY_SHOW]
+	):
 		for c in $OpponentBuilt.get_children():
 			$OpponentBuilt.remove_child(c)
+			c.queue_free()
 		var start_scale = Vector2(0.175, 0.175)
 		var from_pos = Vector2(0, 0)
 
 		for card_name in cards:
 			var card_info = Data.get_card_info(card_name)
 			var incoming_card = Card.instance()
-			var card_mode = incoming_card.CardMode.ENLARGE if opponent_built_mode == OpponentBuiltMode.SHOW else incoming_card.CardMode.WARLORD_SELECT
+			var card_mode
+			if opponent_built_mode in [OpponentBuiltMode.SHOW, OpponentBuiltMode.SILENT]:
+				card_mode = incoming_card.CardMode.ENLARGE
+			elif opponent_built_mode == OpponentBuiltMode.WARLORD_SHOW:
+				card_mode = incoming_card.CardMode.WARLORD_SELECTING
+			else:  #opponent_built_mode == OpponentBuiltMode.ARMORY_SHOW
+				card_mode = incoming_card.CardMode.ARMORY_SELECTING
 			$OpponentBuilt.add_child(incoming_card)
 			incoming_card.init_card(
-				card_name,
-				card_info["up_offset"],
-				start_scale,
-				from_pos,
-				true,
-				card_mode
+				card_name, card_info["up_offset"], start_scale, from_pos, true, card_mode
 			)
 		var positions = get_positions_with_new_card($OpponentBuilt)
 		rearrange($OpponentBuilt, positions, 0)
@@ -778,18 +833,22 @@ func set_employee_can_skill(can: bool) -> void:
 
 func on_FakeBulitScriptCollision_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
-		if opponent_state == OpponentState.WARLORD_CLICKABLE: 
+		if opponent_state == OpponentState.WARLORD_CLICKABLE:
 			on_FakeBulitScriptCollision_mouse_exited()
-			Signal.emit_signal("sgin_warlord_opponent_selected", player_num, employee, username, built)
+			Signal.emit_signal(
+				"sgin_warlord_opponent_selected", player_num, employee, username, built
+			)
+		elif opponent_state == OpponentState.ARMORY_CLICKABLE:
+			Signal.emit_signal(
+				"sgin_armory_opponent_selected", player_num, employee, username, built
+			)
 
 
 func on_FakeBulitScriptCollision_mouse_entered():
-	if opponent_state == OpponentState.WARLORD_CLICKABLE: 
+	if opponent_state in [OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE]:
 		$BuiltScript.global_position = Vector2(built_script_pos.x, built_script_pos.y - 20)
 
 
 func on_FakeBulitScriptCollision_mouse_exited():
-	if opponent_state == OpponentState.WARLORD_CLICKABLE: 
+	if opponent_state in [OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE]:
 		$BuiltScript.global_position = built_script_pos
-
-

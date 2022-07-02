@@ -151,8 +151,9 @@ NOTE_MAGICIAN_SELECT_CHARACTER, "Please select a character to switch your hands 
 NOTE_MERCHANT, "Please select whether to 1) gain 1 gold, 2) gain gold on green areas.", "请选择 1)获得1枚金币；2)按绿色建筑获得金币。"
 NOTE_GAIN_1, "1 Gold", "1金"
 NOTE_GAIN_GREEN, "Green", "商税"
-NOTE_WARLORD, "Please select whether to 1) destroy a built area, 2) gain gold on red areas.", "请选择 1)拆除1座建筑；2)按红色建筑获得金币。"
+NOTE_WARLORD, "Please select whether to 1) destroy a built area, 2) gain gold on red areas.", "请选择 1)摧毁一座建筑；2)按红色建筑获得金币。"
 NOTE_WARLORD_DESTROY, "Destroy", "拆毁"
 NOTE_GAIN_RED, "Red", "军饷"
 NOTE_CANCEL, "Cancel", "取消"
+NOTE_ARMORY, "Please select a built area to destroy.", "请选择一座建筑摧毁之。"
 

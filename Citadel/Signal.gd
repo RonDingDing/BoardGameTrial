@@ -149,13 +149,16 @@ signal sgin_skill(skill_name)
 
 #warning-ignore:unused_signal
 signal sgin_cancel_skill(components, reset)
-
 #warning-ignore:unused_signal
-#signal sgin_queen_done
 signal sgin_reveal_done
-
 #warning-ignore:unused_signal
 signal sgin_check_skill_end_turn_done
+#warning-ignore:unused_signal
+signal sgin_card_clickable_clicked(card_name, global_position)
+#warning-ignore:unused_signal
+signal sgin_armory_opponent_selected(player_num, employee, username, built)
+#warning-ignore:unused_signal
+signal sgin_card_armory_selected(card_name, global_position)
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:
@@ -174,5 +177,3 @@ func on_sgin_player_draw_ready(_card: Node) -> void:
 func on_sgin_player_draw_not_ready(card: Node) -> void:
 	card.set_card_mode(card.CardMode.STATIC)
 
-
- 

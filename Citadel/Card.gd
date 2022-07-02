@@ -2,13 +2,22 @@ extends Node2D
 
 onready var Signal = get_node("/root/Main/Signal")
 onready var TimerGlobal = get_node("/root/Main/Timer")
-enum CardMode { ENLARGE, STATIC, SELECT, PLAY, WARLORD_SELECT }
+enum CardMode {
+	ENLARGE,
+	STATIC,
+	SELECT,
+	PLAY,
+	WARLORD_SELECTING,
+	BUILT_CLICKABLE,
+	ARMORY_SELECTING
+}
 onready var mode = CardMode.STATIC
 onready var card_name = "Unknown"
 onready var card_up_offset = 0
 onready var face_up = false
 onready var desc_trans = ""
 onready var name_text = ""
+
 
 func rid_num(name: String) -> String:
 	var regex = RegEx.new()
@@ -18,8 +27,8 @@ func rid_num(name: String) -> String:
 	if result != null:
 		new_name = name.replace(result.get_string(0), "")
 	return new_name
-	
-	
+
+
 func init_card(
 	animation_name: String,
 	up_offset: float,
@@ -63,35 +72,37 @@ func set_face_up(face_is_up: bool) -> void:
 	$Back.set_visible(not face_is_up)
 
 
-#
-#func init(animation_name: String, up_offset: float) -> void:
-#	card_name = animation_name
-#	$Face.animation = animation_name
-#	var name_trans = tr(str("NAME_", animation_name.to_upper().replace(" ", "_")))
-#	$Face/Name.text = name_trans
-#	var desc = str("DESC_", animation_name.to_upper().replace(" ", "_"))
-#	var desc_trans = tr(str("DESC_", animation_name.to_upper().replace(" ", "_")))
-#	$Face/Description.text = desc_trans if desc != desc_trans else ""
-#	$Face/Description.rect_position.y = 282 - up_offset
-#	scale = Vector2(0.175, 0.175)
-#
-#
-#func init_name(animation_name: String, to_scale: Vector2, global_pos: Vector2) -> void:
-#	card_name = animation_name
-#	scale = to_scale
-#	global_position = global_pos
-
-
 func on_mouse_entered() -> void:
-	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY, CardMode.WARLORD_SELECT]:
-		# TimerGlobal.set_wait_time(0.05)
-		# TimerGlobal.start()
-		# yield(TimerGlobal, "timeout")
+	if (
+		face_up
+		and (
+			mode
+			in [
+				CardMode.ENLARGE,
+				CardMode.PLAY,
+				CardMode.WARLORD_SELECTING,
+				CardMode.BUILT_CLICKABLE,
+				CardMode.ARMORY_SELECTING
+			]
+		)
+	):
 		Signal.emit_signal("sgin_card_focused", card_name)
 
 
 func on_mouse_exited() -> void:
-	if face_up and mode in [CardMode.ENLARGE, CardMode.PLAY, CardMode.WARLORD_SELECT]:
+	if (
+		face_up
+		and (
+			mode
+			in [
+				CardMode.ENLARGE,
+				CardMode.PLAY,
+				CardMode.WARLORD_SELECTING,
+				CardMode.BUILT_CLICKABLE,
+				CardMode.ARMORY_SELECTING
+			]
+		)
+	):
 		Signal.emit_signal("sgin_card_unfocused", card_name)
 
 
@@ -111,5 +122,9 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)
 			CardMode.PLAY:
 				Signal.emit_signal("sgin_card_played", card_name, global_position)
-			CardMode.WARLORD_SELECT:
+			CardMode.WARLORD_SELECTING:
 				Signal.emit_signal("sgin_card_warlord_selected", card_name, global_position)
+			CardMode.ARMORY_SELECTING:
+				Signal.emit_signal("sgin_card_armory_selected", card_name, global_position)
+			CardMode.BUILT_CLICKABLE:
+				Signal.emit_signal("sgin_card_clickable_clicked", card_name, global_position)
