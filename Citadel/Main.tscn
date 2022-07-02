@@ -47,6 +47,7 @@ script = ExtResource( 2 )
 [connection signal="sgin_char_selected" from="Signal" to="Game/Board" method="on_sgin_char_selected"]
 [connection signal="sgin_char_unfocused" from="Signal" to="Game/Board" method="on_sgin_char_unfocused"]
 [connection signal="sgin_character_selection" from="Signal" to="Game/Board" method="on_sgin_character_selection"]
+[connection signal="sgin_disable_player_play" from="Signal" to="Game/Board" method="on_sgin_disable_player_play"]
 [connection signal="sgin_draw_card" from="Signal" to="Game/Board" method="on_sgin_draw_card"]
 [connection signal="sgin_gold_transfer" from="Signal" to="Game/Board" method="on_sgin_gold_transfer"]
 [connection signal="sgin_hide_built" from="Signal" to="Game/Board" method="on_sgin_hide_built"]

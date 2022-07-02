@@ -35,6 +35,7 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 		and can_skill
 		and ((not skill_1_activated_this_turn) or (not skill_2_activated_this_turn))
 	):
+		Signal.emit_signal("sgin_disable_player_play")
 		match employee:
 			"Assassin":
 				set_activated_this_turn(ActivateMode.ALL, true)

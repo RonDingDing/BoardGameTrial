@@ -61,7 +61,7 @@ func to_be_delete():
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			# "hands":["Tavern", "Tavern"],
-			"built": ["Armory"]
+			"built": ["Keep"]
 		},
 		{
 			"player_num": 1,
@@ -461,7 +461,7 @@ func on_start_turn() -> void:
 				player_objs.gold
 			)
 		print()
-		disable_player_play()
+		on_sgin_disable_player_play()
 		var sig = check_reveal(employee_num, employee_name, player_obj.player_num)
 		if sig == "sgin_reveal_done":
 			yield(Signal, "sgin_reveal_done")
@@ -601,7 +601,7 @@ func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 		)
 		if not (enough_money and not_played_same and not_ever_played):
 			return
-		disable_player_play()
+		on_sgin_disable_player_play()
 		var success_play = $Player.card_played(card_name, price, from_pos)
 		if success_play:
 			yield(Signal, "sgin_card_played_finished")
@@ -650,7 +650,7 @@ func has_ever_played(employee_name: String, built: Array) -> bool:
 		return built.size() < 3
 	return false
 
-func disable_player_play() -> void:
+func on_sgin_disable_player_play() -> void:
 	$Employment.hide_discard_hidden()
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
@@ -659,13 +659,13 @@ func disable_player_play() -> void:
 
 
 func assassin_wait() -> void:
-	disable_player_play()	
+	on_sgin_disable_player_play()	
 	$Player.set_script_mode($Player.ScriptMode.ASSASSIN)
 	$Employment.wait_assassin(get_assassinable_characters())
 
 
 func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
-	disable_player_play()
+	on_sgin_disable_player_play()
 	on_sgin_set_reminder("NOTE_PLAY")
 	assassinate(char_num, char_name)
 	$AnyCardEnlarge.assassinate(char_name)
@@ -675,7 +675,7 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 
 
 func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
-	disable_player_play()
+	on_sgin_disable_player_play()
 	on_sgin_set_reminder("NOTE_PLAY")
 	steal(char_num, char_name)
 	$AnyCardEnlarge.steal(char_name)
@@ -685,7 +685,7 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 
 
 func thief_wait():
-	disable_player_play()
+	on_sgin_disable_player_play()
 	$Player.set_script_mode($Player.ScriptMode.THIEF)
 	$Employment.wait_thief(get_stealable_characters())
 
@@ -706,7 +706,7 @@ func magician_wait():
 
 
 func magician_select_deck() -> void:
-	disable_player_play()
+	on_sgin_disable_player_play()
 	for c in $Player.get_handscript_children():
 		TweenMove.animate(
 			[
@@ -749,7 +749,7 @@ func on_sgin_magician_switch(switch):
 
 
 func on_sgin_magician_opponent_selected(player_num: int) -> void:
-	disable_player_play()
+	on_sgin_disable_player_play()
 	for i in range(1, opponent_length + 1):
 		var opponent = select_obj_by_relative_to_first_person(i)
 		opponent.set_opponent_state(opponent.OpponentState.IDLE)
@@ -1014,7 +1014,7 @@ func charskill_play_active_king() -> void:
 		yield(TweenMove, "tween_all_completed")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
-
+	$Player.enable_play()
 
 func charskill_play_active_bishop() -> void:
 	var gained = gain_gold_by_color("blue")
@@ -1027,7 +1027,7 @@ func charskill_play_active_bishop() -> void:
 		yield(TweenMove, "tween_all_completed")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
-	
+	$Player.enable_play()
 	
 
 func gain_gold_by_color(color: String) -> int:
@@ -1062,12 +1062,14 @@ func card_skill_end_turn_park(hand_size: int) -> void:
 func card_skill_play_quarry() -> bool:
 	return true
 
+func card_skill_play_armory() -> void:
+	for p in range(opponent_length + 1):
+		var opponent = select_obj_by_relative_to_first_person(p)
+		opponent.set_opponent_state(opponent.OpponentState.ARMORY_CLICKABLE)
+	$Player.wait_armory()
 
-func armory() -> void:
-	pass
 
-
-func cardskill_charskill8() -> bool:
+func card_skill_outturn_keep() -> bool:
 	return false
 
 
@@ -1241,6 +1243,8 @@ func warlord_destructable(player_num: int, employee_name: String) -> bool:
 	
 	
 func warlord_destructable_card(warlord_gold: int, card_name: String) -> bool:
+	if card_name == "Keep":
+		return card_skill_outturn_keep()
 	return warlord_gold >= Data.get_card_info(card_name)['star'] - 1
 
 func armory_destructable_card(card_name: String) -> bool:
@@ -1312,7 +1316,7 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 		return
 	
 	
-	disable_player_play()
+	on_sgin_disable_player_play()
 	for _i in range(price):
 		TimerGlobal.set_wait_time(0.1)
 		TimerGlobal.start()
@@ -1379,10 +1383,8 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 
 func on_sgin_card_clickable_clicked(card_name: String, _global_position: Vector2) -> void:
 	if card_name == "Armory":
-		$Player.wait_armory()
-		for p in range(opponent_length + 1):
-			var opponent = select_obj_by_relative_to_first_person(p)
-			opponent.set_opponent_state(opponent.OpponentState.ARMORY_CLICKABLE)
+		card_skill_play_armory()
+		
 		
 
 
@@ -1395,7 +1397,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 			
 	if card_obj == null:
 		return
-	disable_player_play()
+	on_sgin_disable_player_play()
 	card_obj.on_mouse_exited()
 	var z_index = card_obj.z_index
 	card_obj.z_index = 4096
