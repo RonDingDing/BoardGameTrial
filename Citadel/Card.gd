@@ -9,7 +9,8 @@ enum CardMode {
 	PLAY,
 	WARLORD_SELECTING,
 	BUILT_CLICKABLE,
-	ARMORY_SELECTING
+	ARMORY_SELECTING,
+	LABORATORY_SELECTING
 }
 onready var mode = CardMode.STATIC
 onready var card_name = "Unknown"
@@ -73,36 +74,12 @@ func set_face_up(face_is_up: bool) -> void:
 
 
 func on_mouse_entered() -> void:
-	if (
-		face_up
-		and (
-			mode
-			in [
-				CardMode.ENLARGE,
-				CardMode.PLAY,
-				CardMode.WARLORD_SELECTING,
-				CardMode.BUILT_CLICKABLE,
-				CardMode.ARMORY_SELECTING
-			]
-		)
-	):
+	if face_up and (not mode in [CardMode.SELECT, CardMode.STATIC]):
 		Signal.emit_signal("sgin_card_focused", card_name)
 
 
 func on_mouse_exited() -> void:
-	if (
-		face_up
-		and (
-			mode
-			in [
-				CardMode.ENLARGE,
-				CardMode.PLAY,
-				CardMode.WARLORD_SELECTING,
-				CardMode.BUILT_CLICKABLE,
-				CardMode.ARMORY_SELECTING
-			]
-		)
-	):
+	if face_up and (not mode in [CardMode.SELECT, CardMode.STATIC]):
 		Signal.emit_signal("sgin_card_unfocused", card_name)
 
 
@@ -128,3 +105,5 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				Signal.emit_signal("sgin_card_armory_selected", card_name, global_position)
 			CardMode.BUILT_CLICKABLE:
 				Signal.emit_signal("sgin_card_clickable_clicked", card_name, global_position)
+			CardMode.LABORATORY_SELECTING:
+				Signal.emit_signal("sgin_card_laboratory_selected", card_name, global_position)

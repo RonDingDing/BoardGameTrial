@@ -37,6 +37,7 @@ script = ExtResource( 2 )
 [connection signal="sgin_card_clickable_clicked" from="Signal" to="Game/Board" method="on_sgin_card_clickable_clicked"]
 [connection signal="sgin_card_dealt" from="Signal" to="Game/Board" method="on_sgin_card_dealt"]
 [connection signal="sgin_card_focused" from="Signal" to="Game/Board" method="on_sgin_card_focused"]
+[connection signal="sgin_card_laboratory_selected" from="Signal" to="Game/Board" method="on_sgin_card_laboratory_selected"]
 [connection signal="sgin_card_played" from="Signal" to="Game/Board" method="on_sgin_card_played"]
 [connection signal="sgin_card_selected" from="Signal" to="Game/Board" method="on_sgin_card_selected"]
 [connection signal="sgin_card_unfocused" from="Signal" to="Game/Board" method="on_sgin_card_unfocused"]

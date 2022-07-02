@@ -29,7 +29,8 @@ enum ScriptMode {
 	MAGICIAN,
 	MERCHANT,
 	WARLORD,
-	ARMORY
+	ARMORY,
+	LABORATORY
 }
 enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
 enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
@@ -41,6 +42,7 @@ onready var built_script_pos = $BuiltScript.global_position
 onready var script_mode = ScriptMode.RESOURCE
 onready var opponent_built_mode = OpponentBuiltMode.SHOW
 onready var opponent_state = OpponentState.IDLE
+onready var card_skill_activated = {"Smithy": false, "Laboratory": false}
 
 # https://colors.artyclick.com/color-name-finder/?color=#162739
 const gray = Color(0.76171875, 0.76171875, 0.76171875)
@@ -73,6 +75,19 @@ func _ready() -> void:
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
+
+
+func get_card_skill_activated(skill_name: String) -> bool:
+	return card_skill_activated[skill_name]
+
+
+func set_card_skill_activated(skill_name: String, val: bool) -> void:
+	card_skill_activated[skill_name] = val
+
+
+func reset_all_card_skill_activated() -> void:
+	for k in card_skill_activated.keys():
+		card_skill_activated[k] = false
 
 
 func set_opponent_state(state: int) -> void:
@@ -152,13 +167,20 @@ func set_script_mode(mode: int) -> void:
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = gray
-	else:  #mode == ScriptMode.ARMORY:
+	elif mode == ScriptMode.ARMORY:
 		$Script1Label.text = "NOTE_NEED_GOLD"
 		$Script2Label.text = "NOTE_NEED_CARD"
 		$Script3Label.text = "NOTE_CANCEL"
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = red
+	else:  #if mode == ScriptMode.LABORATORY:
+		$Script1Label.text = "NOTE_NEED_GOLD"
+		$Script2Label.text = "NOTE_NEED_CARD"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = white_lilac
+		color2 = white_lilac
+		color3 = dark_lilac
 
 	$Script1Label.set("custom_colors/font_color", color1)
 	$Script2Label.set("custom_colors/font_color", color2)
@@ -300,25 +322,36 @@ func on_script3_pressed() -> void:
 		ScriptMode.PLAYING:
 			Signal.emit_signal("sgin_end_turn")
 		ScriptMode.ASSASSIN, ScriptMode.THIEF:
-			Signal.emit_signal("sgin_cancel_skill", ["employment"], $Employee.ActivateMode.ALL)
+			Signal.emit_signal(
+				"sgin_cancel_skill", ["employment"], "Character", $Employee.ActivateMode.ALL
+			)
 		ScriptMode.MERCHANT:
-			Signal.emit_signal("sgin_cancel_skill", ["scripts"], $Employee.ActivateMode.SKILL2)
+			Signal.emit_signal(
+				"sgin_cancel_skill", ["scripts"], "Character", $Employee.ActivateMode.SKILL2
+			)
 		ScriptMode.MAGICIAN:
 			Signal.emit_signal(
-				"sgin_cancel_skill", ["opponent", "scripts"], $Employee.ActivateMode.ALL
+				"sgin_cancel_skill",
+				["opponent", "scripts"],
+				"Character",
+				$Employee.ActivateMode.ALL
 			)
 		ScriptMode.WARLORD:
 			Signal.emit_signal(
 				"sgin_cancel_skill",
 				["opponent", "scripts", "opponent_built"],
+				"Character",
 				$Employee.ActivateMode.SKILL1
 			)
 		ScriptMode.ARMORY:
 			Signal.emit_signal(
 				"sgin_cancel_skill",
 				["opponent", "scripts", "opponent_built"],
+				"Character",
 				$Employee.ActivateMode.NONE
 			)
+		ScriptMode.LABORATORY:
+			Signal.emit_signal("sgin_cancel_skill", [], "Laboratory", false)
 
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
@@ -361,6 +394,14 @@ func wait_armory() -> void:
 	disable_play()
 	set_script_mode(ScriptMode.ARMORY)
 	Signal.emit_signal("sgin_set_reminder", "NOTE_ARMORY")
+
+
+func wait_laboratory() -> void:
+	disable_play()
+	set_script_mode(ScriptMode.LABORATORY)
+	Signal.emit_signal("sgin_set_reminder", "NOTE_LABORATORY")
+	for h in $HandScript.get_children():
+		h.set_card_mode(h.CardMode.LABORATORY_SELECTING)
 
 
 func set_bank_position(pos: Vector2) -> void:
@@ -547,7 +588,7 @@ func enable_play() -> void:
 	for a in $HandScript.get_children():
 		a.set_card_mode(a.CardMode.PLAY)
 	for a in $BuiltScript.get_children():
-		if a.card_name == "Armory":
+		if "Armory" in a.card_name or "Smithy" in a.card_name or "Laboratory" in a.card_name:
 			a.set_card_mode(a.CardMode.BUILT_CLICKABLE)
 		else:
 			a.set_card_mode(a.CardMode.ENLARGE)
@@ -708,10 +749,12 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 	enable_play()
 	Signal.emit_signal("sgin_card_played_finished", card_name)
 
+
 func rearrange_built() -> void:
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
-	
+
+
 func after_end_turn() -> void:
 	hide_script3()
 	played_this_turn = []

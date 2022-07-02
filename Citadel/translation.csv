@@ -156,4 +156,5 @@ NOTE_WARLORD_DESTROY, "Destroy", "拆毁"
 NOTE_GAIN_RED, "Red", "军饷"
 NOTE_CANCEL, "Cancel", "取消"
 NOTE_ARMORY, "Please select a built area to destroy.", "请选择一座建筑摧毁之。"
+NOTE_LABORATORY, "Please discard 1 hand to gain 2 gold.", "请丢弃1张手牌然后获得2枚金币。"
 

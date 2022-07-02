@@ -60,8 +60,8 @@ func to_be_delete():
 			"money": 9,
 			#			"employee": "Architect",
 			#			"hand_num": 8,
-			# "hands":["Tavern", "Tavern"],
-			"built": ["Library", "Observatory"]
+			"hands":[],
+			"built": ["Laboratory"]
 		},
 		{
 			"player_num": 1,
@@ -477,6 +477,7 @@ func on_start_turn() -> void:
 		yield(Signal, "sgin_resource_end")
 		on_sgin_set_reminder("NOTE_PLAY")
 		$Player.enable_play()
+		$Player.reset_all_card_skill_activated()
 		$Player.show_script3()
 		yield(Signal, "sgin_end_turn")
 		var sig2 = check_skill_end_turn($Player.hands, $Player.built)
@@ -554,12 +555,25 @@ func check_skill_resource_draw_gold() -> int:
 	return 2
 	
 	
-func check_skill_not_played_same(player_built: Array) -> bool:
-	for card_name in player_built:
+func check_skill_not_played_same(card_name: String) -> bool:
+	var skill_not_played_same = false
+	for card_name in $Player.built:
 		if "Quarry" in card_name:
-			return card_skill_play_quarry()
-	return false
-	
+			skill_not_played_same = card_skill_play_quarry()
+	var player_not_played_same = $Player.has_not_played_same(card_name)
+	return skill_not_played_same or player_not_played_same
+
+func check_skill_price(card_name: String) -> int:
+	var data =  Data.get_card_info(card_name)
+	var price = data['star']
+	var color = data['kind']
+	for card_name in $Player.built:
+		if "Factory" in card_name:
+			return card_skill_play_factory(color, price)
+	return price
+
+
+
 func check_skill_end_turn(player_hand: Array, player_built: Array) -> String:
 	var sig = ""
 	for card_name in player_built:
@@ -596,14 +610,11 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	if $Player.script_mode == $Player.ScriptMode.PLAYING:		
-		var card_info = Data.get_card_info(card_name)
-		var price = card_info["star"]
+ 
+		var price = check_skill_price(card_name)
 		var enough_money = $Player.has_enough_money(price)
-		var not_played_same = check_skill_not_played_same($Player.built) or $Player.has_not_played_same(card_name)
-		var not_ever_played = (
-			has_ever_played($Player.employee, $Player.played_this_turn)
-			or $Player.has_ever_played()
-		)
+		var not_played_same = check_skill_not_played_same(card_name)
+		var not_ever_played = check_skill_has_ever_played()
 		if not (enough_money and not_played_same and not_ever_played):
 			return
 		on_sgin_disable_player_play()
@@ -717,11 +728,12 @@ func calculate_score(player_num: int) -> Array:
 	print()
 	return [score, score_hand, score_built]
 	
-# Skill
-func has_ever_played(employee_name: String, built: Array) -> bool:
-	if employee_name == "Architect":
-		return built.size() < 3
-	return false
+func check_skill_has_ever_played() -> bool:
+	var skill_ever_played = false
+	if $Player.employee == "Architect":
+		skill_ever_played = $Player.built.size() < 3
+	var player_ever_played = $Player.has_ever_played()
+	return skill_ever_played or player_ever_played
 
 func on_sgin_disable_player_play() -> void:
 	$Employment.hide_discard_hidden()
@@ -1027,7 +1039,7 @@ func on_sgin_skill(skill_name: String) -> void:
 		charskill_play_active_warlord()
 
 
-func on_sgin_cancel_skill(components: Array, activate_mode: int) -> void:
+func on_sgin_cancel_skill(components: Array, activate_key: String, activate_mode: int) -> void:
 	for component in components:
 		if component == "employment":
 			$Employment.hide()
@@ -1040,10 +1052,14 @@ func on_sgin_cancel_skill(components: Array, activate_mode: int) -> void:
 		elif component == "opponent_built":
 			$Player.set_opponent_built_mode($Player.OpponentBuiltMode.SHOW)
 			$Player.hide_opponent_built()
-#		$Player.set_employee_can_skill(true)
-		$Player.set_employee_activated_this_turn(activate_mode, false)
-		on_sgin_set_reminder("NOTE_PLAY")
-		$Player.enable_play()
+
+		if activate_key == "Character":
+			$Player.set_employee_activated_this_turn(activate_mode, false)
+		else:
+			$Player.set_card_skill_activated(activate_key, activate_mode)
+			
+	on_sgin_set_reminder("NOTE_PLAY")
+	$Player.enable_play()
 
 
 func is_stolen(employee_num: int, employee_name: String) -> bool:
@@ -1159,18 +1175,39 @@ func card_skill_resource_draw_observatory() -> int:
 	return 3
 
 
-func cardskill_play_factory(color: String, price: int) -> int:
+func card_skill_play_factory(color: String, price: int) -> int:
 	if color == "purple":
 		return price - 1
 	return price
 
 
-func smithy():
-	pass
+func card_skill_play_smithy() -> void:
+	if $Player.get_card_skill_activated("Smithy"):
+		return
+	elif $Player.gold < 2:
+		return
+	$Player.set_card_skill_activated("Smithy", true) 
+	for _i in range(2):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
+		on_sgin_gold_transfer(first_person_num, bank_num, "sgin_player_gold_ready")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
+	for _i in range(3):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
+		on_sgin_draw_card(first_person_num, true)
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
+	
+	
 
-
-func laboratory():
-	pass
+func card_skill_play_laboratory() -> void:
+	if $Player.get_card_skill_activated("Laboratory"):
+		return
+	$Player.wait_laboratory()
 
 
 func cardskill_gameover_basilica(odd_size: int) -> void:
@@ -1300,8 +1337,12 @@ func charskill_play_active_merchant() -> void:
 
 func charskill_play_active_architect() -> void:
 	for _i in range(2):
+		TimerGlobal.set_wait_time(0.1)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")
 		on_sgin_draw_card(first_person_num, true)
-		yield(Signal, "sgin_player_draw_ready")
+	if TweenMove.is_active():
+		yield(TweenMove, "tween_all_completed")
 	$Player.enable_play()
 
 func charskill_play_active_warlord() -> void:
@@ -1323,7 +1364,7 @@ func armory_destructable(player_num: int) -> bool:
 	return not player_num in city_finished
 	
 func warlord_destructable_card(warlord_gold: int, card_name: String) -> bool:
-	if card_name == "Keep":
+	if "Keep" in card_name:
 		return card_skill_out_turn_keep()
 	return warlord_gold >= Data.get_card_info(card_name)['star'] - 1
 
@@ -1376,6 +1417,10 @@ func on_sgin_armory_opponent_selected(player_num: int, player_employee: String, 
 			shown.append(card_name)
 	destroyed = [player_num, player_employee]
 	$Player.show_opponent_built(opponent_name, shown)
+
+
+func on_sgin_card_laboratory_selected(card_name: String, global_position: Vector2) -> void:
+	print("lab selected:", card_name)
 
 func cal_price_discount(price: int) -> int:
 	return price
@@ -1460,10 +1505,12 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2):
 
 
 func on_sgin_card_clickable_clicked(card_name: String, _global_position: Vector2) -> void:
-	if card_name == "Armory":
+	if "Armory" in card_name:
 		card_skill_play_armory()
-		
-		
+	elif "Smithy" in card_name:
+		card_skill_play_smithy()
+	elif "Laboratory" in card_name:
+		card_skill_play_laboratory()
 
 
 func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
@@ -1526,7 +1573,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	# remove armory
 	var armory_obj
 	for ca in $Player/BuiltScript.get_children():
-		if ca.card_name == "Armory":
+		if "Armory" in ca.card_name:
 			armory_obj = ca
 			
 			break
@@ -1566,3 +1613,5 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	on_sgin_set_reminder("NOTE_PLAY")
 	destroyed = [unfound, "Unchosen"]
 	$Player.enable_play()
+
+
