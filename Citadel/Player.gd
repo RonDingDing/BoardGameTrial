@@ -547,17 +547,6 @@ func get_built_positions_with_new_card() -> Array:
 	return get_positions_with_new_card($BuiltScript)
 
 
-#func on_draw_gold(from_pos: Vector2) -> void:
-#	gold_transfer(
-#		from_pos,
-#		$MoneyIcon.global_position,
-#		Vector2(1, 1),
-#		Vector2(2, 2),
-#		"sgin_player_gold_ready",
-#		1
-#	)
-
-
 func disable_enlarge() -> void:
 	for a in $HandScript.get_children():
 		a.set_card_mode(a.CardMode.STATIC)
@@ -705,14 +694,8 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 	if card_obj == null:
 		enable_play()
 		return false
-
-	for _i in range(price):
-		TimerGlobal.set_wait_time(0.1)
-		TimerGlobal.start()
-		yield(TimerGlobal, "timeout")
-		Signal.emit_signal("sgin_gold_transfer", player_num, bank_num, "sgin_player_pay_ready")
-	if TweenMove.is_active():
-		yield(TweenMove, "tween_all_completed")
+	Signal.emit_signal("sgin_gold_move", player_num, bank_num, price, "sgin_player_pay_ready")
+	yield(Signal, "sgin_player_pay_ready")
 	hands.erase(card_name)
 	built.append(card_name)
 	card_obj.on_mouse_exited()

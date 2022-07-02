@@ -19,22 +19,6 @@ onready var player_built_color = {
 
 
 
-#func charskill_play_active_magician() -> void:
-#	Signal.emit_signal("sgin_magician_wait")
-
-
-#func gain_gold_by_color(color: String) -> void:
-#	Signal.emit_signal("sgin_ask_built_num", color)
-#	var built_yellow_num = player_built_color[color]
-#	var add_num = card_type_change(color)
-#	for _i in range(add_num + built_yellow_num):
-#		Signal.emit_signal("sgin_gold_transfer", bank_num, first_person_num, "sgin_player_gold_ready")
-#		yield(Signal, "sgin_player_gold_ready")
-
-
-#### Regular functions
-
-
 
 
 

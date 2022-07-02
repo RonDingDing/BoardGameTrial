@@ -1,6 +1,6 @@
 extends Node
 #warning-ignore:unused_signal
-signal sgin_gold_transfer(from_pnum, to_pnum, done_signal)
+signal sgin_gold_move(from_pnum, to_pnum, price, done_signal)
 #warning-ignore:unused_signal
 signal sgin_add_point(point)
 #warning-ignore:unused_signal
@@ -163,6 +163,8 @@ signal sgin_card_armory_selected(card_name, global_position)
 signal sgin_card_laboratory_selected(card_name, global_position)
 #warning-ignore:unused_signal
 signal sgin_disable_player_play
+#warning-ignore:unused_signal
+signal sgin_card_move_done
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)
