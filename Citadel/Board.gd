@@ -2,7 +2,7 @@ extends Node2D
 
 onready var current_turn_num = 1
 onready var first_person_num = 0
-onready var opponent_length = 6
+onready var opponent_length = 3#6
 onready var deck_position = $Deck.position
 onready var bank_position = $Bank.position
 onready var discarded_hidden_position = $Employment/DiscardedHidden.position
@@ -61,7 +61,7 @@ func to_be_delete():
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			"hands":[],
-			"built": ["Armory"]
+			"built": ["Laboratory"]
 		},
 		{
 			"player_num": 1,
@@ -116,7 +116,8 @@ func to_be_delete():
 	for i in range(data.size()):
 		var d = data[i]
 		var node = select_obj_by_relative_to_first_person(i)
-		node.on_player_info(d)
+		if node != null:
+			node.on_player_info(d)
 
 
 func select_obj_by_relative_to_first_person(relative_to_me: int) -> Node:
@@ -1354,8 +1355,25 @@ func on_sgin_armory_opponent_selected(player_num: int, player_employee: String, 
 	$Player.show_opponent_built(opponent_name, shown)
 
 
-func on_sgin_card_laboratory_selected(card_name: String, _global_position: Vector2) -> void:
-	print("lab selected:", card_name)
+func on_sgin_card_laboratory_selected(card_name: String, from_pos: Vector2) -> void:
+	on_sgin_disable_player_play()
+	var card_obj = $Player.get_hand_obj(card_name)
+	if card_obj == null:
+		return
+	var original_scale = card_obj.scale
+	card_enlarge_to_center(card_obj, from_pos)
+	yield(Signal, "sgin_card_move_done")
+	card_obj.global_position = center
+	center_card_shrink_to_away(card_obj, original_scale)
+	yield(Signal, "sgin_card_move_done")	
+	$Player.remove_hand(card_name)
+	$Player.rearrange_hands()
+	yield(TweenMove, "tween_all_completed")
+	gold_move(bank_num, first_person_num, 2, "sgin_player_gold_ready")
+	yield(Signal, "sgin_player_gold_ready")
+	$Deck.append(card_name)
+	$Player.set_card_skill_activated("Laboratory", true)
+	$Player.enable_play()
 
 func cal_price_discount(price: int) -> int:
 	return price
@@ -1364,18 +1382,10 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
 	var price_raw = Data.get_card_info(card_name)['star'] - 1
-	var price = cal_price_discount(price_raw)
-	
-	var card_obj
-	for c in $Player/OpponentBuilt.get_children():
-		if c.card_name == card_name:
-			card_obj = c
-			break
-			
+	var price = cal_price_discount(price_raw)	
+	var card_obj = $Player.get_opponent_built_obj(card_name)
 	if card_obj == null:
-		return
-	
-	
+		return	
 	on_sgin_disable_player_play()
 	gold_move(first_person_num, bank_num, price, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
@@ -1383,13 +1393,11 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 	var original_scale = card_obj.scale
 	var war_opponent = select_obj_by_player_num(destroyed[0])
 	if destroyed[0] == first_person_num:
-		for c in $Player/BuiltScript.get_children():
-			if c.card_name == card_name:
-				card_move(c, c.global_position, from_pos, c.scale, original_scale, "sgin_card_move_done")
-				yield(Signal, "sgin_card_move_done")
-				c.set_visible(false)				
-				break
-	
+		var c = $Player.get_built_obj(card_name)
+		if c != null:
+			card_move(c, c.global_position, from_pos, c.scale, original_scale, "sgin_card_move_done")
+			yield(Signal, "sgin_card_move_done")
+			c.set_visible(false)	
 	card_enlarge_to_center(card_obj, from_pos)
 	yield(Signal, "sgin_card_move_done")
 	card_obj.global_position = center
@@ -1427,14 +1435,10 @@ func center_card_shrink_to_away(card_obj: Node, end_scale: Vector2, done_signal:
 	
 
 func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
-	var card_obj
+	
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
-	for c in $Player/OpponentBuilt.get_children():
-		if c.card_name == card_name:
-			card_obj = c
-			break
-			
+	var card_obj = $Player.get_opponent_built_obj("card_name")
 	if card_obj == null:
 		return
 	on_sgin_disable_player_play()
@@ -1442,13 +1446,11 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	var war_opponent = select_obj_by_player_num(destroyed[0])
 	if destroyed[0] == first_person_num:
 		# my built to center
-		for c in $Player/BuiltScript.get_children():
-			if c.card_name != card_name:
-				continue
+		var c = $Player.get_built_obj(card_name)
+		if c != null:
 			card_move(c, c.global_position, from_pos, c.scale, card_obj.scale, "sgin_card_move_done")
 			yield(Signal, "sgin_card_move_done")
 			c.set_visible(false)				
-			break
 	
 	card_enlarge_to_center(card_obj, from_pos)
 	yield(Signal, "sgin_card_move_done")
@@ -1458,11 +1460,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	$Deck.append(card_name)
 	
 	# remove armory
-	var armory_obj
-	for ca in $Player/BuiltScript.get_children():
-		if "Armory" in ca.card_name:
-			armory_obj = ca			
-			break
+	var armory_obj = $Player.get_built_obj("Armory")
 	var armory_scale = armory_obj.scale
 	card_enlarge_to_center(armory_obj, armory_obj.global_position)
 	yield(Signal, "sgin_card_move_done")

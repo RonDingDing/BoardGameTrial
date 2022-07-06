@@ -736,6 +736,10 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 func rearrange_built() -> void:
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
+	
+func rearrange_hands() -> void:
+	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
+	yield(TweenMove, "tween_all_completed")
 
 
 func after_end_turn() -> void:
@@ -855,6 +859,24 @@ func set_employee_activated_this_turn(mode: int, can: bool) -> void:
 func set_employee_can_skill(can: bool) -> void:
 	$Employee.set_can_skill(can)
 
+
+func get_built_obj(card_name: String) -> Node:
+	for c in $BuiltScript.get_children():
+		if c.card_name == card_name:
+			return c
+	return null
+
+func get_hand_obj(card_name: String) -> Node:
+	for c in $HandScript.get_children():
+		if c.card_name == card_name:
+			return c
+	return null
+
+func get_opponent_built_obj(card_name: String) -> Node:
+	for c in $OpponentBuilt.get_children():
+		if c.card_name == card_name:
+			return c
+	return null
 
 func on_FakeBulitScriptCollision_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
