@@ -482,7 +482,7 @@ func on_start_turn() -> void:
 		if sig == "sgin_reveal_done":
 			yield(Signal, "sgin_reveal_done")
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
-		var gold_to_draw = check_skill_resource_draw_gold()
+		var gold_to_draw = check_skill_resource_draw_gold($Player.built)
 		var cards_to_select = check_skill_resource_draw_card_to_select($Player.built)
 		var cards_to_draw = check_skill_resource_draw_card_to_click($Player.built, cards_to_select)
 		on_sgin_set_reminder(tr("NOTE_CHOOSE_RESOURCE").replace("XXX", str(gold_to_draw)).replace("YYY",str(cards_to_select)).replace("ZZZ", str(cards_to_select-cards_to_draw)))
@@ -496,7 +496,7 @@ func on_start_turn() -> void:
 		$Player.reset_all_card_skill_activated()
 		$Player.show_script3()
 		yield(Signal, "sgin_end_turn")
-		var sig2 = check_skill_end_turn($Player.hands, $Player.built)
+		var sig2 = check_skill_end_turn($Player.hands, $Player.built, $Player.gold)
 		if sig2 == "sgin_check_skill_end_turn_done":
 			yield(Signal, "sgin_check_skill_end_turn_done")
 		$Player.after_end_turn()
@@ -540,7 +540,7 @@ func on_sgin_resource_need(what: int) -> void:
 
 
 func gain_gold() -> void:
-	var gold_to_gain = 2
+	var gold_to_gain = check_skill_resource_draw_gold($Player.built)
 	gold_move(bank_num, $Player.player_num, gold_to_gain, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	Signal.emit_signal("sgin_resource_end")
@@ -559,7 +559,10 @@ func check_skill_resource_draw_card_to_select(player_built: Array) -> int:
 	return 2
 
 
-func check_skill_resource_draw_gold() -> int:
+func check_skill_resource_draw_gold(player_built: Array) -> int:
+	for b in player_built:
+		if "Gold Mine" in b:
+			return 3
 	return 2
 	
 	
@@ -582,11 +585,14 @@ func check_skill_price(card_name: String) -> int:
 
 
 
-func check_skill_end_turn(player_hand: Array, player_built: Array) -> String:
+func check_skill_end_turn(player_hand: Array, player_built: Array, player_gold: int) -> String:
 	var sig = ""
 	for card_name in player_built:
 		if "Park" in card_name:
 			card_skill_end_turn_park(player_hand.size())
+			sig = "sgin_check_skill_end_turn_done"
+		if "Poor House" in card_name:
+			card_skill_end_turn_poor_house(player_gold)
 			sig = "sgin_check_skill_end_turn_done"
 	Signal.call_deferred("emit_signal", "sgin_check_skill_end_turn_done")
 	return sig
@@ -688,13 +694,17 @@ func calculate_score(player_num: int) -> Array:
 	var has_blue = 0
 	var has_green = 0
 	var has_purple = 0
+	var has_odd = 0
 	
 	var score_card = []
 	
 	for b in player_obj.built:
 		var data = Data.get_card_info(b)
-		score_coins += data['star']
-		score_card.append(data['star'])
+		var star = data['star']
+		score_coins += star
+		if star % 2:
+			has_odd += 1		
+		score_card.append(star)
 		var color = data['kind']
 		match color:
 			"red":
@@ -721,6 +731,32 @@ func calculate_score(player_num: int) -> Array:
 			if score_ivory > 0:
 				built_effect.append("Ivory Tower")
 				score_built += score_ivory
+		if "Basilica" in b:
+			var score_basilica = card_skill_game_over_basilica(has_odd)
+			if score_basilica > 0:
+				built_effect.append("Basilica")
+				score_built += score_basilica
+		if "Wishing Well" in b:
+			var score_wishing_well = card_skill_game_over_wishing_well(has_purple)
+			if score_wishing_well > 0:
+				built_effect.append("Wishing Well")
+				score_built += score_wishing_well
+		if "Statue" in b:
+			var score_statue = card_skill_game_over_statue(player_obj.has_crown)
+			if score_statue > 0:
+				built_effect.append("Statue")
+				score_built += score_statue
+		if "Imperial Treasury" in b:
+			var score_imperial_treasury = card_skill_game_over_imperial_treasury(player_obj.gold)
+			if score_imperial_treasury > 0:
+				built_effect.append("Imperial Treasury")
+				score_built += score_imperial_treasury
+		if "Dragon Gate" in b:
+			var score_dragon_gate = card_skill_game_over_dragon_gate()
+			if score_dragon_gate > 0:
+				built_effect.append("Dragon Gate")
+				score_built += score_dragon_gate
+		
 	score = score_coins +  score_color + score_finished_7 + score_hand + score_built
 	print()
 	print(player_num)
@@ -1163,38 +1199,38 @@ func card_skill_play_laboratory() -> void:
 	$Player.wait_laboratory()
 
 
-func cardskill_gameover_basilica(odd_size: int) -> void:
-	Signal.emit_signal("sgin_add_point", odd_size)
+func card_skill_game_over_basilica(odd_size: int) -> int:
+	return odd_size
 
 
-func cardskill_gameover_wishing_well(purple_size: int) -> void:
-	Signal.emit_signal("sgin_add_point", purple_size)
+func card_skill_game_over_wishing_well(has_purple: int) -> int:
+	return has_purple
 
 
-func cardskill_gameover_statue(has_crown: bool) -> void:
-	if has_crown:
-		Signal.emit_signal("sgin_add_point", 5)
+func card_skill_game_over_statue(has_crown: bool) -> int:
+	return 5 if has_crown else 0
 
 
-func cardskill_gameover_imperial_treasury(gold: int) -> void:
-	Signal.emit_signal("sgin_add_point", gold)
+func card_skill_game_over_imperial_treasury(gold: int) -> int:
+	return gold
 
 
-func great_wall():
-	pass
+func card_skill_play_great_wall(price_raw: int) -> int:
+	return price_raw + 1
 
 
 func cardskill_resourcegold_gold_mine() -> int:
 	return 3
 
 
-func cardskill_gameover_dragon_gate() -> void:
-	Signal.emit_signal("sgin_add_point", 2)
+func card_skill_game_over_dragon_gate() -> int:
+	return 2
 
 
-func cardskill_end_poor_house(gold: int) -> void:
+func card_skill_end_turn_poor_house(gold: int) -> void:
 	if gold == 0:
-		pass
+		gold_move(bank_num, first_person_num, 1, "sgin_player_gold_ready")
+		yield(Signal, "sgin_player_gold_ready")
 
 
 func haunted_quarter() -> void:
@@ -1306,10 +1342,11 @@ func warlord_destructable(player_num: int, employee_name: String) -> bool:
 func armory_destructable(player_num: int) -> bool:
 	return not player_num in city_finished
 	
-func warlord_destructable_card(warlord_gold: int, card_name: String) -> bool:
+func warlord_destructable_card(built: Array, warlord_gold: int, card_name: String) -> bool:
 	if "Keep" in card_name:
 		return card_skill_out_turn_keep()
-	return warlord_gold >= Data.get_card_info(card_name)['star'] - 1
+	var price_raw = Data.get_card_info(card_name)['star'] - 1
+	return warlord_gold >= check_skill_8_price(built, price_raw)
 
 func armory_destructable_card(card_name: String) -> bool:
 	return card_name != "Armory"
@@ -1337,9 +1374,9 @@ func on_sgin_warlord_opponent_selected(player_num: int, player_employee: String,
 	$Player.set_opponent_built_mode($Player.OpponentBuiltMode.WARLORD_SHOW)
 	var shown = []
 	var warlord_gold = $Player.gold
-	
+	var war_opponent = select_obj_by_player_num(player_num)
 	for card_name in built:
-		if warlord_destructable_card(warlord_gold, card_name):
+		if warlord_destructable_card(war_opponent.built, warlord_gold, card_name):
 			shown.append(card_name)
 	destroyed = [player_num, player_employee]
 	$Player.show_opponent_built(opponent_name, shown)
@@ -1375,14 +1412,18 @@ func on_sgin_card_laboratory_selected(card_name: String, from_pos: Vector2) -> v
 	$Player.set_card_skill_activated("Laboratory", true)
 	$Player.enable_play()
 
-func cal_price_discount(price: int) -> int:
+func check_skill_8_price(built: Array, price: int) -> int:
+	for b in built:
+		if "Great Wall" in b:
+			return price + 1
 	return price
 
 func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void:
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
+	var war_opponent = select_obj_by_player_num(destroyed[0])
 	var price_raw = Data.get_card_info(card_name)['star'] - 1
-	var price = cal_price_discount(price_raw)	
+	var price = check_skill_8_price(war_opponent.built, price_raw)	
 	var card_obj = $Player.get_opponent_built_obj(card_name)
 	if card_obj == null:
 		return	
@@ -1391,7 +1432,6 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 	yield(Signal, "sgin_player_gold_ready")
 	card_obj.on_mouse_exited()
 	var original_scale = card_obj.scale
-	var war_opponent = select_obj_by_player_num(destroyed[0])
 	if destroyed[0] == first_person_num:
 		var c = $Player.get_built_obj(card_name)
 		if c != null:
