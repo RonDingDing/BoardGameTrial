@@ -705,7 +705,11 @@ func calculate_score(player_num: int) -> Array:
 		if star % 2:
 			has_odd += 1		
 		score_card.append(star)
-		var color = data['kind']
+		var color
+		if "Haunted Quarter" in b:
+			card_skill_game_over_haunted_quarter()
+		else:
+			color = data['kind']
 		match color:
 			"red":
 				has_red += 1
@@ -1233,7 +1237,7 @@ func card_skill_end_turn_poor_house(gold: int) -> void:
 		yield(Signal, "sgin_player_gold_ready")
 
 
-func haunted_quarter() -> void:
+func card_skill_game_over_haunted_quarter() -> void:
 	pass
 
 
