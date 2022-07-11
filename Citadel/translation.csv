@@ -137,6 +137,7 @@ NOTE_SELECT,"Please select your character of this turn.", "请选择本回合你
 PHASE_CHARACTER_SELECTION, "Selection Phase", "雇佣阶段"
 PHASE_TURN_START, "Turn Phase", "回合阶段"
 PHASE_TURN_NUM, "Round X", "第X回合"
+PHASE_GAME_OVER, "Game Over", "游戏结束"
 NOTE_CHOOSE_RESOURCE, "Please select: 1) Gain XXX gold. 2) Draw YYY cards and discard ZZZ card. ", "请选择：1)获得XXX个金币；2)摸YYY张牌，弃ZZZ张牌。"
 NOTE_NEED_CARD, "Card", "摸牌"
 NOTE_NEED_GOLD, "Gold", "淘金"
@@ -157,4 +158,5 @@ NOTE_GAIN_RED, "Red", "军饷"
 NOTE_CANCEL, "Cancel", "取消"
 NOTE_ARMORY, "Please select a built area to destroy.", "请选择一座建筑摧毁之。"
 NOTE_LABORATORY, "Please discard 1 hand to gain 2 gold.", "请丢弃1张手牌然后获得2枚金币。"
+NOTE_HAUNTED_QUARTER, "Please choose a type you wish the haunted quarter to turn into.", "请选择猛鬼街要变成的类型。"
 

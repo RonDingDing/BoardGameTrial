@@ -61,7 +61,7 @@ func to_be_delete():
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			"hands":[],
-			"built": ["Laboratory"]
+			"built": ["Tavern", "Tavern", "Tavern","Tavern", "Tavern","Tavern","Tavern"]
 		},
 		{
 			"player_num": 1,
@@ -670,14 +670,31 @@ func employee_reset() -> void:
 		player_obj.set_hide_employee(true)
 
 
+func check_game_over_skill() -> String:
+	var sig = ""
+	for player_num in range(opponent_length + 1):
+		for b in select_obj_by_player_num(player_num).built:
+			if "Haunted Quarter" in b:
+				card_skill_game_over_haunted_quarter(player_num)
+				sig = "sgin_haunted_quarter_color_selected"
+				break
+	return sig
+
 func game_over() -> void:
+	Signal.emit_signal("phase", "PHASE_GAME_OVER")
+	hide()
+	yield(Signal, "uncover")
+	show()
+	var sig = check_game_over_skill()
+	var haunted_color = ""
+	if sig:
+		haunted_color = yield(Signal, "sgin_haunted_quarter_color_selected")
 	var score_dic = {}
 	for player_num in range(opponent_length + 1):
-		score_dic[player_num] = calculate_score(player_num)
+		score_dic[player_num] = calculate_score(player_num, haunted_color)
 		
-	print(score_dic)
 		
-func calculate_score(player_num: int) -> Array:
+func calculate_score(player_num: int, haunted_color: String) -> Array:
 	var score = 0
 	var player_obj = select_obj_by_player_num(player_num)
 	var _player_hands = player_obj.hands
@@ -707,7 +724,7 @@ func calculate_score(player_num: int) -> Array:
 		score_card.append(star)
 		var color
 		if "Haunted Quarter" in b:
-			card_skill_game_over_haunted_quarter()
+			color = haunted_color
 		else:
 			color = data['kind']
 		match color:
@@ -1237,8 +1254,14 @@ func card_skill_end_turn_poor_house(gold: int) -> void:
 		yield(Signal, "sgin_player_gold_ready")
 
 
-func card_skill_game_over_haunted_quarter() -> void:
-	pass
+func card_skill_game_over_haunted_quarter(player_num: int) -> void:
+	hide()
+	hand_over_control(player_num)
+	yield(Signal, "uncover")
+	show()	
+	on_sgin_disable_player_play()
+	on_sgin_set_reminder("NOTE_HAUNTED_QUARTER")
+	$Player.wait_haunted_quarter_color()
 
 
 func framework() -> void:
@@ -1478,8 +1501,7 @@ func center_card_shrink_to_away(card_obj: Node, end_scale: Vector2, done_signal:
 	card_move(card_obj, center, Vector2(3000, center.y), Vector2(0.6, 0.6), end_scale, done_signal)
 	
 
-func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
-	
+func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:	
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
 	var card_obj = $Player.get_opponent_built_obj("card_name")

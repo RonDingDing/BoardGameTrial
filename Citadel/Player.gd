@@ -34,6 +34,7 @@ enum ScriptMode {
 }
 enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
 enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
+enum ColorMode { SILENT, HAUNTED_QUARTER_SELECTABLE }
 
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
@@ -42,6 +43,7 @@ onready var built_script_pos = $BuiltScript.global_position
 onready var script_mode = ScriptMode.RESOURCE
 onready var opponent_built_mode = OpponentBuiltMode.SHOW
 onready var opponent_state = OpponentState.IDLE
+onready var color_mode = ColorMode.HAUNTED_QUARTER_SELECTABLE
 onready var card_skill_activated = {"Smithy": false, "Laboratory": false}
 
 # https://colors.artyclick.com/color-name-finder/?color=#162739
@@ -69,6 +71,7 @@ func _ready() -> void:
 	hide_script3()
 	hide_kill_steal_info()
 	hide_opponent_built()
+	hide_color_choose()
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 	$Script2.rect_position = script2_pos
@@ -899,3 +902,24 @@ func on_FakeBulitScriptCollision_mouse_entered():
 func on_FakeBulitScriptCollision_mouse_exited():
 	if opponent_state in [OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE]:
 		$BuiltScript.global_position = built_script_pos
+
+func hide_color_choose() -> void:
+	$ColorChoose.hide()
+
+func show_color_choose() -> void:
+	$ColorChoose.show()
+
+func set_color_choose_mode(mode: int) -> void:
+	color_mode = mode
+
+func wait_haunted_quarter_color() -> void:
+	show_color_choose()
+	set_color_choose_mode(ColorMode.HAUNTED_QUARTER_SELECTABLE)
+
+
+func on_ColorChoose_input_event(_viewport, event, shape_idx):
+	if event is InputEventMouseButton:
+		var color_dic = {0: "yellow", 1: "blue", 2: "green", 3: "red", 4: "purple"}
+		if color_mode == ColorMode.HAUNTED_QUARTER_SELECTABLE and shape_idx:
+			hide_color_choose()
+			Signal.emit_signal("sgin_haunted_quarter_color_selected", color_dic[shape_idx])
