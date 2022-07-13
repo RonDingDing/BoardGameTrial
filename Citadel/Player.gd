@@ -30,7 +30,8 @@ enum ScriptMode {
 	MERCHANT,
 	WARLORD,
 	ARMORY,
-	LABORATORY
+	LABORATORY,
+	FRAMEWORK
 }
 enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
 enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
@@ -177,14 +178,21 @@ func set_script_mode(mode: int) -> void:
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = red
-	else:  #if mode == ScriptMode.LABORATORY:
+	elif mode == ScriptMode.LABORATORY:
 		$Script1Label.text = "NOTE_NEED_GOLD"
 		$Script2Label.text = "NOTE_NEED_CARD"
 		$Script3Label.text = "NOTE_CANCEL"
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = dark_lilac
-
+	else: # mode == ScriptMode.FRAMEWORK:
+		$Script1Label.text = "NOTE_YES"
+		$Script2Label.text = "NOTE_NO"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = white_lilac
+		color2 = white_lilac
+		color3 = red
+	
 	$Script1Label.set("custom_colors/font_color", color1)
 	$Script2Label.set("custom_colors/font_color", color2)
 	$Script3Label.set("custom_colors/font_color", color3)
@@ -260,32 +268,42 @@ func hide_scripts() -> void:
 
 func on_script1_pressed() -> void:
 	hide_opponent_built()
-	if script_mode == ScriptMode.RESOURCE:
-		Signal.emit_signal("sgin_resource_need", Need.GOLD)
-	elif script_mode == ScriptMode.MAGICIAN:
-		Signal.emit_signal("sgin_magician_switch", MagicianSwitch.DECK)
-	elif script_mode == ScriptMode.MERCHANT and not $Employee.skill_1_activated_this_turn:
-		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
-		Signal.emit_signal("sgin_merchant_gold", MerchantGold.ONE)
-	elif script_mode == ScriptMode.WARLORD and not $Employee.skill_1_activated_this_turn:
-		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
-		Signal.emit_signal("sgin_warlord_choice", WarlordChoice.DESTROY)
+	match script_mode:
+		ScriptMode.RESOURCE:
+			Signal.emit_signal("sgin_resource_need", Need.GOLD)
+		ScriptMode.MAGICIAN:
+			Signal.emit_signal("sgin_magician_switch", MagicianSwitch.DECK)
+		ScriptMode.MERCHANT:
+			if not $Employee.skill_1_activated_this_turn:
+				$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
+				Signal.emit_signal("sgin_merchant_gold", MerchantGold.ONE)
+		ScriptMode.WARLORD:
+			if not $Employee.skill_1_activated_this_turn:
+				$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
+				Signal.emit_signal("sgin_warlord_choice", WarlordChoice.DESTROY)
+		ScriptMode.FRAMEWORK:
+			Signal.emit_signal("sgin_framework_choice", true)
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 
 
 func on_script2_pressed() -> void:
 	hide_opponent_built()
-	if script_mode == ScriptMode.RESOURCE:
-		Signal.emit_signal("sgin_resource_need", Need.CARD)
-	elif script_mode == ScriptMode.MAGICIAN:
-		Signal.emit_signal("sgin_magician_switch", MagicianSwitch.PLAYER)
-	elif script_mode == ScriptMode.MERCHANT and not $Employee.skill_2_activated_this_turn:
-		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
-		Signal.emit_signal("sgin_merchant_gold", MerchantGold.GREEN)
-	elif script_mode == ScriptMode.WARLORD and not $Employee.skill_2_activated_this_turn:
-		$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
-		Signal.emit_signal("sgin_warlord_choice", WarlordChoice.RED)
+	match script_mode:
+		ScriptMode.RESOURCE:
+			Signal.emit_signal("sgin_resource_need", Need.CARD)
+		ScriptMode.MAGICIAN:
+			Signal.emit_signal("sgin_magician_switch", MagicianSwitch.PLAYER)
+		ScriptMode.MERCHANT:
+			if not $Employee.skill_2_activated_this_turn:
+				$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
+				Signal.emit_signal("sgin_merchant_gold", MerchantGold.GREEN)
+		ScriptMode.WARLORD:
+			if not $Employee.skill_2_activated_this_turn:
+				$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
+				Signal.emit_signal("sgin_warlord_choice", WarlordChoice.RED)
+		ScriptMode.FRAMEWORK:
+			Signal.emit_signal("sgin_framework_choice", false)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 
@@ -355,7 +373,14 @@ func on_script3_pressed() -> void:
 			)
 		ScriptMode.LABORATORY:
 			Signal.emit_signal("sgin_cancel_skill", [], "Laboratory", false)
-
+		
+		ScriptMode.FRAMEWORK:
+			Signal.emit_signal(
+				"sgin_cancel_skill",
+				["scripts"],
+				"Character",
+				$Employee.ActivateMode.NONE
+			)
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 

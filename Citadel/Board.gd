@@ -61,7 +61,7 @@ func to_be_delete():
 			#			"employee": "Architect",
 			#			"hand_num": 8,
 			"hands":[],
-			"built": ["Tavern", "Tavern", "Tavern","Tavern", "Tavern","Tavern","Tavern"]
+			"built": ["Framework", "Tavern", "Tavern", "Tavern","Tavern","Tavern"]
 		},
 		{
 			"player_num": 1,
@@ -574,14 +574,18 @@ func check_skill_not_played_same(card_name: String) -> bool:
 	var player_not_played_same = $Player.has_not_played_same(card_name)
 	return skill_not_played_same or player_not_played_same
 
-func check_skill_price(card_name: String) -> int:
+func check_skill_price(card_name: String) -> Array:
 	var data =  Data.get_card_info(card_name)
 	var price = data['star']
 	var color = data['kind']
-	for card_name in $Player.built:
-		if "Factory" in card_name:
-			return card_skill_play_factory(color, price)
-	return price
+	var sig = ""
+	for built_name in $Player.built:
+		if "Factory" in built_name:
+			price = card_skill_play_factory(color, price)
+		if "Framework" in built_name:
+			card_skill_play_framework(card_name)
+			sig = "sgin_framework_choice"
+	return [price, sig]
 
 
 
@@ -623,9 +627,25 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
 
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
-	if $Player.script_mode == $Player.ScriptMode.PLAYING:		
- 
-		var price = check_skill_price(card_name)
+	if $Player.script_mode == $Player.ScriptMode.PLAYING: 
+		var ar = check_skill_price(card_name)
+		var price = ar[0]
+		var sig = ar[1]
+		if sig:
+			var remove_framework = yield(Signal, sig)
+			if remove_framework:
+				var frame_obj = $Player.get_built_obj("Framework")
+				var frame_scale = frame_obj.scale
+				var frame_pos = frame_obj.global_position				
+				card_enlarge_to_center(frame_obj, frame_pos)
+				yield(Signal, "sgin_card_move_done")
+				frame_obj.global_position = center
+				center_card_shrink_to_away(frame_obj, frame_scale)
+				yield(Signal, "sgin_card_move_done")
+				$Player.remove_built("Framework")
+				$Player.rearrange_built()
+				price = 0
+			on_sgin_set_reminder("NOTE_PLAY")
 		var enough_money = $Player.has_enough_money(price)
 		var not_played_same = check_skill_not_played_same(card_name)
 		var not_ever_played = check_skill_has_ever_played()
@@ -1264,9 +1284,13 @@ func card_skill_game_over_haunted_quarter(player_num: int) -> void:
 	$Player.wait_haunted_quarter_color()
 
 
-func framework() -> void:
-	pass
-
+func card_skill_play_framework(card_name: String) -> void:
+	on_sgin_disable_player_play()
+	var trs = Data.get_card_info(card_name)['card_name']
+	on_sgin_set_reminder("NOTE_FRAMEWORK")
+	$Player.set_script_mode($Player.ScriptMode.FRAMEWORK)
+	$Player.show_scripts()
+	
 
 func necropolis() -> void:
 	pass
@@ -1482,6 +1506,7 @@ func on_sgin_card_clickable_clicked(card_name: String, _global_position: Vector2
 		card_skill_play_smithy()
 	elif "Laboratory" in card_name:
 		card_skill_play_laboratory()
+		
 
 func card_move(card_obj: Node, start_pos: Vector2, end_pos: Vector2, start_scale: Vector2, end_scale: Vector2, done_signal: String) -> void:
 	var z_index = card_obj.z_index
@@ -1504,7 +1529,7 @@ func center_card_shrink_to_away(card_obj: Node, end_scale: Vector2, done_signal:
 func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:	
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
-	var card_obj = $Player.get_opponent_built_obj("card_name")
+	var card_obj = $Player.get_opponent_built_obj(card_name)
 	if card_obj == null:
 		return
 	on_sgin_disable_player_play()

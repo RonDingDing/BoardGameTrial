@@ -167,6 +167,8 @@ signal sgin_disable_player_play
 signal sgin_card_move_done
 #warning-ignore:unused_signal
 signal sgin_haunted_quarter_color_selected(color)
+#warning-ignore:unused_signal
+signal sgin_framework_choice(yes_no)
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)

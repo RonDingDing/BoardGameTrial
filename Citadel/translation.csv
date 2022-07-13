@@ -156,7 +156,10 @@ NOTE_WARLORD, "Please select whether to 1) destroy a built area, 2) gain gold on
 NOTE_WARLORD_DESTROY, "Destroy", "拆毁"
 NOTE_GAIN_RED, "Red", "军饷"
 NOTE_CANCEL, "Cancel", "取消"
+NOTE_YES, "Yes", "是"
+NOTE_NO, "No", "否"
 NOTE_ARMORY, "Please select a built area to destroy.", "请选择一座建筑摧毁之。"
 NOTE_LABORATORY, "Please discard 1 hand to gain 2 gold.", "请丢弃1张手牌然后获得2枚金币。"
 NOTE_HAUNTED_QUARTER, "Please choose a type you wish the haunted quarter to turn into.", "请选择猛鬼街要变成的类型。"
+NOTE_FRAMEWORK, "Do you want to destroy Framework to finish building?", "要摧毁脚手架来完成建造吗？"
 
