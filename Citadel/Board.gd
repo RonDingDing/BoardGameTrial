@@ -57,11 +57,11 @@ func to_be_delete():
 		{
 			"player_num": 0,
 			"username": "zero",
-			"money": 9,
+			"money": 0,
 			#			"employee": "Architect",
 			#			"hand_num": 8,
-			"hands":[],
-			"built": ["Framework", "Tavern", "Tavern", "Tavern","Tavern","Tavern"]
+			"hands":["Necropolis"],
+			"built":["Framework", "Tavern", "Tavern","Tavern","Tavern"]
 		},
 		{
 			"player_num": 1,
@@ -574,18 +574,16 @@ func check_skill_not_played_same(card_name: String) -> bool:
 	var player_not_played_same = $Player.has_not_played_same(card_name)
 	return skill_not_played_same or player_not_played_same
 
-func check_skill_price(card_name: String) -> Array:
+func check_skill_play_price(card_name: String) -> int:
 	var data =  Data.get_card_info(card_name)
 	var price = data['star']
 	var color = data['kind']
-	var sig = ""
+	
 	for built_name in $Player.built:
 		if "Factory" in built_name:
 			price = card_skill_play_factory(color, price)
-		if "Framework" in built_name:
-			card_skill_play_framework(card_name)
-			sig = "sgin_framework_choice"
-	return [price, sig]
+		
+	return price
 
 
 
@@ -625,31 +623,33 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 	$Player.draw(card_name, true, from_pos, 1)
 	$AnyCardEnlarge.reset_cards()
 
+ 
 
+
+func handle_play_skill_reaction(price: int, play_name: String, built: Array) -> void:
+	if "Necropolis" in play_name:
+		card_skill_play_necropolis(play_name, price)
+		price = yield(Signal, "sgin_necropolis_reaction_completed")
+	for b in built:
+		if "Framework" in b and price > 0:
+			card_skill_play_framework(play_name, price)
+			price = yield(Signal, "sgin_framework_reaction_completed")
+			
+			
+	Signal.emit_signal("sgin_all_play_reaction_completed", price)
+	
 func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
 	if $Player.script_mode == $Player.ScriptMode.PLAYING: 
-		var ar = check_skill_price(card_name)
-		var price = ar[0]
-		var sig = ar[1]
-		if sig:
-			var remove_framework = yield(Signal, sig)
-			if remove_framework:
-				var frame_obj = $Player.get_built_obj("Framework")
-				var frame_scale = frame_obj.scale
-				var frame_pos = frame_obj.global_position				
-				card_enlarge_to_center(frame_obj, frame_pos)
-				yield(Signal, "sgin_card_move_done")
-				frame_obj.global_position = center
-				center_card_shrink_to_away(frame_obj, frame_scale)
-				yield(Signal, "sgin_card_move_done")
-				$Player.remove_built("Framework")
-				$Player.rearrange_built()
-				price = 0
-			on_sgin_set_reminder("NOTE_PLAY")
+		var price = check_skill_play_price(card_name)
+		
+		var wait = handle_play_skill_reaction(price, card_name, $Player.built)
+		if wait:
+			price = yield(Signal, "sgin_all_play_reaction_completed")
 		var enough_money = $Player.has_enough_money(price)
 		var not_played_same = check_skill_not_played_same(card_name)
 		var not_ever_played = check_skill_has_ever_played()
 		if not (enough_money and not_played_same and not_ever_played):
+			$Player.enable_play()
 			return
 		on_sgin_disable_player_play()
 		var success_play = $Player.card_played(card_name, price, from_pos)
@@ -1104,6 +1104,9 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 			$Player.hide_opponent_built()
 		elif component == "destroy":
 			destroyed = [unfound, "Unchosen"]
+		elif component == "built":
+			$Player.disable_play()
+			
 
 		if not activate_key:
 			pass
@@ -1284,17 +1287,54 @@ func card_skill_game_over_haunted_quarter(player_num: int) -> void:
 	$Player.wait_haunted_quarter_color()
 
 
-func card_skill_play_framework(card_name: String) -> void:
+func card_skill_play_framework(card_name: String, price: int) -> void:
 	on_sgin_disable_player_play()
 	var trs = Data.get_card_info(card_name)['card_name']
 	on_sgin_set_reminder("NOTE_FRAMEWORK")
 	$Player.set_script_mode($Player.ScriptMode.FRAMEWORK)
 	$Player.show_scripts()
+	var remove_framework = yield(Signal, "sgin_framework_choice")
+	if remove_framework:
+		on_sgin_disable_player_play()
+		var frame_obj = $Player.get_built_obj("Framework")
+		var frame_scale = frame_obj.scale
+		var frame_pos = frame_obj.global_position				
+		card_enlarge_to_center(frame_obj, frame_pos)
+		yield(Signal, "sgin_card_move_done")
+		frame_obj.global_position = center
+		center_card_shrink_to_away(frame_obj, frame_scale)
+		yield(Signal, "sgin_card_move_done")
+		$Player.remove_built("Framework")
+		$Player.rearrange_built()
+		price = 0
+	on_sgin_set_reminder("NOTE_PLAY")
+	Signal.emit_signal("sgin_framework_reaction_completed", price)	
+	
 	
 
-func necropolis() -> void:
-	pass
-
+func card_skill_play_necropolis(card_name: String, price: int) -> void:
+	on_sgin_disable_player_play()
+	on_sgin_set_reminder("NOTE_NECROPOLIS")
+	$Player.set_script_mode($Player.ScriptMode.NECROPOLIS)
+	$Player.show_scripts()
+	var wait_remove_hand = yield(Signal, "sgin_necropolis_choice")
+	if wait_remove_hand:
+		on_sgin_set_reminder("NOTE_NECROPOLIS_WAIT")
+		var remove_selected = yield(Signal, "sgin_card_necropolis_selected")
+		var card_obj = $Player.get_built_obj(remove_selected[0])
+		var card_scale = card_obj.scale
+		var card_pos = remove_selected[1]
+		card_enlarge_to_center(card_obj, card_pos)
+		yield(Signal, "sgin_card_move_done")
+		card_obj.global_position = center
+		center_card_shrink_to_away(card_obj, card_scale)
+		yield(Signal, "sgin_card_move_done")
+		$Player.remove_built(remove_selected[0])
+		$Player.rearrange_built()
+		price = 0
+		
+	on_sgin_set_reminder("NOTE_PLAY")
+	Signal.emit_signal("sgin_necropolis_reaction_completed", price)	
 
 func cardskill_gameover_map_room(hand_num: int) -> void:
 	Signal.emit_signal("sgin_add_point", hand_num)
@@ -1565,5 +1605,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	
 	# reset
 	on_sgin_cancel_skill(["opponent", "opponent_built", "destroyed"])
+
+
 
 

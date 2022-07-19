@@ -162,6 +162,8 @@ signal sgin_card_armory_selected(card_name, global_position)
 #warning-ignore:unused_signal
 signal sgin_card_laboratory_selected(card_name, global_position)
 #warning-ignore:unused_signal
+signal sgin_card_necropolis_selected(card_name, global_position)
+#warning-ignore:unused_signal
 signal sgin_disable_player_play
 #warning-ignore:unused_signal
 signal sgin_card_move_done
@@ -169,6 +171,18 @@ signal sgin_card_move_done
 signal sgin_haunted_quarter_color_selected(color)
 #warning-ignore:unused_signal
 signal sgin_framework_choice(yes_no)
+#warning-ignore:unused_signal
+signal sgin_necropolis_choice(yes_no)
+#warning-ignore:unused_signal
+signal sgin_framework_reaction_completed(price)
+#warning-ignore:unused_signal
+signal sgin_necropolis_reaction_completed(price)
+#warning-ignore:unused_signal
+signal sgin_all_play_reaction_completed(price)
+
+
+
+
 
 func on_sgin_char_not_ready(chara: Node) -> void:
 	chara.set_enlargeable(false)

@@ -10,7 +10,8 @@ enum CardMode {
 	WARLORD_SELECTING,
 	BUILT_CLICKABLE,
 	ARMORY_SELECTING,
-	LABORATORY_SELECTING
+	LABORATORY_SELECTING,
+	NECROPOLIS_SELECTING
 }
 onready var mode = CardMode.STATIC
 onready var card_name = "Unknown"
@@ -107,3 +108,5 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				Signal.emit_signal("sgin_card_clickable_clicked", card_name, global_position)
 			CardMode.LABORATORY_SELECTING:
 				Signal.emit_signal("sgin_card_laboratory_selected", card_name, global_position)
+			CardMode.NECROPOLIS_SELECTING:
+				Signal.emit_signal("sgin_card_necropolis_selected", card_name, global_position)

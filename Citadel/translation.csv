@@ -162,4 +162,6 @@ NOTE_ARMORY, "Please select a built area to destroy.", "请选择一座建筑摧
 NOTE_LABORATORY, "Please discard 1 hand to gain 2 gold.", "请丢弃1张手牌然后获得2枚金币。"
 NOTE_HAUNTED_QUARTER, "Please choose a type you wish the haunted quarter to turn into.", "请选择猛鬼街要变成的类型。"
 NOTE_FRAMEWORK, "Do you want to destroy Framework to finish building?", "要摧毁脚手架来完成建造吗？"
-
+NOTE_NECROPOLIS, "Do you want to destroy a built area to finish building?", "要摧毁一座建筑来完成建造吗？"
+NOTE_NECROPOLIS_WAIT, "Please destroy a built area to finish building.", "请摧毁一座建筑来完成建造。"
+NOTE_END_TURN_DISPLAY， "Turn ended.", "回合结束。"

@@ -31,7 +31,8 @@ enum ScriptMode {
 	WARLORD,
 	ARMORY,
 	LABORATORY,
-	FRAMEWORK
+	FRAMEWORK,
+	NECROPOLIS
 }
 enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
 enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
@@ -185,7 +186,14 @@ func set_script_mode(mode: int) -> void:
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = dark_lilac
-	else: # mode == ScriptMode.FRAMEWORK:
+	elif mode == ScriptMode.FRAMEWORK:
+		$Script1Label.text = "NOTE_YES"
+		$Script2Label.text = "NOTE_NO"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = white_lilac
+		color2 = white_lilac
+		color3 = red
+	else: # mode == ScriptMode.NECROPOLIS:
 		$Script1Label.text = "NOTE_YES"
 		$Script2Label.text = "NOTE_NO"
 		$Script3Label.text = "NOTE_CANCEL"
@@ -282,7 +290,15 @@ func on_script1_pressed() -> void:
 				$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL1, true)
 				Signal.emit_signal("sgin_warlord_choice", WarlordChoice.DESTROY)
 		ScriptMode.FRAMEWORK:
+			hide_scripts()
 			Signal.emit_signal("sgin_framework_choice", true)
+		ScriptMode.NECROPOLIS:
+			hide_scripts()
+			for b in $BuiltScript.get_children():
+				b.set_card_mode(b.CardMode.NECROPOLIS_SELECTING)
+			Signal.emit_signal("sgin_necropolis_choice", true)
+
+		
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 
@@ -303,7 +319,11 @@ func on_script2_pressed() -> void:
 				$Employee.set_activated_this_turn($Employee.ActivateMode.SKILL2, true)
 				Signal.emit_signal("sgin_warlord_choice", WarlordChoice.RED)
 		ScriptMode.FRAMEWORK:
+			hide_scripts()
 			Signal.emit_signal("sgin_framework_choice", false)
+		ScriptMode.NECROPOLIS:
+			hide_scripts()
+			Signal.emit_signal("sgin_necropolis_choice", false)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 
@@ -381,6 +401,14 @@ func on_script3_pressed() -> void:
 				"Character",
 				$Employee.ActivateMode.NONE
 			)
+		ScriptMode.NECROPOLIS:
+			Signal.emit_signal(
+				"sgin_cancel_skill",
+				["scripts", "built"],
+				"Character",
+				$Employee.ActivateMode.NONE
+			)	
+		
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
@@ -808,6 +836,7 @@ func remove_built(card_name: String) -> void:
 		if c.card_name == card_name:
 			card_obj = c
 			$BuiltScript.remove_child(card_obj)
+			break
 	if card_obj == null:
 		return
 	card_obj.queue_free()
