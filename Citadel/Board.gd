@@ -496,6 +496,7 @@ func on_start_turn() -> void:
 		$Player.reset_all_card_skill_activated()
 		$Player.show_script3()
 		yield(Signal, "sgin_end_turn")
+		on_sgin_set_reminder("NOTE_END_TURN_DISPLAY")
 		var sig2 = check_skill_end_turn($Player.hands, $Player.built, $Player.gold)
 		if sig2 == "sgin_check_skill_end_turn_done":
 			yield(Signal, "sgin_check_skill_end_turn_done")
