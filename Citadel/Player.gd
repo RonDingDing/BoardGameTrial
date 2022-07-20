@@ -11,6 +11,7 @@ onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var Data = get_node("/root/Main/Data")
 
 onready var played_this_turn = []
+onready var selected = []
 
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
@@ -32,11 +33,12 @@ enum ScriptMode {
 	ARMORY,
 	LABORATORY,
 	FRAMEWORK,
-	NECROPOLIS
+	NECROPOLIS,
+	THIEVES_DEN
 }
 enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
 enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
-enum ColorMode { SILENT, HAUNTED_QUARTER_SELECTABLE }
+enum ColorMode { SILENT, HAUNTED_QUARTER_SELECTABLE, SCHOOL_OF_MAGIC_SELECTABLE }
 
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
@@ -193,14 +195,22 @@ func set_script_mode(mode: int) -> void:
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = red
-	else: # mode == ScriptMode.NECROPOLIS:
+	elif mode == ScriptMode.NECROPOLIS:
 		$Script1Label.text = "NOTE_YES"
 		$Script2Label.text = "NOTE_NO"
 		$Script3Label.text = "NOTE_CANCEL"
 		color1 = white_lilac
 		color2 = white_lilac
 		color3 = red
+	elif mode == ScriptMode.THIEVES_DEN:
+		$Script1Label.text = "NOTE_YES"
+		$Script2Label.text = "NOTE_NO"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = basket_ball_orange
+		color2 = basket_ball_orange
+		color3 = basket_ball_orange
 	
+
 	$Script1Label.set("custom_colors/font_color", color1)
 	$Script2Label.set("custom_colors/font_color", color2)
 	$Script3Label.set("custom_colors/font_color", color3)
@@ -260,6 +270,16 @@ func hide_script3() -> void:
 	$Script3Label.hide()
 
 
+func show_script1() -> void:
+	$Script1.show()
+	$Script1Label.show()
+	
+
+func hide_script1() -> void:
+	$Script1.hide()
+	$Script1Label.hide()
+	
+
 func show_scripts() -> void:
 	$Script2.show()
 	$Script2Label.show()
@@ -297,8 +317,10 @@ func on_script1_pressed() -> void:
 			for b in $BuiltScript.get_children():
 				b.set_card_mode(b.CardMode.NECROPOLIS_SELECTING)
 			Signal.emit_signal("sgin_necropolis_choice", true)
+		ScriptMode.THIEVES_DEN:
+			hide_scripts()
+			Signal.emit_signal("sgin_thieves_den_choice", selected)
 
-		
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
 
@@ -393,22 +415,20 @@ func on_script3_pressed() -> void:
 			)
 		ScriptMode.LABORATORY:
 			Signal.emit_signal("sgin_cancel_skill", [], "Laboratory", false)
-		
+
 		ScriptMode.FRAMEWORK:
 			Signal.emit_signal(
-				"sgin_cancel_skill",
-				["scripts"],
-				"Character",
-				$Employee.ActivateMode.NONE
+				"sgin_cancel_skill", ["scripts"], "Character", $Employee.ActivateMode.NONE
 			)
 		ScriptMode.NECROPOLIS:
 			Signal.emit_signal(
-				"sgin_cancel_skill",
-				["scripts", "built"],
-				"Character",
-				$Employee.ActivateMode.NONE
-			)	
-		
+				"sgin_cancel_skill", ["scripts", "built"], "Character", $Employee.ActivateMode.NONE
+			)
+		ScriptMode.THIEVES_DEN:
+			Signal.emit_signal(
+				"sgin_cancel_skill", ["scripts", "hands", "selected"], "Character", $Employee.ActivateMode.NONE
+			)
+
 	$Script3.rect_position = end_turn_pos
 	$Script3Label.rect_position = Vector2(end_turn_pos.x + 25, end_turn_pos.y + 28)
 
@@ -792,7 +812,8 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 func rearrange_built() -> void:
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
-	
+
+
 func rearrange_hands() -> void:
 	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
@@ -923,17 +944,20 @@ func get_built_obj(card_name: String) -> Node:
 			return c
 	return null
 
+
 func get_hand_obj(card_name: String) -> Node:
 	for c in $HandScript.get_children():
 		if c.card_name == card_name:
 			return c
 	return null
 
+
 func get_opponent_built_obj(card_name: String) -> Node:
 	for c in $OpponentBuilt.get_children():
 		if c.card_name == card_name:
 			return c
 	return null
+
 
 func on_FakeBulitScriptCollision_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
@@ -957,23 +981,45 @@ func on_FakeBulitScriptCollision_mouse_exited():
 	if opponent_state in [OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE]:
 		$BuiltScript.global_position = built_script_pos
 
+
 func hide_color_choose() -> void:
 	$ColorChoose.hide()
+
 
 func show_color_choose() -> void:
 	$ColorChoose.show()
 
+
 func set_color_choose_mode(mode: int) -> void:
 	color_mode = mode
 
-func wait_haunted_quarter_color() -> void:
-	show_color_choose()
-	set_color_choose_mode(ColorMode.HAUNTED_QUARTER_SELECTABLE)
 
+func wait_haunted_quarter_color() -> void:
+	set_color_choose_mode(ColorMode.HAUNTED_QUARTER_SELECTABLE)
+	show_color_choose()
+	
+	
+func wait_school_of_magic_color() -> void:
+	set_color_choose_mode(ColorMode.SCHOOL_OF_MAGIC_SELECTABLE)
+	show_color_choose()
+
+
+func wait_thieves_den() -> void:
+	selected = []
+	for hand_obj in $HandScript.get_children():
+		if "Thieves' Den" in hand_obj.card_name:
+			continue
+		hand_obj.set_card_mode(hand_obj.CardMode.THIEVES_DEN_SELECTING)
+		
 
 func on_ColorChoose_input_event(_viewport, event, shape_idx):
 	if event is InputEventMouseButton:
 		var color_dic = {0: "yellow", 1: "blue", 2: "green", 3: "red", 4: "purple"}
-		if color_mode == ColorMode.HAUNTED_QUARTER_SELECTABLE and shape_idx:
+		if color_mode == ColorMode.HAUNTED_QUARTER_SELECTABLE:
 			hide_color_choose()
 			Signal.emit_signal("sgin_haunted_quarter_color_selected", color_dic[shape_idx])
+		elif color_mode == ColorMode.SCHOOL_OF_MAGIC_SELECTABLE:
+			hide_color_choose()
+			Signal.emit_signal("sgin_school_of_magic_color_selected", color_dic[shape_idx])
+
+

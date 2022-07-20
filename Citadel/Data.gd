@@ -81,7 +81,7 @@ const card_data = {
 	"Necropolis": {"star": 5, "kind": "purple"},
 	"Map Room": {"star": 5, "kind": "purple"},
 	"Monument": {"star": 4, "kind": "purple"},
-	"Secret Vault": {"star": 99, "kind": "purple"},
+	"Secret Vault": {"star": 0, "kind": "purple"},
 	"School of Magic": {"star": 6, "kind": "purple"},
 	"Thieves' Den": {"star": 6, "kind": "purple"},
 	"Capitol": {"star": 5, "kind": "purple"},

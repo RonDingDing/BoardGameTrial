@@ -174,14 +174,24 @@ signal sgin_framework_choice(yes_no)
 #warning-ignore:unused_signal
 signal sgin_necropolis_choice(yes_no)
 #warning-ignore:unused_signal
+signal sgin_thieves_den_choice(card_names)
+#warning-ignore:unused_signal
 signal sgin_framework_reaction_completed(price)
 #warning-ignore:unused_signal
 signal sgin_necropolis_reaction_completed(price)
 #warning-ignore:unused_signal
 signal sgin_all_play_reaction_completed(price)
 
-
-
+#warning-ignore:unused_signal
+signal sgin_school_of_magic_reaction_completed(gained)
+#warning-ignore:unused_signal
+signal sgin_all_resource_skill_reaction_completed(gained)
+#warning-ignore:unused_signal
+signal sgin_school_of_magic_color_selected(color)
+#warning-ignore:unused_signal
+signal sgin_card_thieves_den_selected(card_name, global_pos)
+#warning-ignore:unused_signal
+signal sgin_thieves_den_reaction_completed(hand_remove_num)
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:

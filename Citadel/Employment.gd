@@ -352,3 +352,14 @@ func on_char_clicked(char_num: int) -> void:
 			Signal.emit_signal("sgin_thief_once_finished", char_num, available_characters[char_num])
 
 	state = State.IDLE
+	
+func reset_discard_hidden():
+	for c in $DiscardedHidden/Discarded.get_children():
+		$DiscardedHidden/Discarded.remove_child(c)
+		c.queue_free()
+	for c in $DiscardedHidden/Hidden.get_children():
+		$DiscardedHidden/Hidden.remove_child(c)
+		c.queue_free()
+	for c in $DiscardedHidden/Selected.get_children():
+		$DiscardedHidden/Selected.remove_child(c)
+		c.queue_free()

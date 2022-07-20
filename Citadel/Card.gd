@@ -1,4 +1,4 @@
-extends Node2D
+extends "res://Area2D2.gd"
 
 onready var Signal = get_node("/root/Main/Signal")
 onready var TimerGlobal = get_node("/root/Main/Timer")
@@ -11,7 +11,8 @@ enum CardMode {
 	BUILT_CLICKABLE,
 	ARMORY_SELECTING,
 	LABORATORY_SELECTING,
-	NECROPOLIS_SELECTING
+	NECROPOLIS_SELECTING,
+	THIEVES_DEN_SELECTING
 }
 onready var mode = CardMode.STATIC
 onready var card_name = "Unknown"
@@ -75,15 +76,15 @@ func set_face_up(face_is_up: bool) -> void:
 
 
 func on_mouse_entered() -> void:
+	mouse_collided = true
 	if face_up and (not mode in [CardMode.SELECT, CardMode.STATIC]):
 		Signal.emit_signal("sgin_card_focused", card_name)
 
-
 func on_mouse_exited() -> void:
+	mouse_collided = false
 	if face_up and (not mode in [CardMode.SELECT, CardMode.STATIC]):
 		Signal.emit_signal("sgin_card_unfocused", card_name)
-
-
+	
 func get_card_info() -> Dictionary:
 	return {"card_name": card_name, "card_up_offset": card_up_offset, "position": global_position}
 
@@ -92,9 +93,12 @@ func set_card_mode(modes: int) -> void:
 	mode = modes
 
 
+
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
 	if event.is_pressed() and event is InputEventMouseButton:  #and event.doubleclick:
+		if not is_on_top():
+			return
 		match mode:
 			CardMode.SELECT:
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)
@@ -110,3 +114,5 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 				Signal.emit_signal("sgin_card_laboratory_selected", card_name, global_position)
 			CardMode.NECROPOLIS_SELECTING:
 				Signal.emit_signal("sgin_card_necropolis_selected", card_name, global_position)
+			CardMode.THIEVES_DEN_SELECTING:
+				Signal.emit_signal("sgin_card_thieves_den_selected", card_name, global_position)
