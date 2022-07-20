@@ -1,5 +1,5 @@
 extends "res://BasePlayer.gd"
-enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
+enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE, THEATER_CLICKABLE}
 
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
@@ -175,30 +175,31 @@ func can_end_game() -> bool:
 
 
 func on_mouse_entered() -> void:
-	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE]:
+	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE, OpponentState.THEATER_CLICKABLE]:
 		set_position(Vector2(original_position.x, original_position.y - 20))
 
 
 func on_mouse_exited() -> void:
-	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE]:
+	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE, OpponentState.THEATER_CLICKABLE]:
 		set_position(original_position)
 
 
 func on_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
-		if opponent_state == OpponentState.MAGICIAN_CLICKABLE:
-			on_mouse_exited()
-			Signal.emit_signal("sgin_magician_opponent_selected", player_num)
-		elif opponent_state == OpponentState.WARLORD_CLICKABLE:
-			on_mouse_exited()
-			Signal.emit_signal(
-				"sgin_warlord_opponent_selected", player_num, employee, username, built
-			)
-		elif opponent_state == OpponentState.ARMORY_CLICKABLE:
-			on_mouse_exited()
-			Signal.emit_signal(
-				"sgin_armory_opponent_selected", player_num, employee, username, built
-			)
+		on_mouse_exited()
+		match opponent_state:
+			OpponentState.MAGICIAN_CLICKABLE:
+				Signal.emit_signal("sgin_magician_opponent_selected", player_num)
+			OpponentState.WARLORD_CLICKABLE:
+				Signal.emit_signal(
+					"sgin_warlord_opponent_selected", player_num, employee, username, built
+				)
+			OpponentState.ARMORY_CLICKABLE:
+				Signal.emit_signal(
+					"sgin_armory_opponent_selected", player_num, employee, username, built
+				)
+			OpponentState.THEATER_CLICKABLE:
+				Signal.emit_signal("sgin_theater_opponent_selected", player_num)
 
 
 func add_gold(num: int) -> void:

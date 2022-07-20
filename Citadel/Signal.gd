@@ -148,7 +148,7 @@ signal sgin_card_warlord_selected(card_name, global_position)
 signal sgin_skill(skill_name)
 
 #warning-ignore:unused_signal
-signal sgin_cancel_skill(components, reset)
+signal sgin_cancel_skill(components, activate_key, activate_mode, phase)
 #warning-ignore:unused_signal
 signal sgin_reveal_done
 #warning-ignore:unused_signal
@@ -192,6 +192,16 @@ signal sgin_school_of_magic_color_selected(color)
 signal sgin_card_thieves_den_selected(card_name, global_pos)
 #warning-ignore:unused_signal
 signal sgin_thieves_den_reaction_completed(hand_remove_num)
+#warning-ignore:unused_signal
+signal sgin_theater_choice(yes_no)
+#warning-ignore:unused_signal
+signal sgin_theater_opponent_selected(player_num)
+#warning-ignore:unused_signal
+signal sgin_theater_reaction_completed
+#warning-ignore:unused_signal
+signal sgin_all_selection_skill_reaction_completed
+
+
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:

@@ -62,7 +62,8 @@ func to_be_delete():
 			#			"hand_num": 8,
 			"hands":[],
 			"built":[
-#				"School of Magic", "Haunted Quarter", "Castle1", "Castle2","Castle3","Castle4","Castle5"
+				"Theater", 
+#"Haunted Quarter", "Castle1", "Castle2","Castle3","Castle4","Castle5"
 			]
 		},
 		{
@@ -209,8 +210,8 @@ func start_game():
 func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
-#	for _i in range(4):
-	for _i in range(7):
+	for _i in range(4):
+#	for _i in range(7):
 		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
@@ -402,7 +403,6 @@ func get_next_x_player_num(x: int = 1) -> int:
 
 
 func on_sgin_character_selection() -> void:
-
 	for i in range(opponent_length + 1):
 		handle_last_player_who_select(i)
 		$Employment.wait_select()
@@ -413,6 +413,10 @@ func on_sgin_character_selection() -> void:
 			hand_over_control(next_player_num)
 			yield(Signal, "uncover")
 			show()
+	var sig = check_skill_selection()
+	if sig:
+		yield(Signal, "sgin_all_selection_skill_reaction_completed")
+
 	Signal.emit_signal("sgin_start_turn")
 
 
@@ -549,6 +553,18 @@ func gain_gold() -> void:
 	yield(Signal, "sgin_player_gold_ready")
 	Signal.emit_signal("sgin_resource_end")
 
+func check_skill_selection() -> String:
+	var sig = ""
+	for i in range(opponent_length + 1):
+		var player_obj = select_obj_by_player_num(i)
+		for b in player_obj.built:
+			if "Theater" in b:
+				card_skill_selection_theater(player_obj.player_num)
+				yield(Signal, "sgin_theater_reaction_completed")
+				sig = "sgin_all_selection_skill_reaction_completed"
+	Signal.emit_signal("sgin_all_selection_skill_reaction_completed")
+	return sig
+
 func check_skill_resource_draw_card_to_click(player_built: Array, card_to_select: int) -> int:
 	for card_name in player_built:
 		if "Library" in card_name:
@@ -659,7 +675,7 @@ func handle_play_skill_reaction(price: int, play_name: String, built: Array) -> 
 func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	if $Player.script_mode != $Player.ScriptMode.PLAYING:
 		return
-	var price = check_skill_play_price(play_name)	
+	var price = check_skill_play_price(play_name)
 	var wait = handle_play_skill_reaction(price, play_name, $Player.built)
 	if wait:
 		price = yield(Signal, "sgin_all_play_reaction_completed")
@@ -1145,14 +1161,14 @@ func on_sgin_skill(skill_name: String) -> void:
 		charskill_play_active_warlord()
 
 
-func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_mode: int=-1) -> void:
+func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_mode: int=-1, phase: int=Phase.TURN) -> void:
 	for component in components:
 		if component == "employment":
 			$Employment.hide()
 		elif component == "opponent":
 			for p in range(opponent_length + 1):
 				var opponent = select_obj_by_relative_to_first_person(p)
-				opponent.set_opponent_state(opponent.OpponentState.IDLE)			
+				opponent.set_opponent_state(opponent.OpponentState.IDLE)
 		elif component == "scripts":	
 			$Player.hide_scripts()
 		elif component == "opponent_built":
@@ -1173,9 +1189,9 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 			$Player.set_employee_activated_this_turn(activate_mode, false)
 		else:
 			$Player.set_card_skill_activated(activate_key, activate_mode)
-			
-	on_sgin_set_reminder("NOTE_PLAY")
-	$Player.enable_play()
+	if phase == Phase.TURN:
+		on_sgin_set_reminder("NOTE_PLAY")
+		$Player.enable_play()
 
 
 func is_stolen(employee_num: int, employee_name: String) -> bool:
@@ -1458,10 +1474,32 @@ func card_skill_game_over_capitol(
 	return 0
 
 
-func theater():
-	pass
-
-
+func card_skill_selection_theater(player_num: int) -> void:
+	hide()
+	hand_over_control(player_num)
+	yield(Signal, "uncover")
+	show()
+	on_sgin_set_reminder("NOTE_THEATER_ASK")
+	$Player.wait_theater()
+	var use_theater = yield(Signal, "sgin_theater_choice")
+	if use_theater:
+		for i in range(1, opponent_length + 1):
+			var player_obj = select_obj_by_relative_to_first_person(i)
+			player_obj.set_opponent_state(player_obj.OpponentState.THEATER_CLICKABLE)
+		on_sgin_set_reminder("NOTE_THEATER")
+		var selected_player = yield(Signal, "sgin_theater_opponent_selected")
+		var my_employee = $Player.employee
+		var my_employ_num = $Player.employee_num
+		var switch_player = select_obj_by_player_num(selected_player)
+		var his_employee = switch_player.employee
+		var his_employ_num = switch_player.employee_num
+		var temp = [my_employ_num, my_employee]
+		$Player.set_employee(his_employ_num, his_employee)
+		switch_player.set_employee(temp[0], temp[1])
+	Signal.emit_signal("sgin_theater_reaction_completed")
+	
+	
+	
 func card_skill_play_stables() -> bool:
 	return false
 

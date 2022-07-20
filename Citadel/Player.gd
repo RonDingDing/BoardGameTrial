@@ -34,11 +34,13 @@ enum ScriptMode {
 	LABORATORY,
 	FRAMEWORK,
 	NECROPOLIS,
-	THIEVES_DEN
+	THIEVES_DEN,
+	THEATER
 }
 enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
-enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE }
+enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE, THEATER_CLICKABLE }
 enum ColorMode { SILENT, HAUNTED_QUARTER_SELECTABLE, SCHOOL_OF_MAGIC_SELECTABLE }
+enum Phase { CHARACTER_SELECTION, RESOURCE, TURN, END, GAME_OVER }
 
 onready var script1_pos = $Script1.rect_position
 onready var script2_pos = $Script2.rect_position
@@ -68,6 +70,7 @@ const green = Color(0, 1, 0)
 const red = Color(1, 0, 0)
 const cherry = Color(0.80859375, 0.0078125, 0.203125)
 const venetian_red = Color(0.78125, 0.03125, 0.08203125)
+const blue_koi = Color(0.39453125, 0.6171875, 0.77734375)
 
 
 func _ready() -> void:
@@ -209,8 +212,13 @@ func set_script_mode(mode: int) -> void:
 		color1 = basket_ball_orange
 		color2 = basket_ball_orange
 		color3 = basket_ball_orange
-	
-
+	else:  #if mode == ScriptMode.THEATER:
+		$Script1Label.text = "NOTE_YES"
+		$Script2Label.text = "NOTE_NO"
+		$Script3Label.text = "NOTE_CANCEL"
+		color1 = blue_koi
+		color2 = blue_koi
+		color3 = blue_koi
 	$Script1Label.set("custom_colors/font_color", color1)
 	$Script2Label.set("custom_colors/font_color", color2)
 	$Script3Label.set("custom_colors/font_color", color3)
@@ -273,12 +281,12 @@ func hide_script3() -> void:
 func show_script1() -> void:
 	$Script1.show()
 	$Script1Label.show()
-	
+
 
 func hide_script1() -> void:
 	$Script1.hide()
 	$Script1Label.hide()
-	
+
 
 func show_scripts() -> void:
 	$Script2.show()
@@ -320,6 +328,9 @@ func on_script1_pressed() -> void:
 		ScriptMode.THIEVES_DEN:
 			hide_scripts()
 			Signal.emit_signal("sgin_thieves_den_choice", selected)
+		ScriptMode.THEATER:
+			hide_scripts()
+			Signal.emit_signal("sgin_theater_choice", true)
 
 	$Script1.rect_position = script1_pos
 	$Script1Label.rect_position = Vector2(script1_pos.x + 25, script1_pos.y + 28)
@@ -346,6 +357,9 @@ func on_script2_pressed() -> void:
 		ScriptMode.NECROPOLIS:
 			hide_scripts()
 			Signal.emit_signal("sgin_necropolis_choice", false)
+		ScriptMode.THEATER:
+			hide_scripts()
+			Signal.emit_signal("sgin_theater_choice", false)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
 
@@ -386,47 +400,57 @@ func on_script3_pressed() -> void:
 			Signal.emit_signal("sgin_end_turn")
 		ScriptMode.ASSASSIN, ScriptMode.THIEF:
 			Signal.emit_signal(
-				"sgin_cancel_skill", ["employment"], "Character", $Employee.ActivateMode.ALL
+				"sgin_cancel_skill", ["employment"], "Character", $Employee.ActivateMode.ALL, Phase.TURN
 			)
 		ScriptMode.MERCHANT:
 			Signal.emit_signal(
-				"sgin_cancel_skill", ["scripts"], "Character", $Employee.ActivateMode.SKILL2
+				"sgin_cancel_skill", ["scripts"], "Character", $Employee.ActivateMode.SKILL2, Phase.TURN
 			)
 		ScriptMode.MAGICIAN:
 			Signal.emit_signal(
 				"sgin_cancel_skill",
 				["opponent", "scripts"],
 				"Character",
-				$Employee.ActivateMode.ALL
+				$Employee.ActivateMode.ALL, Phase.TURN
+				
 			)
 		ScriptMode.WARLORD:
 			Signal.emit_signal(
 				"sgin_cancel_skill",
 				["opponent", "scripts", "opponent_built"],
 				"Character",
-				$Employee.ActivateMode.SKILL1
+				$Employee.ActivateMode.SKILL1, Phase.TURN
 			)
 		ScriptMode.ARMORY:
 			Signal.emit_signal(
 				"sgin_cancel_skill",
 				["opponent", "scripts", "opponent_built"],
-				"Character",
-				$Employee.ActivateMode.NONE
+				"",
+				false, Phase.TURN
 			)
 		ScriptMode.LABORATORY:
-			Signal.emit_signal("sgin_cancel_skill", [], "Laboratory", false)
+			Signal.emit_signal("sgin_cancel_skill", [], "Laboratory", false, Phase.TURN)
 
 		ScriptMode.FRAMEWORK:
 			Signal.emit_signal(
-				"sgin_cancel_skill", ["scripts"], "Character", $Employee.ActivateMode.NONE
+				"sgin_cancel_skill", ["scripts"], "", false, Phase.TURN
 			)
 		ScriptMode.NECROPOLIS:
 			Signal.emit_signal(
-				"sgin_cancel_skill", ["scripts", "built"], "Character", $Employee.ActivateMode.NONE
+				"sgin_cancel_skill", ["scripts", "built"], "", false, Phase.TURN
 			)
 		ScriptMode.THIEVES_DEN:
 			Signal.emit_signal(
-				"sgin_cancel_skill", ["scripts", "hands", "selected"], "Character", $Employee.ActivateMode.NONE
+				"sgin_cancel_skill",
+				["scripts", "hands", "selected"],
+				"", false, Phase.TURN
+			)
+		ScriptMode.THEATER:
+			Signal.emit_signal(
+				"sgin_cancel_skill",
+				["scripts", "opponent"],
+				"", false,
+				Phase.RESOURCE
 			)
 
 	$Script3.rect_position = end_turn_pos
@@ -997,8 +1021,8 @@ func set_color_choose_mode(mode: int) -> void:
 func wait_haunted_quarter_color() -> void:
 	set_color_choose_mode(ColorMode.HAUNTED_QUARTER_SELECTABLE)
 	show_color_choose()
-	
-	
+
+
 func wait_school_of_magic_color() -> void:
 	set_color_choose_mode(ColorMode.SCHOOL_OF_MAGIC_SELECTABLE)
 	show_color_choose()
@@ -1010,7 +1034,12 @@ func wait_thieves_den() -> void:
 		if "Thieves' Den" in hand_obj.card_name:
 			continue
 		hand_obj.set_card_mode(hand_obj.CardMode.THIEVES_DEN_SELECTING)
-		
+
+
+func wait_theater() -> void:
+	set_script_mode(ScriptMode.THEATER)
+	show_scripts()
+
 
 func on_ColorChoose_input_event(_viewport, event, shape_idx):
 	if event is InputEventMouseButton:
@@ -1021,5 +1050,3 @@ func on_ColorChoose_input_event(_viewport, event, shape_idx):
 		elif color_mode == ColorMode.SCHOOL_OF_MAGIC_SELECTABLE:
 			hide_color_choose()
 			Signal.emit_signal("sgin_school_of_magic_color_selected", color_dic[shape_idx])
-
-
