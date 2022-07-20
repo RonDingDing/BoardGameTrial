@@ -57,11 +57,13 @@ func to_be_delete():
 		{
 			"player_num": 0,
 			"username": "zero",
-			"money": 0,
+			"money": 3,
 			#			"employee": "Architect",
 			#			"hand_num": 8,
-			"hands":["Necropolis"],
-			"built":["Framework", "Tavern", "Tavern","Tavern","Tavern"]
+			"hands":[],
+			"built":[
+#				"School of Magic", "Haunted Quarter", "Castle1", "Castle2","Castle3","Castle4","Castle5"
+			]
 		},
 		{
 			"player_num": 1,
@@ -207,7 +209,8 @@ func start_game():
 func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
-	for _i in range(4):
+#	for _i in range(4):
+	for _i in range(7):
 		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
@@ -625,56 +628,75 @@ func on_sgin_card_selected(card_name: String, from_pos: Vector2) -> void:
 
  
 
+func handle_resource_skill_reaction(required_color: String, gained: int, built: Array) -> void:
+	for b in built:
+		if "School of Magic" in b:
+			card_skill_resource_skill_school_of_magic()
+			var color = yield(Signal, "sgin_school_of_magic_color_selected")
+			if color == required_color:
+				gained += 1
+	Signal.emit_signal("sgin_all_resource_skill_reaction_completed", gained)
+			
+
 
 func handle_play_skill_reaction(price: int, play_name: String, built: Array) -> void:
 	if "Necropolis" in play_name:
 		card_skill_play_necropolis(play_name, price)
 		price = yield(Signal, "sgin_necropolis_reaction_completed")
+	if "Thieves' Den" in play_name and price > 0:
+		card_skill_play_thieves_den(price)
+		price = yield(Signal, "sgin_thieves_den_reaction_completed")			
+	
 	for b in built:
-		if "Framework" in b and price > 0:
+		if price <= 0:
+			break
+		if "Framework" in b:
 			card_skill_play_framework(play_name, price)
 			price = yield(Signal, "sgin_framework_reaction_completed")
-			
-			
 	Signal.emit_signal("sgin_all_play_reaction_completed", price)
 	
-func on_sgin_card_played(card_name: String, from_pos: Vector2) -> void:
-	if $Player.script_mode == $Player.ScriptMode.PLAYING: 
-		var price = check_skill_play_price(card_name)
-		
-		var wait = handle_play_skill_reaction(price, card_name, $Player.built)
-		if wait:
-			price = yield(Signal, "sgin_all_play_reaction_completed")
-		var enough_money = $Player.has_enough_money(price)
-		var not_played_same = check_skill_not_played_same(card_name)
-		var not_ever_played = check_skill_has_ever_played()
-		if not (enough_money and not_played_same and not_ever_played):
-			$Player.enable_play()
-			return
-		on_sgin_disable_player_play()
-		var success_play = $Player.card_played(card_name, price, from_pos)
-		if success_play:
-			yield(Signal, "sgin_card_played_finished")
-		if $Player.built.size() == 7:
-			city_finished.append($Player.player_num)
+func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
+	if $Player.script_mode != $Player.ScriptMode.PLAYING:
+		return
+	var price = check_skill_play_price(play_name)	
+	var wait = handle_play_skill_reaction(price, play_name, $Player.built)
+	if wait:
+		price = yield(Signal, "sgin_all_play_reaction_completed")
+	var enough_money = $Player.has_enough_money(price)
+	var not_played_same = check_skill_not_played_same(play_name)
+	var not_ever_played = check_skill_has_ever_played(play_name)
+	var playable = check_skill_playable(play_name, $Player.built.size())
+	if not (enough_money and not_played_same and not_ever_played and playable):
 		$Player.enable_play()
+		return
+	on_sgin_disable_player_play()
+	var success_play = $Player.card_played(play_name, price, from_pos)
+	if success_play:
+		yield(Signal, "sgin_card_played_finished")
+	if $Player.built.size() == 7:
+		city_finished.append($Player.player_num)
+	$Player.enable_play()
 
 
 func is_game_over() -> bool:
 	var over = false
 	for p in range(opponent_length + 1):
 		var player_obj = select_obj_by_player_num(p)
-		if player_obj.can_end_game():
+		over = check_skill_can_end_game(player_obj.built)
+		if over:
+			break
+		elif player_obj.can_end_game():
 			over = true
+			break
 	return over
 
 
-func on_sgin_one_round_finished() -> void:
-	
+func on_sgin_one_round_finished() -> void:	
 	if not is_game_over():
 		current_turn_num += 1
 		var crown_player_num = find_employee_4_pnum()
 		$Employment.reset_available()
+		$Employment.reset_discard_hidden()
 		employee_reset()
 		$Player.set_assassinated("Unchosen")
 		$Player.set_stolen("Unchosen")
@@ -717,21 +739,21 @@ func game_over() -> void:
 func calculate_score(player_num: int, haunted_color: String) -> Array:
 	var score = 0
 	var player_obj = select_obj_by_player_num(player_num)
-	var _player_hands = player_obj.hands
+	var player_hands = player_obj.hands
 	var player_built = player_obj.built
 	var score_coins = 0
 	var score_color = 0
 	var score_hand = 0
 	var score_built = 0
-	var _hands_effect = []
+	var hands_effect = []
 	var built_effect = []
 	var score_finished_7 = 0
-	var has_red = 0
-	var has_yellow = 0
-	var has_blue = 0
-	var has_green = 0
-	var has_purple = 0
-	var has_odd = 0
+	var red_num = 0
+	var yellow_num = 0
+	var blue_num = 0
+	var green_num = 0
+	var purple_num = 0
+	var odd_num = 0
 	
 	var score_card = []
 	
@@ -740,7 +762,7 @@ func calculate_score(player_num: int, haunted_color: String) -> Array:
 		var star = data['star']
 		score_coins += star
 		if star % 2:
-			has_odd += 1		
+			odd_num += 1		
 		score_card.append(star)
 		var color
 		if "Haunted Quarter" in b:
@@ -749,36 +771,46 @@ func calculate_score(player_num: int, haunted_color: String) -> Array:
 			color = data['kind']
 		match color:
 			"red":
-				has_red += 1
+				red_num += 1
 			"yellow":
-				has_yellow += 1
+				yellow_num += 1
 			"blue":
-				has_blue += 1
+				blue_num += 1
 			"green":
-				has_green += 1
+				green_num += 1
 			"purple":
-				has_purple += 1
-	if has_red > 0 and has_yellow > 0 and has_blue > 0 and has_green > 0 and has_purple > 0:
+				purple_num += 1
+	if red_num > 0 and yellow_num > 0 and blue_num > 0 and green_num > 0 and purple_num > 0:
 		score_color = 3
 	var finished_found = city_finished.find(player_num) 
 	if finished_found == 0:
 		score_finished_7 = 4
 	elif finished_found == 1:
 		score_finished_7 = 2
-	
+	for h in player_hands:
+		if "Secret Vault" in h:
+			var score_secret_vault = card_skill_game_over_secret_vault()
+			if score_secret_vault > 0:
+				hands_effect.append("Secret Vault")
+				score_hand += score_secret_vault			
 	for b in player_built:
+		if "Map Room" in b:
+			var score_map_room = card_skill_game_over_map_room(player_hands.size())
+			if score_map_room > 0:
+				built_effect.append("Map Room")
+				score_built += score_map_room
 		if "Ivory Tower" in b:
-			var score_ivory = card_skill_game_over_ivory_tower(has_purple)
+			var score_ivory = card_skill_game_over_ivory_tower(purple_num)
 			if score_ivory > 0:
 				built_effect.append("Ivory Tower")
 				score_built += score_ivory
 		if "Basilica" in b:
-			var score_basilica = card_skill_game_over_basilica(has_odd)
+			var score_basilica = card_skill_game_over_basilica(odd_num)
 			if score_basilica > 0:
 				built_effect.append("Basilica")
 				score_built += score_basilica
 		if "Wishing Well" in b:
-			var score_wishing_well = card_skill_game_over_wishing_well(has_purple)
+			var score_wishing_well = card_skill_game_over_wishing_well(purple_num)
 			if score_wishing_well > 0:
 				built_effect.append("Wishing Well")
 				score_built += score_wishing_well
@@ -797,7 +829,12 @@ func calculate_score(player_num: int, haunted_color: String) -> Array:
 			if score_dragon_gate > 0:
 				built_effect.append("Dragon Gate")
 				score_built += score_dragon_gate
-		
+		if "Capitol" in b:
+			var score_capitol = card_skill_game_over_capitol(red_num, blue_num, green_num, yellow_num, purple_num)
+			if score_capitol > 0:
+				built_effect.append("Capitol")
+				score_built += score_capitol
+				
 	score = score_coins +  score_color + score_finished_7 + score_hand + score_built
 	print()
 	print(player_num)
@@ -813,12 +850,27 @@ func calculate_score(player_num: int, haunted_color: String) -> Array:
 	print()
 	return [score, score_hand, score_built]
 	
-func check_skill_has_ever_played() -> bool:
+func check_skill_has_ever_played(play_name: String) -> bool:
 	var skill_ever_played = false
 	if $Player.employee == "Architect":
 		skill_ever_played = $Player.built.size() < 3
+	if "Stables" in play_name:
+		skill_ever_played = card_skill_play_stables()
 	var player_ever_played = $Player.has_ever_played()
 	return skill_ever_played or player_ever_played
+	
+func check_skill_playable(play_name: String, built_num: int) -> bool:
+	if "Monument" in play_name:
+		return card_skill_can_build_monument(built_num)
+	if "Secret Vault" in play_name:
+		return card_skill_can_build_secret_vault()
+	return true
+	
+func check_skill_can_end_game(player_built: Array) -> bool:
+	if "Monument" in player_built:
+		return card_skill_can_end_game_monument(player_built.size())
+	return false
+	
 
 func on_sgin_disable_player_play() -> void:
 	$Employment.hide_discard_hidden()
@@ -1042,6 +1094,9 @@ func on_sgin_merchant_gold(mode: int) -> void:
 		yield(Signal, "sgin_player_gold_ready")
 	else:
 		var gained = gain_gold_by_color("green")
+		var wait = handle_resource_skill_reaction("green", gained, $Player.built)
+		if wait:
+			gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")
 		gold_move(bank_num, $Player.player_num, gained, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 		if gained == 0:
@@ -1102,11 +1157,14 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 		elif component == "opponent_built":
 			$Player.set_opponent_built_mode($Player.OpponentBuiltMode.SHOW)
 			$Player.hide_opponent_built()
+		elif component == "selected":
+			$Player.selected = []
 		elif component == "destroy":
 			destroyed = [unfound, "Unchosen"]
 		elif component == "built":
-			$Player.disable_play()
-			
+			$Player.rearrange_built()
+		elif component == "hands":
+			$Player.rearrange_hands()
 
 		if not activate_key:
 			pass
@@ -1152,35 +1210,34 @@ func is_number_four(employee_num: int) -> bool:
 func charskill_play_active_king() -> void:
 	$Player.disable_play()
 	var gained = gain_gold_by_color("yellow")
+	var wait = handle_resource_skill_reaction("yellow", gained, $Player.built)
+	if wait:
+		gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")	
 	gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
+	on_sgin_set_reminder("NOTE_PLAY")
 	$Player.enable_play()
 
 func charskill_play_active_bishop() -> void:
 	$Player.disable_play()
 	var gained = gain_gold_by_color("blue")
+	var wait = handle_resource_skill_reaction("blue", gained, $Player.built)
+	if wait:
+		gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")
 	gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.ALL, false)
+	on_sgin_set_reminder("NOTE_PLAY")
 	$Player.enable_play()
 	
 
 func gain_gold_by_color(color: String) -> int:
-	var built_color_num = $Player.built_color_num(color)
-	var add_num = card_type_change(color)
-	var gained = built_color_num + add_num
-	return gained
+	var built_color_num = $Player.built_color_num(color)	  
+	return built_color_num
 	
-
-	
-
-
-func card_type_change(_color: String) -> int:
-	return 0
-
 
 func card_skill_resource_draw_library(card_to_gain: int) -> int:
 	return card_to_gain
@@ -1247,8 +1304,8 @@ func card_skill_game_over_basilica(odd_size: int) -> int:
 	return odd_size
 
 
-func card_skill_game_over_wishing_well(has_purple: int) -> int:
-	return has_purple
+func card_skill_game_over_wishing_well(purple_num: int) -> int:
+	return purple_num
 
 
 func card_skill_game_over_statue(has_crown: bool) -> int:
@@ -1287,9 +1344,8 @@ func card_skill_game_over_haunted_quarter(player_num: int) -> void:
 	$Player.wait_haunted_quarter_color()
 
 
-func card_skill_play_framework(card_name: String, price: int) -> void:
+func card_skill_play_framework(_card_name: String, price: int) -> void:
 	on_sgin_disable_player_play()
-	var trs = Data.get_card_info(card_name)['card_name']
 	on_sgin_set_reminder("NOTE_FRAMEWORK")
 	$Player.set_script_mode($Player.ScriptMode.FRAMEWORK)
 	$Player.show_scripts()
@@ -1310,9 +1366,37 @@ func card_skill_play_framework(card_name: String, price: int) -> void:
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_framework_reaction_completed", price)	
 	
+
+func card_skill_play_thieves_den(price: int) -> void:
+	on_sgin_disable_player_play()
+	on_sgin_set_reminder("NOTE_THIEVES_DEN")
+	$Player.set_script_mode($Player.ScriptMode.THIEVES_DEN)
+	$Player.show_script1()
+	$Player.wait_thieves_den()
+	var remove_hands = yield(Signal, "sgin_thieves_den_choice")
+	$Player.hide_script1()
+	for h in remove_hands:
+		if price <= 0:
+			break
+		var hand_obj = $Player.get_hand_obj(h)
+		var hand_scale = hand_obj.scale
+		var hand_pos = hand_obj.global_position
+		card_enlarge_to_center(hand_obj, hand_pos)
+		yield(Signal, "sgin_card_move_done")
+		hand_obj.global_position = center
+		center_card_shrink_to_away(hand_obj, hand_scale)
+		yield(Signal, "sgin_card_move_done")
+		$Player.remove_hand(h)
+		price -= 1
+	$Player.rearrange_hands()
+	on_sgin_set_reminder("NOTE_PLAY")
+	print(price)
+	Signal.emit_signal("sgin_thieves_den_reaction_completed", price)
+		
 	
 
-func card_skill_play_necropolis(card_name: String, price: int) -> void:
+
+func card_skill_play_necropolis(_card_name: String, price: int) -> void:
 	on_sgin_disable_player_play()
 	on_sgin_set_reminder("NOTE_NECROPOLIS")
 	$Player.set_script_mode($Player.ScriptMode.NECROPOLIS)
@@ -1336,42 +1420,48 @@ func card_skill_play_necropolis(card_name: String, price: int) -> void:
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_necropolis_reaction_completed", price)	
 
-func cardskill_gameover_map_room(hand_num: int) -> void:
-	Signal.emit_signal("sgin_add_point", hand_num)
+func card_skill_game_over_map_room(hand_num: int) -> int:
+	return hand_num
 
 
-func cardskill_canbuild_monument(built_num: int) -> bool:
-	return built_num >= 5
+func card_skill_can_build_monument(built_num: int) -> bool:
+	return built_num <= 5
 
 
-func cardskill_builtcount_monument() -> int:
-	return 2
+func card_skill_can_end_game_monument(built_num: int) -> bool:
+	return built_num >= 6
 
 
-func cardskill_gameoverhand_secret_vault() -> void:
-	Signal.emit_signal("sgin_add_point", 3)
+func card_skill_can_build_secret_vault() -> bool:
+	return false
 
 
-func school_of_magic() -> void:
-	pass
+func card_skill_game_over_secret_vault() -> int:
+	return 3
+
+
+func card_skill_resource_skill_school_of_magic() -> void:
+	on_sgin_set_reminder("NOTE_SCHOOL_OF_MAGIC")
+	$Player.wait_school_of_magic_color()
 
 
 func thieves_den() -> void:
 	pass
 
 
-func cardskill_gameover_capitol(
+func card_skill_game_over_capitol(
 	red_num: int, blue_num: int, green_num: int, yellow_num: int, purple_num: int
-) -> void:
+) -> int:
 	if red_num >= 3 or blue_num >= 3 or green_num >= 3 or yellow_num >= 3 or purple_num >= 3:
-		Signal.emit_signal("sgin_add_point", 3)
+		return 3
+	return 0
 
 
 func theater():
 	pass
 
 
-func cardskill_play_stables():
+func card_skill_play_stables() -> bool:
 	return false
 
 
@@ -1454,6 +1544,9 @@ func on_sgin_warlord_choice(mode: int) -> void:
 				opponent.set_opponent_state(opponent.OpponentState.SILENT)
 	else:
 		var gained = gain_gold_by_color("red")
+		var wait = handle_resource_skill_reaction("red", gained, $Player.built)
+		if wait:
+			gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")
 		gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn($Player/Employee.ActivateMode.SKILL2, false)
@@ -1607,5 +1700,13 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	on_sgin_cancel_skill(["opponent", "opponent_built", "destroyed"])
 
 
-
+func on_sgin_card_thieves_den_selected(card_name: String, _global_pos: Vector2) -> void:
+	if card_name in $Player.selected:
+		$Player.selected.erase(card_name)
+		$Player.get_hand_obj(card_name).global_position.y += 20
+	else:
+		$Player.selected.append(card_name)
+		$Player.get_hand_obj(card_name).global_position.y -= 20
+	print($Player.selected)
+		
 

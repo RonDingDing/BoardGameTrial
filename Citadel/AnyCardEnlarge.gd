@@ -60,7 +60,7 @@ func steal(char_name: String) -> void:
 
 
 func on_sgin_card_focused(card_name: String) -> void:
-	if mode == Mode.ENLARGE:
+	if mode == Mode.ENLARGE and enlarging != card_name:
 		$CharacterCard.hide()
 		enlarging = card_name
 		var card_info = Data.get_card_info(card_name)
@@ -76,12 +76,14 @@ func on_sgin_card_focused(card_name: String) -> void:
 
 
 func on_sgin_card_unfocused(card_name: String) -> void:
+	print("enlarging: ", enlarging)
 	if mode == Mode.ENLARGE and enlarging == card_name:
+		enlarging = "Unknown"
 		$Card0.hide()
 
 
 func on_sgin_char_focused(char_name: String) -> void:
-	if mode == Mode.ENLARGE:
+	if mode == Mode.ENLARGE and enlarging != char_name:
 		$Card0.hide()
 		enlarging = char_name
 		var char_info = Data.get_char_info(char_name)
@@ -98,6 +100,7 @@ func on_sgin_char_focused(char_name: String) -> void:
 
 func on_sgin_char_unfocused(char_name: String) -> void:
 	if mode == Mode.ENLARGE and enlarging == char_name:
+		enlarging = "Unknown"
 		$CharacterCard.hide()
 
 
