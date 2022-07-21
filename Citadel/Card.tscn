@@ -1,4 +1,4 @@
-[gd_scene load_steps=56 format=2]
+[gd_scene load_steps=57 format=2]
 
 [ext_resource path="res://images/Architecture/Ivory Tower.png" type="Texture" id=1]
 [ext_resource path="res://images/Architecture/Armory.png" type="Texture" id=2]
@@ -73,14 +73,24 @@ animations = [ {
 "name": "Quarry",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 44 ) ],
+"frames": [ ExtResource( 31 ) ],
 "loop": true,
-"name": "Observatory",
+"name": "Museum",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 36 ) ],
+"frames": [ ExtResource( 39 ) ],
 "loop": true,
-"name": "Park",
+"name": "Laboratory",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 37 ) ],
+"loop": true,
+"name": "Poor House",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 7 ) ],
+"loop": true,
+"name": "Fortress",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 45 ) ],
@@ -93,59 +103,9 @@ animations = [ {
 "name": "Monastery",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 21 ) ],
+"frames": [ ExtResource( 27 ) ],
 "loop": true,
-"name": "School of Magic",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 43 ) ],
-"loop": true,
-"name": "Necropolis",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 26 ) ],
-"loop": true,
-"name": "Theater",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 13 ) ],
-"loop": true,
-"name": "Harbor",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 8 ) ],
-"loop": true,
-"name": "Framework",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 15 ) ],
-"loop": true,
-"name": "Imperial Treasury",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 42 ) ],
-"loop": true,
-"name": "Map Room",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 4 ) ],
-"loop": true,
-"name": "Church",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 41 ) ],
-"loop": true,
-"name": "Manor",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 49 ) ],
-"loop": true,
-"name": "Unknown",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 17 ) ],
-"loop": true,
-"name": "Barracks",
+"name": "Temple",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 18 ) ],
@@ -153,24 +113,9 @@ animations = [ {
 "name": "Castle",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 52 ) ],
+"frames": [ ExtResource( 24 ) ],
 "loop": true,
-"name": "Statue",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 39 ) ],
-"loop": true,
-"name": "Laboratory",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 38 ) ],
-"loop": true,
-"name": "Prison",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 9 ) ],
-"loop": true,
-"name": "Basilica",
+"name": "Smithy",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 1 ) ],
@@ -178,29 +123,14 @@ animations = [ {
 "name": "Ivory Tower",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 20 ) ],
+"frames": [ ExtResource( 2 ) ],
 "loop": true,
-"name": "Stables",
+"name": "Armory",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 37 ) ],
+"frames": [ ExtResource( 38 ) ],
 "loop": true,
-"name": "Poor House",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 3 ) ],
-"loop": true,
-"name": "Docks",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 29 ) ],
-"loop": true,
-"name": "Town Hall",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 28 ) ],
-"loop": true,
-"name": "Trading Post",
+"name": "Prison",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 30 ) ],
@@ -208,49 +138,9 @@ animations = [ {
 "name": "Wishing Well",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 25 ) ],
+"frames": [ ExtResource( 33 ) ],
 "loop": true,
-"name": "Thieves' Den",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 11 ) ],
-"loop": true,
-"name": "Great Wall",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 12 ) ],
-"loop": true,
-"name": "Cathedral",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 22 ) ],
-"loop": true,
-"name": "Secret Vault",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 27 ) ],
-"loop": true,
-"name": "Temple",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 5 ) ],
-"loop": true,
-"name": "Dragon Gate",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 7 ) ],
-"loop": true,
-"name": "Fortress",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 2 ) ],
-"loop": true,
-"name": "Armory",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 16 ) ],
-"loop": true,
-"name": "Capitol",
+"name": "Market",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 35 ) ],
@@ -258,24 +148,39 @@ animations = [ {
 "name": "Palace",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 19 ) ],
+"frames": [ ExtResource( 5 ) ],
 "loop": true,
-"name": "Watchtower",
+"name": "Dragon Gate",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 31 ) ],
+"frames": [ ExtResource( 41 ) ],
 "loop": true,
-"name": "Museum",
+"name": "Manor",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 24 ) ],
+"frames": [ ExtResource( 13 ) ],
 "loop": true,
-"name": "Smithy",
+"name": "Harbor",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 33 ) ],
+"frames": [ ExtResource( 17 ) ],
 "loop": true,
-"name": "Market",
+"name": "Barracks",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 10 ) ],
+"loop": true,
+"name": "Gold Mine",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 52 ) ],
+"loop": true,
+"name": "Statue",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 4 ) ],
+"loop": true,
+"name": "Church",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 23 ) ],
@@ -283,14 +188,109 @@ animations = [ {
 "name": "Tavern",
 "speed": 5.0
 }, {
+"frames": [ ExtResource( 25 ) ],
+"loop": true,
+"name": "Thieves' Den",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 49 ) ],
+"loop": true,
+"name": "Unknown",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 16 ) ],
+"loop": true,
+"name": "Capitol",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 28 ) ],
+"loop": true,
+"name": "Trading Post",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 19 ) ],
+"loop": true,
+"name": "Watchtower",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 43 ) ],
+"loop": true,
+"name": "Necropolis",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 15 ) ],
+"loop": true,
+"name": "Imperial Treasury",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 9 ) ],
+"loop": true,
+"name": "Basilica",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 8 ) ],
+"loop": true,
+"name": "Framework",
+"speed": 5.0
+}, {
 "frames": [ ExtResource( 14 ) ],
 "loop": true,
 "name": "Haunted Quarter",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 10 ) ],
+"frames": [ ExtResource( 20 ) ],
 "loop": true,
-"name": "Gold Mine",
+"name": "Stables",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 36 ) ],
+"loop": true,
+"name": "Park",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 21 ) ],
+"loop": true,
+"name": "School of Magic",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 29 ) ],
+"loop": true,
+"name": "Town Hall",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 12 ) ],
+"loop": true,
+"name": "Cathedral",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 26 ) ],
+"loop": true,
+"name": "Theater",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 22 ) ],
+"loop": true,
+"name": "Secret Vault",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 3 ) ],
+"loop": true,
+"name": "Docks",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 44 ) ],
+"loop": true,
+"name": "Observatory",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 42 ) ],
+"loop": true,
+"name": "Map Room",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 11 ) ],
+"loop": true,
+"name": "Great Wall",
 "speed": 5.0
 } ]
 
@@ -312,6 +312,10 @@ animations = [ {
 
 [sub_resource type="RectangleShape2D" id=6]
 extents = Vector2( 335, 526 )
+
+[sub_resource type="DynamicFont" id=7]
+size = 90
+font_data = ExtResource( 50 )
 
 [node name="Card" type="Area2D"]
 script = ExtResource( 47 )
@@ -355,6 +359,18 @@ frames = SubResource( 5 )
 
 [node name="Collision" type="CollisionShape2D" parent="."]
 shape = SubResource( 6 )
+
+[node name="MuseumNum" type="Label" parent="."]
+margin_left = -292.0
+margin_top = -496.0
+margin_right = -237.0
+margin_bottom = -405.0
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_fonts/font = SubResource( 7 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [connection signal="input_event" from="." to="." method="on_input_event"]
 [connection signal="mouse_entered" from="." to="." method="on_mouse_entered"]

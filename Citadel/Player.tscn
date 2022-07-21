@@ -40,19 +40,24 @@ animations = [ {
 "name": "Player6",
 "speed": 5.0
 }, {
+"frames": [ ExtResource( 12 ) ],
+"loop": true,
+"name": "Player4",
+"speed": 5.0
+}, {
 "frames": [ ExtResource( 8 ) ],
 "loop": true,
 "name": "Player0",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 11 ) ],
+"frames": [ ExtResource( 14 ) ],
 "loop": true,
-"name": "Player3",
+"name": "Player2",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 12 ) ],
+"frames": [ ExtResource( 13 ) ],
 "loop": true,
-"name": "Player4",
+"name": "Player7",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 15 ) ],
@@ -65,14 +70,9 @@ animations = [ {
 "name": "Player5",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 13 ) ],
+"frames": [ ExtResource( 11 ) ],
 "loop": true,
-"name": "Player7",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 14 ) ],
-"loop": true,
-"name": "Player2",
+"name": "Player3",
 "speed": 5.0
 } ]
 
@@ -308,7 +308,6 @@ shape = SubResource( 6 )
 [connection signal="input_event" from="FakeBulitScriptCollision" to="." method="on_FakeBulitScriptCollision_input_event"]
 [connection signal="mouse_entered" from="FakeBulitScriptCollision" to="." method="on_FakeBulitScriptCollision_mouse_entered"]
 [connection signal="mouse_exited" from="FakeBulitScriptCollision" to="." method="on_FakeBulitScriptCollision_mouse_exited"]
-[connection signal="input_event" from="Employee" to="Employee" method="on_input_event"]
 [connection signal="mouse_entered" from="Script1" to="." method="on_script1_mouse_entered"]
 [connection signal="mouse_exited" from="Script1" to="." method="on_script1_mouse_exited"]
 [connection signal="pressed" from="Script1" to="." method="on_script1_pressed"]

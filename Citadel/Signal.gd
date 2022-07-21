@@ -1,4 +1,6 @@
 extends Node
+onready var Data = get_node("/root/Main/Data")
+
 #warning-ignore:unused_signal
 signal sgin_gold_move(from_pnum, to_pnum, price, done_signal)
 #warning-ignore:unused_signal
@@ -181,7 +183,6 @@ signal sgin_framework_reaction_completed(price)
 signal sgin_necropolis_reaction_completed(price)
 #warning-ignore:unused_signal
 signal sgin_all_play_reaction_completed(price)
-
 #warning-ignore:unused_signal
 signal sgin_school_of_magic_reaction_completed(gained)
 #warning-ignore:unused_signal
@@ -200,16 +201,18 @@ signal sgin_theater_opponent_selected(player_num)
 signal sgin_theater_reaction_completed
 #warning-ignore:unused_signal
 signal sgin_all_selection_skill_reaction_completed
+#warning-ignore:unused_signal
+signal sgin_card_museum_selected(card_name, global_position)
 
 
 
 
 func on_sgin_char_not_ready(chara: Node) -> void:
-	chara.set_enlargeable(false)
+	chara.set_char_mode(Data.CharMode.STATIC)
 
 
 func on_sgin_char_ready(chara: Node) -> void:
-	chara.set_enlargeable(true)
+	chara.set_char_mode(Data.CharMode.ENLARGE)
 
 
 func on_sgin_player_draw_ready(_card: Node) -> void:
@@ -218,7 +221,7 @@ func on_sgin_player_draw_ready(_card: Node) -> void:
 
 
 func on_sgin_player_draw_not_ready(card: Node) -> void:
-	card.set_card_mode(card.CardMode.STATIC)
+	card.set_card_mode(Data.CardMode.STATIC)
 
 
 

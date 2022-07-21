@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=12 format=2]
 
 [ext_resource path="res://Bank.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Deck.tscn" type="PackedScene" id=2]
@@ -9,7 +9,6 @@
 [ext_resource path="res://images/Background.jpg" type="Texture" id=9]
 [ext_resource path="res://OpponentInfo.tscn" type="PackedScene" id=11]
 [ext_resource path="res://AnyCardEnlarge.tscn" type="PackedScene" id=12]
-[ext_resource path="res://Skill.gd" type="Script" id=13]
 
 [sub_resource type="Curve2D" id=2]
 _data = {
@@ -73,9 +72,6 @@ offset = 783.189
 position = Vector2( 719, 530 )
 
 [node name="AnyCardEnlarge" parent="." instance=ExtResource( 12 )]
-
-[node name="Skill" type="Node2D" parent="."]
-script = ExtResource( 13 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 714, 523.5 )

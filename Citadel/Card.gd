@@ -2,19 +2,8 @@ extends "res://Area2D2.gd"
 
 onready var Signal = get_node("/root/Main/Signal")
 onready var TimerGlobal = get_node("/root/Main/Timer")
-enum CardMode {
-	ENLARGE,
-	STATIC,
-	SELECT,
-	PLAY,
-	WARLORD_SELECTING,
-	BUILT_CLICKABLE,
-	ARMORY_SELECTING,
-	LABORATORY_SELECTING,
-	NECROPOLIS_SELECTING,
-	THIEVES_DEN_SELECTING
-}
-onready var mode = CardMode.STATIC
+onready var Data = get_node("/root/Main/Data")
+onready var mode = Data.CardMode.STATIC
 onready var card_name = "Unknown"
 onready var card_up_offset = 0
 onready var face_up = false
@@ -32,14 +21,7 @@ func rid_num(name: String) -> String:
 	return new_name
 
 
-func init_card(
-	animation_name: String,
-	up_offset: float,
-	scales: Vector2,
-	pos: Vector2,
-	face_is_up: bool,
-	modes: int
-) -> void:
+func init_card(animation_name: String, up_offset: float, scales: Vector2, pos: Vector2, face_is_up: bool, modes: int) -> void:
 	card_name = animation_name
 	var new_name = rid_num(animation_name)
 	var desc = str("DESC_", new_name.to_upper().replace(" ", "_"))
@@ -52,6 +34,7 @@ func init_card(
 	set_card_mode(modes)
 	set_scale(scales)
 	set_global_position(pos)
+
 
 
 func set_face_up(face_is_up: bool) -> void:
@@ -77,21 +60,26 @@ func set_face_up(face_is_up: bool) -> void:
 
 func on_mouse_entered() -> void:
 	mouse_collided = true
-	if face_up and (not mode in [CardMode.SELECT, CardMode.STATIC]):
+	if face_up and (not mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
 		Signal.emit_signal("sgin_card_focused", card_name)
+
 
 func on_mouse_exited() -> void:
 	mouse_collided = false
-	if face_up and (not mode in [CardMode.SELECT, CardMode.STATIC]):
+	if face_up and (not mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
 		Signal.emit_signal("sgin_card_unfocused", card_name)
-	
+
+
 func get_card_info() -> Dictionary:
 	return {"card_name": card_name, "card_up_offset": card_up_offset, "position": global_position}
 
 
 func set_card_mode(modes: int) -> void:
 	mode = modes
-
+	if "Museum" in card_name and face_up and mode == Data.CardMode.BUILT_CLICKABLE:
+		$MuseumNum.set_visible(true)
+	else:
+		$MuseumNum.set_visible(false)
 
 
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -100,19 +88,30 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 		if not is_on_top():
 			return
 		match mode:
-			CardMode.SELECT:
+			Data.CardMode.SELECT:
 				Signal.emit_signal("sgin_card_selected", card_name, global_position)
-			CardMode.PLAY:
+			Data.CardMode.PLAY:
 				Signal.emit_signal("sgin_card_played", card_name, global_position)
-			CardMode.WARLORD_SELECTING:
+			Data.CardMode.WARLORD_SELECTING:
 				Signal.emit_signal("sgin_card_warlord_selected", card_name, global_position)
-			CardMode.ARMORY_SELECTING:
+			Data.CardMode.ARMORY_SELECTING:
 				Signal.emit_signal("sgin_card_armory_selected", card_name, global_position)
-			CardMode.BUILT_CLICKABLE:
+			Data.CardMode.BUILT_CLICKABLE:
 				Signal.emit_signal("sgin_card_clickable_clicked", card_name, global_position)
-			CardMode.LABORATORY_SELECTING:
+			Data.CardMode.LABORATORY_SELECTING:
 				Signal.emit_signal("sgin_card_laboratory_selected", card_name, global_position)
-			CardMode.NECROPOLIS_SELECTING:
+			Data.CardMode.NECROPOLIS_SELECTING:
 				Signal.emit_signal("sgin_card_necropolis_selected", card_name, global_position)
-			CardMode.THIEVES_DEN_SELECTING:
+			Data.CardMode.THIEVES_DEN_SELECTING:
 				Signal.emit_signal("sgin_card_thieves_den_selected", card_name, global_position)
+			Data.CardMode.MUSEUM_SELECTING:
+				Signal.emit_signal("sgin_card_museum_selected", card_name, global_position)
+
+
+func add_museum_num() -> void:
+	$MuseumNum.set_text(str(int($MuseumNum.text) + 1))
+	$MuseumNum.show()
+
+func set_museum_num(num: int) -> void:
+	$MuseumNum.set_text(str(num))
+

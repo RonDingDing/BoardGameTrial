@@ -169,3 +169,4 @@ NOTE_SCHOOL_OF_MAGIC, "Please choose a type you wish the School of Magic to turn
 NOTE_THIEVES_DEN, "Please select the hands you wish to remove as cost to build the Thieves' Den.", "请选择若干张手牌弃掉，以抵扣贼窝的建造成本。"
 NOTE_THEATER_ASK, "Do you want to exchange your employee with another player?", "你要和另一名玩家交换雇佣角色吗？"
 NOTE_THEATER, "Please select a player with whom you wish to exchange your employee.", "请选择一名玩家与其交换雇佣角色。"
+NOTE_MUSEUM, "Please select a hand to stash into the Museum.", "请选择要藏进博物馆的手牌。"

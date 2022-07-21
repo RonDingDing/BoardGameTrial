@@ -1,6 +1,8 @@
 extends  "res://Area2D2.gd"
 
+
 onready var Signal = get_node("/root/Main/Signal")
+onready var Data = get_node("/root/Main/Data")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var char_name = "Unchosen"
 onready var desc_trans = ""
@@ -8,8 +10,7 @@ onready var name_text = ""
 onready var char_num = 0
 onready var char_up_offset = 0
 onready var face_up = false
-onready var enlargeable = false
-
+onready var char_mode = Data.CharMode.ENLARGE
 
 func get_char_info() -> Dictionary:
 	return {
@@ -19,6 +20,8 @@ func get_char_info() -> Dictionary:
 		"position": global_position
 	}
 
+func set_char_mode(mode: int) -> void:
+	char_mode = mode
 
 func init_char(
 	animation_name: String,
@@ -37,6 +40,7 @@ func init_char(
 	set_face_up(face_is_up)
 	set_scale(scales)  #Vector2(0.13, 0.13)
 	set_position(pos)
+	set_char_mode(Data.CharMode.ENLARGE)
 
 
 func set_face_up(face_is_up: bool) -> void:
@@ -63,24 +67,19 @@ func set_face_up(face_is_up: bool) -> void:
 
 
 func on_mouse_entered() -> void:
-	if face_up and enlargeable:
-		# TimerGlobal.set_wait_time(0.05)
-		# TimerGlobal.start()
-		# yield(TimerGlobal, "timeout")
-
+	if face_up and char_mode != Data.CharMode.STATIC:
 		Signal.emit_signal("sgin_char_focused", char_name)
 
 
 func on_mouse_exited() -> void:
-	if face_up and enlargeable:
+	if face_up and char_mode != Data.CharMode.STATIC:
 		Signal.emit_signal("sgin_char_unfocused", char_name)
 
 
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
-	if event.is_pressed() and event is InputEventMouseButton and is_on_top():  # and event.doubleclick:
+	if event.is_pressed() and event is InputEventMouseButton and is_on_top() and char_mode == Data.CharMode.CLICKABLE:  # and event.doubleclick:
 		Signal.emit_signal("sgin_char_selected", char_num)
 
 
-func set_enlargeable(able: bool) -> void:
-	enlargeable = able
+ 

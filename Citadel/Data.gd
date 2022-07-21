@@ -112,98 +112,10 @@ const card_data = {
 	"Temple": {"star": 1, "kind": "blue"},
 }
 
-const char_data = {
-	"Magistrate": 1,
-	"Witch": 1,
-	"Assassin": 1,
-	"Thief": 2,
-	"Spy": 2,
-	"Blackmailer": 2,
-	"Magician": 3,
-	"Wizard": 3,
-	"Seer": 3,
-	"Patrician": 4,
-	"King": 4,
-	"Emperor": 4,
-	"Bishop": 5,
-	"Abbot": 5,
-	"Cardinal": 5,
-	"Alchemist": 6,
-	"Merchant": 6,
-	"Trader": 6,
-	"Navigator": 7,
-	"Scholar": 7,
-	"Architect": 7,
-	"Marshal": 8,
-	"Diplomat": 8,
-	"Warlord": 8,
-	"Artist": 9,
-	"Queen": 9,
-	"Tax Collector": 9
-}
+const char_data = {"Magistrate": 1, "Witch": 1, "Assassin": 1, "Thief": 2, "Spy": 2, "Blackmailer": 2, "Magician": 3, "Wizard": 3, "Seer": 3, "Patrician": 4, "King": 4, "Emperor": 4, "Bishop": 5, "Abbot": 5, "Cardinal": 5, "Alchemist": 6, "Merchant": 6, "Trader": 6, "Navigator": 7, "Scholar": 7, "Architect": 7, "Marshal": 8, "Diplomat": 8, "Warlord": 8, "Artist": 9, "Queen": 9, "Tax Collector": 9}
 
-const up_offset_char = {
-	"en":
-	{
-		"Magistrate": 0,
-		"Witch": 0,
-		"Assassin": -45,
-		"Thief": -50,
-		"Spy": -30,
-		"Blackmailer": 0,
-		"Magician": -35,
-		"Wizard": -15,
-		"Seer": -15,
-		"Patrician": -45,
-		"King": -40,
-		"Emperor": -15,
-		"Bishop": -40,
-		"Abbot": -30,
-		"Cardinal": -15,
-		"Alchemist": -30,
-		"Merchant": -50,
-		"Trader": -40,
-		"Navigator": -55,
-		"Scholar": -40,
-		"Architect": -70,
-		"Marshal": -15,
-		"Diplomat": -20,
-		"Warlord": -35,
-		"Artist": -40,
-		"Queen": -55,
-		"Tax Collector": -20
-	},
-	"zh_CN":
-	{
-		"Magistrate": -20,
-		"Witch": -30,
-		"Assassin": -65,
-		"Thief": -45,
-		"Spy": -30,
-		"Blackmailer": 0,
-		"Magician": -65,
-		"Wizard": -45,
-		"Seer": -65,
-		"Patrician": -70,
-		"King": -70,
-		"Emperor": -45,
-		"Bishop": -55,
-		"Abbot": -55,
-		"Cardinal": -35,
-		"Alchemist": -45,
-		"Merchant": -70,
-		"Trader": -50,
-		"Navigator": -70,
-		"Scholar": -55,
-		"Architect": -100,
-		"Marshal": -10,
-		"Diplomat": -5,
-		"Warlord": -55,
-		"Artist": -35,
-		"Queen": -75,
-		"Tax Collector": -60
-	}
-}
+const up_offset_char = {"en": {"Magistrate": 0, "Witch": 0, "Assassin": -45, "Thief": -50, "Spy": -30, "Blackmailer": 0, "Magician": -35, "Wizard": -15, "Seer": -15, "Patrician": -45, "King": -40, "Emperor": -15, "Bishop": -40, "Abbot": -30, "Cardinal": -15, "Alchemist": -30, "Merchant": -50, "Trader": -40, "Navigator": -55, "Scholar": -40, "Architect": -70, "Marshal": -15, "Diplomat": -20, "Warlord": -35, "Artist": -40, "Queen": -55, "Tax Collector": -20}, "zh_CN": {"Magistrate": -20, "Witch": -30, "Assassin": -65, "Thief": -45, "Spy": -30, "Blackmailer": 0, "Magician": -65, "Wizard": -45, "Seer": -65, "Patrician": -70, "King": -70, "Emperor": -45, "Bishop": -55, "Abbot": -55, "Cardinal": -35, "Alchemist": -45, "Merchant": -70, "Trader": -50, "Navigator": -70, "Scholar": -55, "Architect": -100, "Marshal": -10, "Diplomat": -5, "Warlord": -55, "Artist": -35, "Queen": -75, "Tax Collector": -60}}
+
 
 func rid_num(name: String) -> String:
 	var regex = RegEx.new()
@@ -215,11 +127,10 @@ func rid_num(name: String) -> String:
 	return new_name
 
 
-
 func get_up_offset(name: String) -> float:
 	var new_name = rid_num(name)
 	return up_offset[TranslationServer.get_locale()].get(new_name, 0)
-	
+
 
 func get_card_info(name: String) -> Dictionary:
 	var new_name = rid_num(name)
@@ -243,3 +154,19 @@ func get_char_info(char_name: String) -> Dictionary:
 		"char_num": char_data[char_name],
 		"char_up_offset": get_up_offset_char(char_name),
 	}
+
+
+enum Phase { CHARACTER_SELECTION, RESOURCE, TURN, END, GAME_OVER }
+enum Need { GOLD, CARD }
+enum FindPlayerObjBy { EMPLOYEE, EMPLOYEE_NUM, PLAYER_NUM, CROWN, RELATIVE_TO_FIRST_PERSON }
+enum ScriptMode { RESOURCE, PLAYING, NOT_PLAYING, ASSASSIN, THIEF, MAGICIAN, MERCHANT, WARLORD, ARMORY, LABORATORY, FRAMEWORK, NECROPOLIS, THIEVES_DEN, THEATER, MUSEUM }
+enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE, THEATER_CLICKABLE }
+enum OpponentBuiltMode { SILENT, SHOW, WARLORD_SHOW, ARMORY_SHOW }
+enum ColorMode { SILENT, HAUNTED_QUARTER_SELECTABLE, SCHOOL_OF_MAGIC_SELECTABLE }
+enum CardMode { ENLARGE, STATIC, SELECT, PLAY, ASSASSINATING, STEALING, WARLORD_SELECTING, BUILT_CLICKABLE, ARMORY_SELECTING, LABORATORY_SELECTING, NECROPOLIS_SELECTING, THIEVES_DEN_SELECTING, MUSEUM_SELECTING }
+enum CharMode { STATIC, ENLARGE, CLICKABLE }
+enum EmploymentState { IDLE, DISCARDING, HIDING, SELECTING, ASSASSINATING, STEALING }
+enum ActivateMode { ALL, SKILL1, SKILL2 }
+enum MagicianSwitch { DECK, PLAYER }
+enum MerchantGold { ONE, GREEN }
+enum WarlordChoice { DESTROY, RED }

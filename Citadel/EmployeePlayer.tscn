@@ -16,9 +16,9 @@
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
-"frames": [ ExtResource( 6 ) ],
+"frames": [ ExtResource( 2 ) ],
 "loop": true,
-"name": "Merchant",
+"name": "Architect",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 11 ) ],
@@ -26,14 +26,19 @@ animations = [ {
 "name": "Queen",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 7 ) ],
-"loop": true,
-"name": "Warlord",
-"speed": 5.0
-}, {
 "frames": [ ExtResource( 1 ) ],
 "loop": true,
 "name": "Unchosen",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 3 ) ],
+"loop": true,
+"name": "Thief",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 4 ) ],
+"loop": true,
+"name": "King",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 13 ) ],
@@ -41,9 +46,14 @@ animations = [ {
 "name": "Magician",
 "speed": 5.0
 }, {
-"frames": [ ExtResource( 4 ) ],
+"frames": [ ExtResource( 7 ) ],
 "loop": true,
-"name": "King",
+"name": "Warlord",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 6 ) ],
+"loop": true,
+"name": "Merchant",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 9 ) ],
@@ -54,16 +64,6 @@ animations = [ {
 "frames": [ ExtResource( 5 ) ],
 "loop": true,
 "name": "Assassin",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 2 ) ],
-"loop": true,
-"name": "Architect",
-"speed": 5.0
-}, {
-"frames": [ ExtResource( 3 ) ],
-"loop": true,
-"name": "Thief",
 "speed": 5.0
 }, {
 "frames": [ ExtResource( 8 ) ],
@@ -91,5 +91,6 @@ animation = "Unchosen"
 position = Vector2( 0.5, 0.5 )
 shape = SubResource( 2 )
 
-[connection signal="mouse_entered" from="." to="." method="on_mouse_entered"]
-[connection signal="mouse_exited" from="." to="." method="on_mouse_exited"]
+[connection signal="input_event" from="." to="." method="on_input_event"]
+[connection signal="mouse_entered" from="." to="." method="on_employee_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="on_employee_mouse_exited"]

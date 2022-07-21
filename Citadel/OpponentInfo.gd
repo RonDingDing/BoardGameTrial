@@ -1,5 +1,4 @@
 extends "res://BasePlayer.gd"
-enum OpponentState { IDLE, SILENT, MAGICIAN_CLICKABLE, WARLORD_CLICKABLE, ARMORY_CLICKABLE, THEATER_CLICKABLE}
 
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
@@ -7,7 +6,7 @@ onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
 onready var Data = get_node("/root/Main/Data")
 
-onready var opponent_state = OpponentState.IDLE
+onready var opponent_state = Data.OpponentState.IDLE
 onready var bank_position = Vector2(-9999, -9999)
 onready var deck_position = Vector2(-9999, -9999)
 onready var original_position = Vector2(-9999, -9999)
@@ -56,7 +55,7 @@ func draw(
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
 	add_child(incoming_card)
 	incoming_card.init_card(
-		"Unknown", 0, start_scale, from_pos, false, incoming_card.CardMode.ENLARGE
+		"Unknown", 0, start_scale, from_pos, false, Data.CardMode.ENLARGE
 	)
 	TweenMove.animate(
 		[
@@ -131,7 +130,11 @@ func on_player_info(data: Dictionary) -> void:
 	has_crown = data.get("has_crown", has_crown)
 	set_crown(has_crown)
 	if original_position == Vector2(-9999, -9999):
-		original_position = position
+		original_position = position	
+	set_museum_num(data.get("museum_num", 0))
+
+func set_museum_num(num: int) -> void:
+	museum_num = num
 
 
 func set_hide_employee(hide: bool) -> void:
@@ -150,18 +153,7 @@ func set_crown(with_crown: bool) -> void:
 	$Crown.set_visible(has_crown)
 
 
-func get_my_player_info() -> Dictionary:
-	return {
-		"player_num": player_num,
-		"username": username,
-		"money": gold,
-		"employee": employee,
-		"employee_num": employee_num,
-		"hands": hands,
-		"built": built,
-		"has_crown": has_crown,
-		"hide_employee": hide_employee
-	}
+
 
 
 func show_employee() -> void:
@@ -175,12 +167,12 @@ func can_end_game() -> bool:
 
 
 func on_mouse_entered() -> void:
-	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE, OpponentState.THEATER_CLICKABLE]:
+	if opponent_state in [Data.OpponentState.MAGICIAN_CLICKABLE, Data.OpponentState.WARLORD_CLICKABLE, Data.OpponentState.ARMORY_CLICKABLE, Data.OpponentState.THEATER_CLICKABLE]:
 		set_position(Vector2(original_position.x, original_position.y - 20))
 
 
 func on_mouse_exited() -> void:
-	if opponent_state in [OpponentState.MAGICIAN_CLICKABLE, OpponentState.WARLORD_CLICKABLE, OpponentState.ARMORY_CLICKABLE, OpponentState.THEATER_CLICKABLE]:
+	if opponent_state in [Data.OpponentState.MAGICIAN_CLICKABLE, Data.OpponentState.WARLORD_CLICKABLE, Data.OpponentState.ARMORY_CLICKABLE, Data.OpponentState.THEATER_CLICKABLE]:
 		set_position(original_position)
 
 
@@ -188,17 +180,17 @@ func on_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton:
 		on_mouse_exited()
 		match opponent_state:
-			OpponentState.MAGICIAN_CLICKABLE:
+			Data.OpponentState.MAGICIAN_CLICKABLE:
 				Signal.emit_signal("sgin_magician_opponent_selected", player_num)
-			OpponentState.WARLORD_CLICKABLE:
+			Data.OpponentState.WARLORD_CLICKABLE:
 				Signal.emit_signal(
 					"sgin_warlord_opponent_selected", player_num, employee, username, built
 				)
-			OpponentState.ARMORY_CLICKABLE:
+			Data.OpponentState.ARMORY_CLICKABLE:
 				Signal.emit_signal(
 					"sgin_armory_opponent_selected", player_num, employee, username, built
 				)
-			OpponentState.THEATER_CLICKABLE:
+			Data.OpponentState.THEATER_CLICKABLE:
 				Signal.emit_signal("sgin_theater_opponent_selected", player_num)
 
 
@@ -212,5 +204,5 @@ func on_Built_mouse_exited():
 
 
 func on_Built_input_event(_viewport, event, _shape_idx):
-	if opponent_state == OpponentState.IDLE and event is InputEventMouseButton:
+	if opponent_state == Data.OpponentState.IDLE and event is InputEventMouseButton:
 		Signal.emit_signal("sgin_show_built", player_num)
