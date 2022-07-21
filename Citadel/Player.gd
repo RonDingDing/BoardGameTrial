@@ -925,8 +925,9 @@ func wait_school_of_magic_color() -> void:
 func wait_thieves_den() -> void:
 	selected = []
 	for hand_obj in $HandScript.get_children():
+		print(hand_obj.card_name)
 		if "Thieves' Den" in hand_obj.card_name:
-			continue
+			hand_obj.set_card_mode(Data.CardMode.ENLARGE)
 		hand_obj.set_card_mode(Data.CardMode.THIEVES_DEN_SELECTING)
 
 

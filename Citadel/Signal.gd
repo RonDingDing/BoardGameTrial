@@ -47,7 +47,7 @@ signal uncover
 #warning-ignore:unused_signal
 signal sgin_char_focused(char_name)
 #warning-ignore:unused_signal
-signal sgin_char_unfocused(char_name)
+signal sgin_char_unfocused
 #warning-ignore:unused_signal
 signal sgin_char_selected(char_num)
 #warning-ignore:unused_signal

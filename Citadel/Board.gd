@@ -183,7 +183,7 @@ func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
 #	for _i in range(4):
-	for _i in range(7):
+	for _i in range(10):
 		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
@@ -346,12 +346,12 @@ func on_sgin_char_focused(char_name: String) -> void:
 	$AnyCardEnlarge.on_sgin_char_focused(char_name)
 
 
-func on_sgin_card_unfocused(card_name: String) -> void:
-	$AnyCardEnlarge.on_sgin_card_unfocused(card_name)
+func on_sgin_card_unfocused() -> void:
+	$AnyCardEnlarge.on_sgin_card_unfocused()
 
 
-func on_sgin_char_unfocused(char_name: String) -> void:
-	$AnyCardEnlarge.on_sgin_char_unfocused(char_name)
+func on_sgin_char_unfocused() -> void:
+	$AnyCardEnlarge.on_sgin_char_unfocused()
 
 
 func handle_last_player_who_select(i: int) -> void:
@@ -1388,7 +1388,7 @@ func card_skill_play_thieves_den(price: int, gold: int) -> void:
 		on_sgin_cancel_skill(["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
 		Signal.emit_signal("sgin_thieves_den_reaction_completed", price)
 		return 
-	
+	on_sgin_disable_player_play()
 	$Player.hide_script1()
 	for h in remove_hands:
 		if price <= 0:

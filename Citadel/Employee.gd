@@ -17,4 +17,4 @@ func on_employee_mouse_entered() -> void:
 
 func on_employee_mouse_exited():
 	if employee != "Unchosen" and (not hide_employee):# and employee_mode == Data.ScriptMode.PLAYING:
-		Signal.emit_signal("sgin_char_unfocused", employee)
+		Signal.emit_signal("sgin_char_unfocused")

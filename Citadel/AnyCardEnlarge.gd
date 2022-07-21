@@ -59,7 +59,7 @@ func steal(char_name: String) -> void:
 
 
 func on_sgin_card_focused(card_name: String) -> void:
-	if mode == Data.CardMode.ENLARGE and enlarging != card_name:
+	if mode == Data.CardMode.ENLARGE:# and enlarging != card_name:
 		$CharacterCard.hide()
 		enlarging = card_name
 		var card_info = Data.get_card_info(card_name)
@@ -74,18 +74,17 @@ func on_sgin_card_focused(card_name: String) -> void:
 		)
 
 
-func on_sgin_card_unfocused(card_name: String) -> void:
-	if mode == Data.CardMode.ENLARGE and enlarging == card_name:
+func on_sgin_card_unfocused() -> void:
+	if mode == Data.CardMode.ENLARGE: #and enlarging == card_name:
 		enlarging = "Unknown"
 		$Card0.hide()
 
 
 func on_sgin_char_focused(char_name: String, forced: bool=false) -> void:
-	var condition = true
-	if not forced:
-		condition = enlarging != char_name
-	
-	if mode == Data.CardMode.ENLARGE and condition:
+#	var condition = true
+#	if not forced:
+#		condition = enlarging != char_name
+	if mode == Data.CardMode.ENLARGE:# and condition:
 		$Card0.hide()
 		enlarging = char_name
 		var char_info = Data.get_char_info(char_name)
@@ -100,8 +99,8 @@ func on_sgin_char_focused(char_name: String, forced: bool=false) -> void:
 		)
 
 
-func on_sgin_char_unfocused(char_name: String) -> void:
-	if mode == Data.CardMode.ENLARGE and enlarging == char_name:
+func on_sgin_char_unfocused() -> void:
+	if mode == Data.CardMode.ENLARGE:# and enlarging == char_name:
 		enlarging = "Unknown"
 		$CharacterCard.hide()
 

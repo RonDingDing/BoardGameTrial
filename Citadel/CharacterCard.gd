@@ -69,15 +69,21 @@ func set_face_up(face_is_up: bool) -> void:
 func on_mouse_entered() -> void:
 	mouse_collided = true
 	var card = find_top_most_card_collide_with_mouse()
-	if card == null:
-		return
 	if face_up and char_mode != Data.CharMode.STATIC:
-		Signal.emit_signal("sgin_char_focused", card.char_name)
+		if card == null or card.get("char_name") == null:
+			Signal.emit_signal("sgin_char_unfocused")
+		else:		
+			Signal.emit_signal("sgin_char_focused", card.char_name)
 
 
 func on_mouse_exited() -> void:
+	mouse_collided = false
+	var card = find_top_most_card_collide_with_mouse()
 	if face_up and char_mode != Data.CharMode.STATIC:
-		Signal.emit_signal("sgin_char_unfocused", char_name)
+		if card == null or card.get("char_name") == null:
+			Signal.emit_signal("sgin_char_unfocused")
+		else:
+			Signal.emit_signal("sgin_char_focused", card.char_name)
 
 
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
@@ -86,7 +92,6 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 		var card = find_top_most_card_collide_with_mouse()
 		if card == null:
 			return
-		
 		Signal.emit_signal("sgin_char_selected", card.char_num)
 
 
