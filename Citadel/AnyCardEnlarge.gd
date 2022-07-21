@@ -135,7 +135,6 @@ func char_enter(char_name: String, start_pos: Vector2, end_pos: Vector2, start_s
 	yield(TweenMove, "tween_all_completed")
 	reset_characters()
 	Signal.emit_signal("sgin_char_entered")
-	set_mode(Data.CardMode.ENLARGE)
 
 
 func reset_characters() -> void:

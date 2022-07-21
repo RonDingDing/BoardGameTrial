@@ -455,6 +455,7 @@ func on_start_turn() -> void:
 	show()
 	for employee_num in range(1, $Employment.full_num):
 		# 播放动画，显示大牌，然后移动到相应的雇佣区去
+		on_sgin_disable_player_play()
 		var employee_name = $Employment.find_by_num(employee_num)
 		var player_obj = select_obj_by_employee(employee_name)
 		var param = make_params(player_obj, employee_num, employee_name)
@@ -488,7 +489,7 @@ func on_start_turn() -> void:
 				player_objs.museum_num
 			)
 		print()
-		on_sgin_disable_player_play()
+		
 		var sig = check_reveal(employee_num, employee_name, player_obj.player_num)
 		if sig == "sgin_reveal_done":
 			yield(Signal, "sgin_reveal_done")
@@ -503,7 +504,7 @@ func on_start_turn() -> void:
 		$Player.hide_scripts()
 		yield(Signal, "sgin_resource_end")
 		on_sgin_set_reminder("NOTE_PLAY")
-		$Player.enable_play()
+		on_sgin_enable_player_play()
 		$Player.reset_all_card_skill_activated()
 		$Player.show_script3()
 		yield(Signal, "sgin_end_turn")
@@ -691,7 +692,7 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	var not_ever_played = check_skill_has_ever_played(play_name)
 	var playable = check_skill_playable(play_name, $Player.built.size())
 	if not (enough_money and not_played_same and not_ever_played and playable):
-		$Player.enable_play()
+		on_sgin_enable_player_play()
 		return
 	on_sgin_disable_player_play()
 	var success_play = $Player.card_played(play_name, price, from_pos)
@@ -699,7 +700,7 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 		yield(Signal, "sgin_card_played_finished")
 	if $Player.built.size() == 7:
 		city_finished.append($Player.player_num)
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 
 func is_game_over() -> bool:
@@ -912,6 +913,11 @@ func on_sgin_disable_player_play() -> void:
 	$AnyCardEnlarge.set_mode(Data.CardMode.STATIC)
 	$Player.hide_scripts()
 	$Player.disable_play()
+	
+func on_sgin_enable_player_play() -> void:
+	$AnyCardEnlarge.set_mode(Data.CardMode.ENLARGE)
+	on_sgin_set_reminder("NOTE_PLAY")
+	$Player.enable_play()
 
 
 func assassin_wait() -> void:
@@ -927,7 +933,7 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 	$AnyCardEnlarge.assassinate(char_name)
 	yield(TweenMove, "tween_all_completed")
 	$Player.set_assassinated(char_name)
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 
 func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
@@ -937,7 +943,7 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 	$AnyCardEnlarge.steal(char_name)
 	yield(TweenMove, "tween_all_completed")
 	$Player.set_stolen(char_name)
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 
 func thief_wait():
@@ -976,7 +982,7 @@ func magician_select_deck() -> void:
 	card_gain(first_person_num, temp.size(), "sgin_player_draw_ready")
 	yield(Signal, "sgin_player_draw_ready")
 	on_sgin_set_reminder("NOTE_PLAY")
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 
 func magician_select_player() -> void:
@@ -1025,8 +1031,7 @@ func on_sgin_magician_opponent_selected(player_num: int) -> void:
 	for _i in range(switch_hands_name.size()):
 		yield(Signal, "sgin_player_draw_ready")
 
-	on_sgin_set_reminder("NOTE_PLAY")
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 func charskill_play_passive_queen(in_turn: bool=true) -> void:
 	var four_player = find_employee_4_player()
@@ -1207,8 +1212,7 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 		else:
 			$Player.set_card_skill_activated(activate_key, activate_mode)
 	if phase == Data.Phase.TURN:
-		on_sgin_set_reminder("NOTE_PLAY")
-		$Player.enable_play()
+		on_sgin_enable_player_play()
 
 
 func is_stolen(employee_num: int, employee_name: String) -> bool:
@@ -1249,8 +1253,7 @@ func charskill_play_active_king() -> void:
 	yield(Signal, "sgin_player_gold_ready")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn(Data.ActivateMode.ALL, false)
-	on_sgin_set_reminder("NOTE_PLAY")
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 func charskill_play_active_bishop() -> void:
 	$Player.disable_play()
@@ -1262,8 +1265,7 @@ func charskill_play_active_bishop() -> void:
 	yield(Signal, "sgin_player_gold_ready")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn(Data.ActivateMode.ALL, false)
-	on_sgin_set_reminder("NOTE_PLAY")
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 	
 
 func gain_gold_by_color(color: String) -> int:
@@ -1615,9 +1617,7 @@ func on_sgin_warlord_choice(mode: int) -> void:
 		gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn(Data.ActivateMode.SKILL2, false)
-		on_sgin_set_reminder("NOTE_PLAY")		
-		$Player.enable_play()
-
+		on_sgin_enable_player_play()
 
 func on_sgin_warlord_opponent_selected(player_num: int, player_employee: String, opponent_name: String, built: Array) -> void:
 	$Player.set_opponent_built_mode(Data.OpponentBuiltMode.WARLORD_SHOW)
@@ -1787,5 +1787,4 @@ func on_sgin_card_museum_selected(card_name: String, _global_position: Vector2) 
 	$Player.add_museum_num()
 	museum_obj.add_museum_num()
 	$Player.set_card_skill_activated("Museum", true)
-	on_sgin_set_reminder("NOTE_PLAY")
-	$Player.enable_play()
+	on_sgin_enable_player_play()
