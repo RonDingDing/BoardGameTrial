@@ -17,6 +17,7 @@ func set_mode(modes: int) -> void:
 
 
 func assassinate(char_name: String) -> void:
+	set_mode(Data.CardMode.ENLARGE)
 	on_sgin_char_focused(char_name, true)
 	set_mode(Data.CardMode.ASSASSINATING)
 	TweenMove.animate(
@@ -37,6 +38,7 @@ func assassinate(char_name: String) -> void:
 
 
 func steal(char_name: String) -> void:
+	set_mode(Data.CardMode.ENLARGE)
 	on_sgin_char_focused(char_name, true)
 	set_mode(Data.CardMode.STEALING)
 	TweenMove.animate(

@@ -87,6 +87,7 @@ func shuffle():
 
 
 func pop() -> String:
+	# print(deck.slice(-5, deck.size()))
 	var card_name = deck.pop_front()
 	if card_name == null:
 		return ""

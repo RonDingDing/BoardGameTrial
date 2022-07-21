@@ -404,9 +404,9 @@ func on_script3_pressed() -> void:
 		Data.ScriptMode.NECROPOLIS:
 			Signal.emit_signal("sgin_cancel_skill", ["scripts", "built"], "", false, Data.Phase.TURN)
 		Data.ScriptMode.THIEVES_DEN:
-			Signal.emit_signal("sgin_cancel_skill", ["scripts", "hands", "selected"], "", false, Data.Phase.TURN)
+			Signal.emit_signal("sgin_cancel_skill", ["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
 		Data.ScriptMode.THEATER:
-			Signal.emit_signal("sgin_cancel_skill", ["scripts", "opponent"], "", false, Data.Phase.RESOURCE)
+			Signal.emit_signal("sgin_cancel_skill", ["scripts", "opponent"], "Theater", false, Data.Phase.RESOURCE)
 		Data.ScriptMode.MUSEUM:
 			Signal.emit_signal("sgin_cancel_skill", ["scripts", "hands", "built"], "Museum", false, Data.Phase.TURN)
 	$Script3.rect_position = end_turn_pos

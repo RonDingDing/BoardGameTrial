@@ -55,63 +55,37 @@ func to_be_delete():
 		{
 			"player_num": 0,
 			"username": "zero",
-			"money": 3,
-			#			"employee": "Architect",
-			#			"hand_num": 8,
-			"hands":[],
-			"built":[
-				"Museum", 
-#"Haunted Quarter", "Castle1", "Castle2","Castle3","Castle4","Castle5"
-			]
+			"money": 0,
 		},
 		{
 			"player_num": 1,
 			"username": "one",
-			"money": 9,
-			# "hands":["Tavern", "Tavern"],
-			#			"employee": "Architect",
-			#			"hand_num": 8,
-			"built": []
+			"money": 0,
 		},
 		{
 			"player_num": 2,
 			"username": "two",
-			"money": 9,
-			#			"employee": "Wizard",
-			#			"hand_num": 2,
-			#			"built": ["Market", "Dragon House"]
+			"money": 0,
 		},
 		{
 			"player_num": 3,
 			"username": "three",
-			"money": 9,
-			#			"employee": "King",
-			#			"hand_num": 3,
-			#			"built": ["Market", "Dragon House"]
+			"money": 0,
 		},
 		{
 			"player_num": 4,
 			"username": "four",
-			"money": 9,
-			#			"employee": "Merchant",
-			#			"hand_num": 4,
-			#			"built": ["Market", "Dragon House"]
+			"money": 0,
 		},
 		{
 			"player_num": 5,
 			"username": "five",
-			"money": 9,
-			#			"employee": "Warlord",
-			#			"hand_num": 6,
-			#			"built": ["Market", "Dragon House"]
+			"money": 0,
 		},
 		{
 			"player_num": 6,
 			"username": "six",
-			"money": 9,
-			#			"employee": "Wizard",
-			#			"hand_num": 6,
-			#			"built": ["Market", "Dragon House"]
+			"money": 0,
 		}
 	]
 	for i in range(data.size()):
@@ -208,8 +182,8 @@ func start_game():
 func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
-	for _i in range(4):
-#	for _i in range(7):
+#	for _i in range(4):
+	for _i in range(7):
 		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
@@ -664,12 +638,12 @@ func handle_resource_skill_reaction(required_color: String, gained: int, built: 
 			
 
 
-func handle_play_skill_reaction(price: int, play_name: String, built: Array) -> void:
+func handle_play_skill_reaction(price: int, play_name: String, gold: int, built: Array) -> void:
 	if "Necropolis" in play_name:
 		card_skill_play_necropolis(play_name, price)
 		price = yield(Signal, "sgin_necropolis_reaction_completed")
 	if "Thieves' Den" in play_name and price > 0:
-		card_skill_play_thieves_den(price)
+		card_skill_play_thieves_den(price, gold)
 		price = yield(Signal, "sgin_thieves_den_reaction_completed")			
 	
 	for b in built:
@@ -684,7 +658,7 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	if $Player.script_mode != Data.ScriptMode.PLAYING:
 		return
 	var price = check_skill_play_price(play_name)
-	var wait = handle_play_skill_reaction(price, play_name, $Player.built)
+	var wait = handle_play_skill_reaction(price, play_name, $Player.gold, $Player.built)
 	if wait:
 		price = yield(Signal, "sgin_all_play_reaction_completed")
 	var enough_money = $Player.has_enough_money(price)
@@ -1140,8 +1114,7 @@ func on_sgin_merchant_gold(mode: int) -> void:
 		yield(Signal, "sgin_player_gold_ready")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn(Data.ActivateMode.SKILL2, false)
-	on_sgin_set_reminder("NOTE_PLAY")		
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 
 func on_sgin_show_built(player_num: int) -> void:
@@ -1326,6 +1299,7 @@ func card_skill_play_smithy() -> void:
 	yield(Signal, "sgin_player_gold_ready")
 	card_gain(first_person_num, 3, "sgin_player_draw_ready")
 	yield(Signal, "sgin_player_draw_ready")
+	on_sgin_enable_player_play()
 	
 
 func card_skill_play_laboratory() -> void:
@@ -1396,18 +1370,25 @@ func card_skill_play_framework(_card_name: String, price: int) -> void:
 		yield(Signal, "sgin_card_move_done")
 		$Player.remove_built("Framework")
 		$Player.rearrange_built()
+		$Deck.append("Framework")
 		price = 0
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_framework_reaction_completed", price)	
 	
 
-func card_skill_play_thieves_den(price: int) -> void:
+func card_skill_play_thieves_den(price: int, gold: int) -> void:
 	on_sgin_disable_player_play()
 	on_sgin_set_reminder("NOTE_THIEVES_DEN")
 	$Player.set_script_mode(Data.ScriptMode.THIEVES_DEN)
 	$Player.show_script1()
 	$Player.wait_thieves_den()
 	var remove_hands = yield(Signal, "sgin_thieves_den_choice")
+	if gold + remove_hands.size() < price:
+		on_sgin_set_reminder("NOTE_PLAY")
+		on_sgin_cancel_skill(["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
+		Signal.emit_signal("sgin_thieves_den_reaction_completed", price)
+		return 
+	
 	$Player.hide_script1()
 	for h in remove_hands:
 		if price <= 0:
@@ -1421,6 +1402,7 @@ func card_skill_play_thieves_den(price: int) -> void:
 		center_card_shrink_to_away(hand_obj, hand_scale)
 		yield(Signal, "sgin_card_move_done")
 		$Player.remove_hand(h)
+		$Deck.append(h)
 		price -= 1
 	$Player.rearrange_hands()
 	on_sgin_set_reminder("NOTE_PLAY")
@@ -1448,6 +1430,7 @@ func card_skill_play_necropolis(_card_name: String, price: int) -> void:
 		yield(Signal, "sgin_card_move_done")
 		$Player.remove_built(remove_selected[0])
 		$Player.rearrange_built()
+		$Deck.append(remove_selected[0])
 		price = 0
 		
 	on_sgin_set_reminder("NOTE_PLAY")
@@ -1570,7 +1553,7 @@ func charskill_play_active_merchant() -> void:
 func charskill_play_active_architect() -> void:
 	card_gain(first_person_num, 2, "sgin_player_draw_ready")
 	yield(Signal, "sgin_player_draw_ready")
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 func charskill_play_active_warlord() -> void:
 	$Player.wait_warlord()
@@ -1659,7 +1642,7 @@ func on_sgin_card_laboratory_selected(card_name: String, from_pos: Vector2) -> v
 	yield(Signal, "sgin_player_gold_ready")
 	$Deck.append(card_name)
 	$Player.set_card_skill_activated("Laboratory", true)
-	$Player.enable_play()
+	on_sgin_enable_player_play()
 
 func check_skill_8_price(built: Array, price: int) -> int:
 	for b in built:
@@ -1760,6 +1743,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	yield(Signal, "sgin_card_move_done")
 	$Player.remove_built("Armory")
 	$Player.rearrange_built()
+	$Deck.append("Armory")
 	if TweenMove.is_active():
 		yield(TweenMove, "tween_all_completed")
 	

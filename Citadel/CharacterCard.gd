@@ -67,8 +67,12 @@ func set_face_up(face_is_up: bool) -> void:
 
 
 func on_mouse_entered() -> void:
+	mouse_collided = true
+	var card = find_top_most_card_collide_with_mouse()
+	if card == null:
+		return
 	if face_up and char_mode != Data.CharMode.STATIC:
-		Signal.emit_signal("sgin_char_focused", char_name)
+		Signal.emit_signal("sgin_char_focused", card.char_name)
 
 
 func on_mouse_exited() -> void:
@@ -78,8 +82,12 @@ func on_mouse_exited() -> void:
 
 func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	# 如卡片不灰（可点击），主视角玩家选择了某角色
-	if event.is_pressed() and event is InputEventMouseButton and is_on_top() and char_mode == Data.CharMode.CLICKABLE:  # and event.doubleclick:
-		Signal.emit_signal("sgin_char_selected", char_num)
+	if event.is_pressed() and event is InputEventMouseButton and char_mode == Data.CharMode.CLICKABLE:  # and event.doubleclick:
+		var card = find_top_most_card_collide_with_mouse()
+		if card == null:
+			return
+		
+		Signal.emit_signal("sgin_char_selected", card.char_num)
 
 
  

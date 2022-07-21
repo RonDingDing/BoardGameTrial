@@ -60,8 +60,11 @@ func set_face_up(face_is_up: bool) -> void:
 
 func on_mouse_entered() -> void:
 	mouse_collided = true
+	var card = find_top_most_card_collide_with_mouse()
+	if card == null:
+		return
 	if face_up and (not mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
-		Signal.emit_signal("sgin_card_focused", card_name)
+		Signal.emit_signal("sgin_card_focused", card.card_name)
 
 
 func on_mouse_exited() -> void:
