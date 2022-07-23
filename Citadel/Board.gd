@@ -56,7 +56,8 @@ func to_be_delete():
 			"player_num": 0,
 			"username": "zero",
 			"money": 0,
-			"built": ["Framework"]
+			"built": ["Framework"],
+			"hands": ["Necropolis"]
 		},
 		{
 			"player_num": 1,
@@ -656,6 +657,8 @@ func handle_play_skill_reaction(price: int, play_name: String, gold: int, built:
 	Signal.emit_signal("sgin_all_play_reaction_completed", price)
 	
 func skill_can_play(play_name: String, price: int) -> bool:
+	if price < 0:
+		return false
 	var enough_money = $Player.has_enough_money(price)
 	var not_played_same = check_skill_not_played_same(play_name)
 	var not_ever_played = check_skill_has_ever_played(play_name)
@@ -1370,12 +1373,13 @@ func card_skill_play_framework(play_name: String, price: int) -> void:
 	$Player.set_script_mode(Data.ScriptMode.FRAMEWORK)
 	$Player.show_scripts()
 	var remove_framework = yield(Signal, "sgin_framework_choice")
-	if remove_framework:
+	$Player.hide_scripts()
+	if remove_framework == "yes":
 		if skill_can_play(play_name, 0):
 			on_sgin_disable_player_play()
 			var frame_obj = $Player.get_built_obj("Framework")
 			var frame_scale = frame_obj.scale
-			var frame_pos = frame_obj.global_position				
+			var frame_pos = frame_obj.global_position
 			card_enlarge_to_center(frame_obj, frame_pos)
 			yield(Signal, "sgin_card_move_done")
 			frame_obj.global_position = center
@@ -1385,11 +1389,10 @@ func card_skill_play_framework(play_name: String, price: int) -> void:
 			$Player.rearrange_built()
 			$Deck.append("Framework")
 			price = 0
-		else:
-			on_sgin_cancel_skill(["scripts"], "", false, Data.Phase.TURN)
-
+		elif remove_framework == "cancel":
+			price = -1
 	on_sgin_set_reminder("NOTE_PLAY")
-	Signal.emit_signal("sgin_framework_reaction_completed", price)	
+	Signal.emit_signal("sgin_framework_reaction_completed", price)
 	
 
 func card_skill_play_thieves_den(play_name: String, price: int, gold: int) -> void:
@@ -1432,8 +1435,8 @@ func card_skill_play_necropolis(_card_name: String, price: int) -> void:
 	$Player.set_script_mode(Data.ScriptMode.NECROPOLIS)
 	$Player.show_scripts()
 	var wait_remove_hand = yield(Signal, "sgin_necropolis_choice")
-	if wait_remove_hand:
-		
+	$Player.hide_scripts()
+	if wait_remove_hand == "yes":
 		on_sgin_set_reminder("NOTE_NECROPOLIS_WAIT")
 		var remove_selected = yield(Signal, "sgin_card_necropolis_selected")
 		var card_obj = $Player.get_built_obj(remove_selected[0])
@@ -1448,9 +1451,10 @@ func card_skill_play_necropolis(_card_name: String, price: int) -> void:
 		$Player.rearrange_built()
 		$Deck.append(remove_selected[0])
 		price = 0
-		
+	elif wait_remove_hand == "cancel":
+		price = -1
 	on_sgin_set_reminder("NOTE_PLAY")
-	Signal.emit_signal("sgin_necropolis_reaction_completed", price)	
+	Signal.emit_signal("sgin_necropolis_reaction_completed", price)
 
 func card_skill_game_over_map_room(hand_num: int) -> int:
 	return hand_num
@@ -1486,6 +1490,7 @@ func card_skill_game_over_capitol(
 
 
 func card_skill_selection_theater(player_num: int) -> void:
+	$Player.hide_scripts()
 	hide()
 	hand_over_control(player_num)
 	yield(Signal, "uncover")

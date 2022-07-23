@@ -307,13 +307,12 @@ func on_script1_pressed() -> void:
 				$Employee.set_activated_this_turn(Data.ActivateMode.SKILL1, true)
 				Signal.emit_signal("sgin_warlord_choice", Data.WarlordChoice.DESTROY)
 		Data.ScriptMode.FRAMEWORK:
-			hide_scripts()
-			Signal.emit_signal("sgin_framework_choice", true)
+			Signal.emit_signal("sgin_framework_choice", "yes")
 		Data.ScriptMode.NECROPOLIS:
 			hide_scripts()
 			for b in $BuiltScript.get_children():
 				b.set_card_mode(Data.CardMode.NECROPOLIS_SELECTING)
-			Signal.emit_signal("sgin_necropolis_choice", true)
+			Signal.emit_signal("sgin_necropolis_choice", "yes")
 		Data.ScriptMode.THIEVES_DEN:
 			hide_scripts()
 			Signal.emit_signal("sgin_thieves_den_choice", selected)
@@ -341,13 +340,10 @@ func on_script2_pressed() -> void:
 				$Employee.set_activated_this_turn(Data.ActivateMode.SKILL2, true)
 				Signal.emit_signal("sgin_warlord_choice", Data.WarlordChoice.RED)
 		Data.ScriptMode.FRAMEWORK:
-			hide_scripts()
-			Signal.emit_signal("sgin_framework_choice", false)
+			Signal.emit_signal("sgin_framework_choice", "no")
 		Data.ScriptMode.NECROPOLIS:
-			hide_scripts()
-			Signal.emit_signal("sgin_necropolis_choice", false)
+			Signal.emit_signal("sgin_necropolis_choice", "no")
 		Data.ScriptMode.THEATER:
-			hide_scripts()
 			Signal.emit_signal("sgin_theater_choice", false)
 	$Script2.rect_position = script2_pos
 	$Script2Label.rect_position = Vector2(script2_pos.x + 25, script2_pos.y + 28)
@@ -400,9 +396,9 @@ func on_script3_pressed() -> void:
 		Data.ScriptMode.LABORATORY:
 			Signal.emit_signal("sgin_cancel_skill", [], "Laboratory", false, Data.Phase.TURN)
 		Data.ScriptMode.FRAMEWORK:
-			Signal.emit_signal("sgin_cancel_skill", ["scripts"], "", false, Data.Phase.TURN)
+			Signal.emit_signal("sgin_framework_choice", "cancel")
 		Data.ScriptMode.NECROPOLIS:
-			Signal.emit_signal("sgin_cancel_skill", ["scripts", "built"], "", false, Data.Phase.TURN)
+			Signal.emit_signal("sgin_necropolis_choice", "cancel")
 		Data.ScriptMode.THIEVES_DEN:
 			Signal.emit_signal("sgin_cancel_skill", ["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
 		Data.ScriptMode.THEATER:
