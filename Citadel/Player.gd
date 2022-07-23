@@ -691,7 +691,6 @@ func has_ever_played() -> bool:
 
 func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 	disable_play()
-	played_this_turn.append(card_name)
 	var card_obj
 	for c in $HandScript.get_children():
 		if c.card_name == card_name and c.global_position == from_pos:
@@ -732,6 +731,7 @@ func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
 	enable_play()
+	played_this_turn.append(card_name)
 	Signal.emit_signal("sgin_card_played_finished", card_name)
 
 

@@ -56,6 +56,7 @@ func to_be_delete():
 			"player_num": 0,
 			"username": "zero",
 			"money": 0,
+			"built": ["Framework"]
 		},
 		{
 			"player_num": 1,
@@ -182,8 +183,7 @@ func start_game():
 func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
-#	for _i in range(4):
-	for _i in range(10):
+	for _i in range(4):
 		for p_num in range(all_player_length):
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
@@ -567,13 +567,15 @@ func check_skill_resource_draw_gold(player_built: Array) -> int:
 			return 3
 	return 2
 	
-	
+func check_rule_not_played_same(card_name: String) -> bool:
+	return $Player.has_not_played_same(card_name)
+
 func check_skill_not_played_same(card_name: String) -> bool:
 	var skill_not_played_same = false
 	for card_name in $Player.built:
 		if "Quarry" in card_name:
 			skill_not_played_same = card_skill_play_quarry()
-	var player_not_played_same = $Player.has_not_played_same(card_name)
+	var player_not_played_same = check_rule_not_played_same(card_name)
 	return skill_not_played_same or player_not_played_same
 
 func check_skill_play_price(card_name: String) -> int:
@@ -654,6 +656,14 @@ func handle_play_skill_reaction(price: int, play_name: String, gold: int, built:
 			price = yield(Signal, "sgin_framework_reaction_completed")
 	Signal.emit_signal("sgin_all_play_reaction_completed", price)
 	
+func skill_can_play(play_name: String, price: int) -> bool:
+	var enough_money = $Player.has_enough_money(price)
+	var not_played_same = check_skill_not_played_same(play_name)
+	var not_ever_played = check_skill_has_ever_played(play_name)
+	var playable = check_skill_playable(play_name, $Player.built.size())
+	return (enough_money and not_played_same and not_ever_played and playable)
+ 
+	
 func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	if $Player.script_mode != Data.ScriptMode.PLAYING:
 		return
@@ -661,11 +671,11 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	var wait = handle_play_skill_reaction(price, play_name, $Player.gold, $Player.built)
 	if wait:
 		price = yield(Signal, "sgin_all_play_reaction_completed")
-	var enough_money = $Player.has_enough_money(price)
-	var not_played_same = check_skill_not_played_same(play_name)
-	var not_ever_played = check_skill_has_ever_played(play_name)
-	var playable = check_skill_playable(play_name, $Player.built.size())
-	if not (enough_money and not_played_same and not_ever_played and playable):
+	if not skill_can_play(play_name, price):
+		on_sgin_set_reminder("NOTE_CANNOT_PLAY")
+		TimerGlobal.set_wait_time(0.5)
+		TimerGlobal.start()
+		yield(TimerGlobal, "timeout")		
 		on_sgin_enable_player_play()
 		return
 	on_sgin_disable_player_play()
@@ -861,11 +871,14 @@ func calculate_score(player_num: int, haunted_color: String) -> Array:
 func check_skill_has_ever_played(play_name: String) -> bool:
 	var skill_ever_played = false
 	if $Player.employee == "Architect":
-		skill_ever_played = $Player.built.size() < 3
+		skill_ever_played = $Player.played_this_turn.size() < 3
 	if "Stables" in play_name:
 		skill_ever_played = card_skill_play_stables()
-	var player_ever_played = $Player.has_ever_played()
+	var player_ever_played = check_rule_has_ever_played()
 	return skill_ever_played or player_ever_played
+	
+func check_rule_has_ever_played() -> bool:
+	return $Player.has_ever_played()
 	
 func check_skill_playable(play_name: String, built_num: int) -> bool:
 	if "Monument" in play_name:
@@ -1352,26 +1365,27 @@ func card_skill_game_over_haunted_quarter(player_num: int) -> void:
 	$Player.wait_haunted_quarter_color()
 
 
-func card_skill_play_framework(_card_name: String, price: int) -> void:
+func card_skill_play_framework(play_name: String, price: int) -> void:
 	on_sgin_disable_player_play()
 	on_sgin_set_reminder("NOTE_FRAMEWORK")
 	$Player.set_script_mode(Data.ScriptMode.FRAMEWORK)
 	$Player.show_scripts()
 	var remove_framework = yield(Signal, "sgin_framework_choice")
 	if remove_framework:
-		on_sgin_disable_player_play()
-		var frame_obj = $Player.get_built_obj("Framework")
-		var frame_scale = frame_obj.scale
-		var frame_pos = frame_obj.global_position				
-		card_enlarge_to_center(frame_obj, frame_pos)
-		yield(Signal, "sgin_card_move_done")
-		frame_obj.global_position = center
-		center_card_shrink_to_away(frame_obj, frame_scale)
-		yield(Signal, "sgin_card_move_done")
-		$Player.remove_built("Framework")
-		$Player.rearrange_built()
-		$Deck.append("Framework")
-		price = 0
+		if skill_can_play(play_name, 0):
+			on_sgin_disable_player_play()
+			var frame_obj = $Player.get_built_obj("Framework")
+			var frame_scale = frame_obj.scale
+			var frame_pos = frame_obj.global_position				
+			card_enlarge_to_center(frame_obj, frame_pos)
+			yield(Signal, "sgin_card_move_done")
+			frame_obj.global_position = center
+			center_card_shrink_to_away(frame_obj, frame_scale)
+			yield(Signal, "sgin_card_move_done")
+			$Player.remove_built("Framework")
+			$Player.rearrange_built()
+			$Deck.append("Framework")
+			price = 0
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_framework_reaction_completed", price)	
 	
@@ -1418,6 +1432,7 @@ func card_skill_play_necropolis(_card_name: String, price: int) -> void:
 	$Player.show_scripts()
 	var wait_remove_hand = yield(Signal, "sgin_necropolis_choice")
 	if wait_remove_hand:
+		
 		on_sgin_set_reminder("NOTE_NECROPOLIS_WAIT")
 		var remove_selected = yield(Signal, "sgin_card_necropolis_selected")
 		var card_obj = $Player.get_built_obj(remove_selected[0])
