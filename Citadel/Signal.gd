@@ -176,7 +176,7 @@ signal sgin_framework_choice(yes_no)
 #warning-ignore:unused_signal
 signal sgin_necropolis_choice(yes_no)
 #warning-ignore:unused_signal
-signal sgin_thieves_den_choice(card_names)
+signal sgin_thieves_den_choice(card_names, cancel)
 #warning-ignore:unused_signal
 signal sgin_framework_reaction_completed(price)
 #warning-ignore:unused_signal

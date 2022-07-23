@@ -309,15 +309,12 @@ func on_script1_pressed() -> void:
 		Data.ScriptMode.FRAMEWORK:
 			Signal.emit_signal("sgin_framework_choice", "yes")
 		Data.ScriptMode.NECROPOLIS:
-			hide_scripts()
 			for b in $BuiltScript.get_children():
 				b.set_card_mode(Data.CardMode.NECROPOLIS_SELECTING)
 			Signal.emit_signal("sgin_necropolis_choice", "yes")
 		Data.ScriptMode.THIEVES_DEN:
-			hide_scripts()
-			Signal.emit_signal("sgin_thieves_den_choice", selected)
+			Signal.emit_signal("sgin_thieves_den_choice", selected, false)
 		Data.ScriptMode.THEATER:
-			hide_scripts()
 			Signal.emit_signal("sgin_theater_choice", true)
 
 	$Script1.rect_position = script1_pos
@@ -400,7 +397,7 @@ func on_script3_pressed() -> void:
 		Data.ScriptMode.NECROPOLIS:
 			Signal.emit_signal("sgin_necropolis_choice", "cancel")
 		Data.ScriptMode.THIEVES_DEN:
-			Signal.emit_signal("sgin_cancel_skill", ["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
+			Signal.emit_signal("sgin_thieves_den_choice", [], true)
 		Data.ScriptMode.THEATER:
 			Signal.emit_signal("sgin_cancel_skill", ["scripts", "opponent"], "Theater", false, Data.Phase.RESOURCE)
 		Data.ScriptMode.MUSEUM:
@@ -687,17 +684,13 @@ func has_ever_played() -> bool:
 	return played_this_turn.size() < 1
 
 
-func card_played(card_name: String, price: int, from_pos: Vector2) -> void:
+func card_played(card_name: String, price: int) -> void:
 	disable_play()
-	var card_obj
-	for c in $HandScript.get_children():
-		if c.card_name == card_name and c.global_position == from_pos:
-			card_obj = c
-			break
-
+	var card_obj = get_hand_obj(card_name)
 	if card_obj == null:
 		enable_play()
 		return false
+	var from_pos = card_obj.global_position
 	Signal.emit_signal("sgin_gold_move", player_num, bank_num, price, "sgin_player_pay_ready")
 	yield(Signal, "sgin_player_pay_ready")
 	hands.erase(card_name)
@@ -741,6 +734,7 @@ func rearrange_built() -> void:
 func rearrange_hands() -> void:
 	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
+	
 
 
 func after_end_turn() -> void:

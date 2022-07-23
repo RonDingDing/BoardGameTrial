@@ -57,7 +57,7 @@ func to_be_delete():
 			"username": "zero",
 			"money": 0,
 			"built": ["Framework"],
-			"hands": ["Necropolis"]
+			"hands": ["Necropolis", "Thieves' Den", "Tavern1", "Tavern2", "Tavern3", "Tavern4"]
 		},
 		{
 			"player_num": 1,
@@ -583,11 +583,9 @@ func check_skill_play_price(card_name: String) -> int:
 	var data =  Data.get_card_info(card_name)
 	var price = data['star']
 	var color = data['kind']
-	
 	for built_name in $Player.built:
 		if "Factory" in built_name:
 			price = card_skill_play_factory(color, price)
-		
 	return price
 
 
@@ -651,9 +649,11 @@ func handle_play_skill_reaction(price: int, play_name: String, gold: int, built:
 		if "Framework" in b:
 			card_skill_play_framework(play_name, price)
 			price = yield(Signal, "sgin_framework_reaction_completed")
+	print("After framework price; ", price)
 	if "Thieves' Den" in play_name and price > 0:
 		card_skill_play_thieves_den(play_name, price, gold)
 		price = yield(Signal, "sgin_thieves_den_reaction_completed")
+	print("After thieves den price; ", price)
 	Signal.emit_signal("sgin_all_play_reaction_completed", price)
 	
 func skill_can_play(play_name: String, price: int) -> bool:
@@ -673,15 +673,18 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	var wait = handle_play_skill_reaction(price, play_name, $Player.gold, $Player.built)
 	if wait:
 		price = yield(Signal, "sgin_all_play_reaction_completed")
+	print("judge price: ", price)
 	if not skill_can_play(play_name, price):
+		print("cannot play")
 		on_sgin_set_reminder("NOTE_CANNOT_PLAY")
 		TimerGlobal.set_wait_time(0.5)
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
 		on_sgin_enable_player_play()
 		return
+	print("success play")
 	on_sgin_disable_player_play()
-	var success_play = $Player.card_played(play_name, price, from_pos)
+	var success_play = $Player.card_played(play_name, price)
 	if success_play:
 		yield(Signal, "sgin_card_played_finished")
 	if $Player.built.size() == 7:
@@ -1190,8 +1193,10 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 			destroyed = [unfound, "Unchosen"]
 		elif component == "built":
 			$Player.rearrange_built()
+			yield(TweenMove, "tween_all_completed")
 		elif component == "hands":
 			$Player.rearrange_hands()
+			yield(TweenMove, "tween_all_completed")
 
 		if not activate_key:
 			pass
@@ -1388,9 +1393,9 @@ func card_skill_play_framework(play_name: String, price: int) -> void:
 			$Player.remove_built("Framework")
 			$Player.rearrange_built()
 			$Deck.append("Framework")
-			price = 0
-		elif remove_framework == "cancel":
-			price = -1
+			price = 0		
+	elif remove_framework == "cancel":
+		price = -1
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_framework_reaction_completed", price)
 	
@@ -1401,16 +1406,22 @@ func card_skill_play_thieves_den(play_name: String, price: int, gold: int) -> vo
 	$Player.set_script_mode(Data.ScriptMode.THIEVES_DEN)
 	$Player.show_script1()
 	$Player.wait_thieves_den()
-	var remove_hands = yield(Signal, "sgin_thieves_den_choice")
+	var res = yield(Signal, "sgin_thieves_den_choice")
+	var remove_hands = res[0]
+	var cancel = res[1]	
+	$Player.hide_scripts()
 	var real_price = max(0, price - remove_hands.size())
+	if cancel:
+		real_price = -1
 	if not skill_can_play(play_name, real_price):
 		on_sgin_set_reminder("NOTE_PLAY")
 		on_sgin_cancel_skill(["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
 		Signal.emit_signal("sgin_thieves_den_reaction_completed", price)
 		return 
 	on_sgin_disable_player_play()
+	var real_remove = min(remove_hands.size(), price)
 	$Player.hide_script1()
-	for i in range(real_price):
+	for i in range(real_remove):
 		var h = remove_hands[i]
 		var hand_obj = $Player.get_hand_obj(h)
 		var hand_scale = hand_obj.scale
@@ -1423,6 +1434,7 @@ func card_skill_play_thieves_den(play_name: String, price: int, gold: int) -> vo
 		$Player.remove_hand(h)
 		$Deck.append(h)
 	$Player.rearrange_hands()
+	yield(TweenMove, "tween_all_completed")
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_thieves_den_reaction_completed", real_price)
 		
@@ -1789,6 +1801,7 @@ func on_sgin_card_museum_selected(card_name: String, _global_position: Vector2) 
 	yield(Signal, "sgin_card_move_done")
 	$Player.remove_hand(card_name)
 	$Player.rearrange_hands()
+	yield(TweenMove, "tween_all_completed")
 	$Player.add_museum_num()
 	museum_obj.add_museum_num()
 	$Player.set_card_skill_activated("Museum", true)

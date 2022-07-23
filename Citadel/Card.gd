@@ -112,7 +112,7 @@ func on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void
 			Data.CardMode.NECROPOLIS_SELECTING:
 				Signal.emit_signal("sgin_card_necropolis_selected", card.card_name, global_position)
 			Data.CardMode.THIEVES_DEN_SELECTING:
-				if not "Thieves' Den" in card_name:
+				if not "Thieves' Den" in card_name and card.card_name == card_name:
 					Signal.emit_signal("sgin_card_thieves_den_selected", card.card_name, global_position)
 			Data.CardMode.MUSEUM_SELECTING:
 				Signal.emit_signal("sgin_card_museum_selected", card.card_name, global_position)
