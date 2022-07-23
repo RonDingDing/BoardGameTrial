@@ -673,6 +673,8 @@ func show_employee() -> void:
 func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
 	$Crown.set_visible(has_crown)
+	
+
 
 
 func has_enough_money(price: int) -> bool:

@@ -644,16 +644,15 @@ func handle_play_skill_reaction(price: int, play_name: String, gold: int, built:
 	if "Necropolis" in play_name:
 		card_skill_play_necropolis(play_name, price)
 		price = yield(Signal, "sgin_necropolis_reaction_completed")
-	if "Thieves' Den" in play_name and price > 0:
-		card_skill_play_thieves_den(price, gold)
-		price = yield(Signal, "sgin_thieves_den_reaction_completed")			
-	
 	for b in built:
 		if price <= 0:
 			break
 		if "Framework" in b:
 			card_skill_play_framework(play_name, price)
 			price = yield(Signal, "sgin_framework_reaction_completed")
+	if "Thieves' Den" in play_name and price > 0:
+		card_skill_play_thieves_den(play_name, price, gold)
+		price = yield(Signal, "sgin_thieves_den_reaction_completed")
 	Signal.emit_signal("sgin_all_play_reaction_completed", price)
 	
 func skill_can_play(play_name: String, price: int) -> bool:
@@ -675,7 +674,7 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 		on_sgin_set_reminder("NOTE_CANNOT_PLAY")
 		TimerGlobal.set_wait_time(0.5)
 		TimerGlobal.start()
-		yield(TimerGlobal, "timeout")		
+		yield(TimerGlobal, "timeout")
 		on_sgin_enable_player_play()
 		return
 	on_sgin_disable_player_play()
@@ -1386,27 +1385,30 @@ func card_skill_play_framework(play_name: String, price: int) -> void:
 			$Player.rearrange_built()
 			$Deck.append("Framework")
 			price = 0
+		else:
+			on_sgin_cancel_skill(["scripts"], "", false, Data.Phase.TURN)
+
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_framework_reaction_completed", price)	
 	
 
-func card_skill_play_thieves_den(price: int, gold: int) -> void:
+func card_skill_play_thieves_den(play_name: String, price: int, gold: int) -> void:
 	on_sgin_disable_player_play()
 	on_sgin_set_reminder("NOTE_THIEVES_DEN")
 	$Player.set_script_mode(Data.ScriptMode.THIEVES_DEN)
 	$Player.show_script1()
 	$Player.wait_thieves_den()
 	var remove_hands = yield(Signal, "sgin_thieves_den_choice")
-	if gold + remove_hands.size() < price:
+	var real_price = max(0, price - remove_hands.size())
+	if not skill_can_play(play_name, real_price):
 		on_sgin_set_reminder("NOTE_PLAY")
 		on_sgin_cancel_skill(["scripts", "hands", "selected"], "Thieves' Den", false, Data.Phase.TURN)
 		Signal.emit_signal("sgin_thieves_den_reaction_completed", price)
 		return 
 	on_sgin_disable_player_play()
 	$Player.hide_script1()
-	for h in remove_hands:
-		if price <= 0:
-			break
+	for i in range(real_price):
+		var h = remove_hands[i]
 		var hand_obj = $Player.get_hand_obj(h)
 		var hand_scale = hand_obj.scale
 		var hand_pos = hand_obj.global_position
@@ -1417,10 +1419,9 @@ func card_skill_play_thieves_den(price: int, gold: int) -> void:
 		yield(Signal, "sgin_card_move_done")
 		$Player.remove_hand(h)
 		$Deck.append(h)
-		price -= 1
 	$Player.rearrange_hands()
 	on_sgin_set_reminder("NOTE_PLAY")
-	Signal.emit_signal("sgin_thieves_den_reaction_completed", price)
+	Signal.emit_signal("sgin_thieves_den_reaction_completed", real_price)
 		
 	
 
