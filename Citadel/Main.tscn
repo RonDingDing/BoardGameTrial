@@ -11,10 +11,10 @@
 [node name="Signal" type="Node" parent="."]
 script = ExtResource( 9 )
 
-[node name="Data" type="Node" parent="."]
+[node name="Data" type="Node2D" parent="."]
 script = ExtResource( 6 )
 
-[node name="Game" type="Node" parent="."]
+[node name="Game" type="Node2D" parent="."]
 
 [node name="Board" parent="Game" instance=ExtResource( 1 )]
 

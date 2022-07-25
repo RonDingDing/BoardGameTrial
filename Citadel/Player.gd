@@ -1,8 +1,4 @@
 extends "res://BasePlayer.gd"
-const deck_num = -1
-const bank_num = -2
-const unfound = -3
-
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
@@ -12,11 +8,6 @@ onready var Data = get_node("/root/Main/Data")
 
 onready var played_this_turn = []
 onready var selected = []
-
-onready var bank_position = Vector2(-9999, -9999)
-onready var deck_position = Vector2(-9999, -9999)
-onready var center = get_viewport_rect().size / 2
-
 
 
 onready var script1_pos = $Script1.rect_position
@@ -28,27 +19,6 @@ onready var opponent_built_mode = Data.OpponentBuiltMode.SHOW
 onready var opponent_state = Data.OpponentState.IDLE
 onready var color_mode = Data.ColorMode.HAUNTED_QUARTER_SELECTABLE
 onready var card_skill_activated = {"Smithy": false, "Laboratory": false, "Museum": false}
-
-# https://colors.artyclick.com/color-name-finder/?color=#162739
-const gray = Color(0.76171875, 0.76171875, 0.76171875)
-const white = Color(1, 1, 1)
-const white_smoke = Color(0.95703125, 0.95703125, 0.95703125)
-const white_lilac = Color(0.96875, 0.96484375, 0.984375)
-const jaguar = Color(0.0315, 0.00390625, 0.0625)
-const black = Color(0, 0, 0)
-const dark = Color(0.10546875, 0.140625, 0.19140625)
-const palatinate_purple = Color(0.40625, 0.15625, 0.375)
-const dark_lilac = Color(0.609375, 0.42578125, 0.64453125)
-const grape_purple = Color(0.36328125, 0.078125, 0.31640625)
-const basket_ball_orange = Color(0.96875, 0.50390625, 0.34375)
-const green_teal = Color(0.046875, 0.70703125, 0.46484375)
-const shamrock_green = Color(0, 0.6171875, 0.375)
-const green = Color(0, 1, 0)
-const red = Color(1, 0, 0)
-const cherry = Color(0.80859375, 0.0078125, 0.203125)
-const venetian_red = Color(0.78125, 0.03125, 0.08203125)
-const blue_koi = Color(0.39453125, 0.6171875, 0.77734375)
-const yellow = Color(1, 1, 0)
 
 
 func _ready() -> void:
@@ -83,129 +53,129 @@ func set_opponent_state(state: int) -> void:
 
 
 func set_script_mode(mode: int) -> void:
-	var color1 = white
-	var color2 = white
-	var color3 = white
+	var color1 = Data.WHITE
+	var color2 = Data.WHITE
+	var color3 = Data.WHITE
 	script_mode = mode
 	match mode:
 		Data.ScriptMode.RESOURCE:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = white
-			color2 = white
-			color3 = white
+			color1 = Data.WHITE
+			color2 = Data.WHITE
+			color3 = Data.WHITE
 		Data.ScriptMode.ASSASSIN:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = white_smoke
-			color2 = white_smoke
-			color3 = white_smoke
+			color1 = Data.WHITE_SMOKE
+			color2 = Data.WHITE_SMOKE
+			color3 = Data.WHITE_SMOKE
 		Data.ScriptMode.THIEF:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = basket_ball_orange
-			color2 = basket_ball_orange
-			color3 = basket_ball_orange
+			color1 = Data.BASKET_BALL_ORANGE
+			color2 = Data.BASKET_BALL_ORANGE
+			color3 = Data.BASKET_BALL_ORANGE
 		Data.ScriptMode.MAGICIAN:
 			$Script1Label.text = "NOTE_FROM_DECK"
 			$Script2Label.text = "NOTE_FROM_PLAYER"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = palatinate_purple
-			color2 = dark_lilac
-			color3 = grape_purple
+			color1 = Data.PALATINATE_PURPLE
+			color2 = Data.DARK_LILAC
+			color3 = Data.GRAPE_PURPLE
 		Data.ScriptMode.MERCHANT:
 			$Script1Label.text = "NOTE_GAIN_1"
 			$Script2Label.text = "NOTE_GAIN_GREEN"
 			$Script3Label.text = "NOTE_CANCEL"
 			if $Employee.skill_1_activated_this_turn:
-				color1 = gray
+				color1 = Data.GRAY
 			else:
-				color1 = shamrock_green
+				color1 = Data.SHAMROCK_GREEN
 			if $Employee.skill_2_activated_this_turn:
-				color2 = gray
+				color2 = Data.GRAY
 			else:
-				color2 = green_teal
-			color3 = green
+				color2 = Data.GREEN_TEAL
+			color3 = Data.GREEN
 		Data.ScriptMode.WARLORD:
 			$Script1Label.text = "NOTE_WARLORD_DESTROY"
 			$Script2Label.text = "NOTE_GAIN_RED"
 			$Script3Label.text = "NOTE_CANCEL"
 			if $Employee.skill_1_activated_this_turn:
-				color1 = gray
+				color1 = Data.GRAY
 			else:
-				color1 = venetian_red
+				color1 = Data.VENETIAN_RED
 			if $Employee.skill_2_activated_this_turn:
-				color2 = gray
+				color2 = Data.GRAY
 			else:
-				color2 = cherry
-			color3 = red
+				color2 = Data.CHERRY
+			color3 = Data.RED
 		Data.ScriptMode.PLAYING:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_END_TURN"
-			color1 = white_lilac
-			color2 = white_lilac
-			color3 = white_lilac
+			color1 = Data.WHITE_LILAC
+			color2 = Data.WHITE_LILAC
+			color3 = Data.WHITE_LILAC
 		Data.ScriptMode.NOT_PLAYING:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_END_TURN"
-			color1 = white_lilac
-			color2 = white_lilac
-			color3 = gray
+			color1 = Data.WHITE_LILAC
+			color2 = Data.WHITE_LILAC
+			color3 = Data.GRAY
 		Data.ScriptMode.ARMORY:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = white_lilac
-			color2 = white_lilac
-			color3 = red
+			color1 = Data.WHITE_LILAC
+			color2 = Data.WHITE_LILAC
+			color3 = Data.RED
 		Data.ScriptMode.LABORATORY:
 			$Script1Label.text = "NOTE_NEED_GOLD"
 			$Script2Label.text = "NOTE_NEED_CARD"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = white_lilac
-			color2 = white_lilac
-			color3 = dark_lilac
+			color1 = Data.WHITE_LILAC
+			color2 = Data.WHITE_LILAC
+			color3 = Data.DARK_LILAC
 		Data.ScriptMode.FRAMEWORK:
 			$Script1Label.text = "NOTE_YES"
 			$Script2Label.text = "NOTE_NO"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = white_lilac
-			color2 = white_lilac
-			color3 = red
+			color1 = Data.WHITE_LILAC
+			color2 = Data.WHITE_LILAC
+			color3 = Data.RED
 		Data.ScriptMode.NECROPOLIS:
 			$Script1Label.text = "NOTE_YES"
 			$Script2Label.text = "NOTE_NO"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = white_lilac
-			color2 = white_lilac
-			color3 = red
+			color1 = Data.WHITE_LILAC
+			color2 = Data.WHITE_LILAC
+			color3 = Data.RED
 		Data.ScriptMode.THIEVES_DEN:
 			$Script1Label.text = "NOTE_YES"
 			$Script2Label.text = "NOTE_NO"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = basket_ball_orange
-			color2 = basket_ball_orange
-			color3 = basket_ball_orange
+			color1 = Data.BASKET_BALL_ORANGE
+			color2 = Data.BASKET_BALL_ORANGE
+			color3 = Data.BASKET_BALL_ORANGE
 		Data.ScriptMode.THEATER:
 			$Script1Label.text = "NOTE_YES"
 			$Script2Label.text = "NOTE_NO"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = blue_koi
-			color2 = blue_koi
-			color3 = blue_koi
+			color1 = Data.BLUE_KOI
+			color2 = Data.BLUE_KOI
+			color3 = Data.BLUE_KOI
 		Data.ScriptMode.MUSEUM:
 			$Script1Label.text = "NOTE_YES"
 			$Script2Label.text = "NOTE_NO"
 			$Script3Label.text = "NOTE_CANCEL"
-			color1 = yellow
-			color2 = yellow
-			color3 = yellow
-	
+			color1 = Data.YELLOW
+			color2 = Data.YELLOW
+			color3 = Data.YELLOW
+
 	$Script1Label.set("custom_colors/font_color", color1)
 	$Script2Label.set("custom_colors/font_color", color2)
 	$Script3Label.set("custom_colors/font_color", color3)
@@ -453,12 +423,9 @@ func wait_laboratory() -> void:
 		h.set_card_mode(Data.CardMode.LABORATORY_SELECTING)
 
 
-func set_bank_position(pos: Vector2) -> void:
-	bank_position = pos
 
 
-func set_deck_position(pos: Vector2) -> void:
-	deck_position = pos
+
 
 
 func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_is_up: bool, animation_time: float, start_scale: Vector2, end_scale: Vector2) -> void:
@@ -477,11 +444,11 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 		not_ready_signal = "sgin_player_built_not_ready"
 		ready_signal = "sgin_player_built_ready"
 
-	var card_info = Data.get_card_info(card_name)
+#	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	list.append(card_name)
 	node.add_child(incoming_card)
-	incoming_card.init_card(card_name, card_info["up_offset"], start_scale, from_pos, true, Data.CardMode.ENLARGE)
+	incoming_card.init_card(card_name, start_scale, from_pos, true, Data.CardMode.ENLARGE)
 	Signal.emit_signal(not_ready_signal, incoming_card)
 	var positions = get_positions_with_new_card(node)
 	var action_list = [
@@ -518,7 +485,7 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 	Signal.emit_signal(ready_signal, incoming_card)
 
 
-func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Vector2(0.175, 0.175), end_scale: Vector2 = Vector2(0.175, 0.175)) -> void:
+func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_MEDIUM) -> void:
 	player_draw_built("hands", card_name, from_pos, face_is_up, animation_time, start_scale, end_scale)
 
 
@@ -578,7 +545,7 @@ func disable_play() -> void:
 		a.set_card_mode(Data.CardMode.STATIC)
 	set_script_mode(Data.ScriptMode.NOT_PLAYING)
 #	$Employee.set_employee_mode(Data.ScriptMode.NOT_PLAYING)
-	$Script3Label.set("custom_colors/font_color", gray)
+	$Script3Label.set("custom_colors/font_color", Data.GRAY)
 
 
 func enable_play() -> void:
@@ -590,7 +557,7 @@ func enable_play() -> void:
 			a.set_card_mode(Data.CardMode.BUILT_CLICKABLE)
 		else:
 			a.set_card_mode(Data.CardMode.ENLARGE)
-		
+
 #	$Employee.set_employee_mode(Data.ScriptMode.PLAYING)
 	set_script_mode(Data.ScriptMode.PLAYING)
 
@@ -625,13 +592,13 @@ func on_player_info(data: Dictionary) -> void:
 		$BuiltScript.remove_child(n)
 		n.queue_free()
 	for c in data.get("hands", []):
-		draw(c, true, deck_position, 0)
+		draw(c, true, Data.DECK_POSITION, 0)
 	enable_enlarge()
 	for b in data.get("built", []):
-		build(b, deck_position, 0)
+		build(b, Data.DECK_POSITION, 0)
 	set_museum_num(data.get("museum_num", 0))
-	
-		
+
+
 func set_museum_num(num: int) -> void:
 	museum_num = num
 	var museum = get_built_obj("Museum")
@@ -639,10 +606,8 @@ func set_museum_num(num: int) -> void:
 		museum.set_museum_num(museum_num)
 
 
-func build(card_name: String, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Vector2(0.175, 0.175), end_scale: Vector2 = Vector2(0.175, 0.175)) -> void:
+func build(card_name: String, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_MEDIUM) -> void:
 	player_draw_built("built", card_name, from_pos, true, animation_time, start_scale, end_scale)
-
-
 
 
 func set_hide_employee(hide: bool) -> void:
@@ -666,8 +631,6 @@ func show_employee() -> void:
 func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
 	$Crown.set_visible(has_crown)
-	
-
 
 
 func has_enough_money(price: int) -> bool:
@@ -691,7 +654,7 @@ func card_played(card_name: String, price: int) -> void:
 		enable_play()
 		return false
 	var from_pos = card_obj.global_position
-	Signal.emit_signal("sgin_gold_move", player_num, bank_num, price, "sgin_player_pay_ready")
+	Signal.emit_signal("sgin_gold_move", player_num, Data.bank_num, price, "sgin_player_pay_ready")
 	yield(Signal, "sgin_player_pay_ready")
 	hands.erase(card_name)
 	built.append(card_name)
@@ -702,18 +665,18 @@ func card_played(card_name: String, price: int) -> void:
 	disable_enlarge()
 	TweenMove.animate(
 		[
-			[card_obj, "global_position", from_pos, center],
-			[card_obj, "scale", original_scale, Vector2(0.6, 0.6)],
+			[card_obj, "global_position", from_pos, Data.CENTER],
+			[card_obj, "scale", original_scale, Data.CARD_SIZE_BIG],
 		]
 	)
 	yield(TweenMove, "tween_all_completed")
 	$HandScript.remove_child(card_obj)
 	$BuiltScript.add_child(card_obj)
-	card_obj.global_position = center
+	card_obj.global_position = Data.CENTER
 	TweenMove.animate(
 		[
-			[card_obj, "global_position", center, $BuiltScript.global_position + get_built_positions_with_new_card()[-1]],
-			[card_obj, "scale", Vector2(0.6, 0.6), original_scale],
+			[card_obj, "global_position", Data.CENTER, $BuiltScript.global_position + get_built_positions_with_new_card()[-1]],
+			[card_obj, "scale", Data.CARD_SIZE_BIG, original_scale],
 		]
 	)
 	yield(TweenMove, "tween_all_completed")
@@ -734,7 +697,6 @@ func rearrange_built() -> void:
 func rearrange_hands() -> void:
 	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
-	
 
 
 func after_end_turn() -> void:
@@ -804,11 +766,11 @@ func show_opponent_built(name: String, cards: Array) -> void:
 		for c in $OpponentBuilt.get_children():
 			$OpponentBuilt.remove_child(c)
 			c.queue_free()
-		var start_scale = Vector2(0.175, 0.175)
-		var from_pos = Vector2(0, 0)
+		var start_scale = Data.CARD_SIZE_MEDIUM
+		var from_pos = Data.ZERO
 
 		for card_name in cards:
-			var card_info = Data.get_card_info(card_name)
+#			var card_info = Data.get_card_info(card_name)
 			var incoming_card = Card.instance()
 			var card_mode
 			match opponent_built_mode:
@@ -819,7 +781,7 @@ func show_opponent_built(name: String, cards: Array) -> void:
 				Data.OpponentBuiltMode.ARMORY_SHOW:
 					card_mode = Data.CardMode.ARMORY_SELECTING
 			$OpponentBuilt.add_child(incoming_card)
-			incoming_card.init_card(card_name, card_info["up_offset"], start_scale, from_pos, true, card_mode)
+			incoming_card.init_card(card_name, start_scale, from_pos, true, card_mode)
 		var positions = get_positions_with_new_card($OpponentBuilt)
 		rearrange($OpponentBuilt, positions, 0)
 
@@ -938,6 +900,6 @@ func on_ColorChoose_input_event(_viewport, event, shape_idx):
 			hide_color_choose()
 			Signal.emit_signal("sgin_school_of_magic_color_selected", color_dic[shape_idx])
 
+
 func add_museum_num() -> void:
 	museum_num += 1
-	

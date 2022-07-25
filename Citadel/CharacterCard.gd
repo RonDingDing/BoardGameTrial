@@ -38,7 +38,7 @@ func init_char(
 	char_up_offset = up_offset
 	$Face/Description.rect_position.y = 420 - up_offset
 	set_face_up(face_is_up)
-	set_scale(scales)  #Vector2(0.13, 0.13)
+	set_scale(scales)
 	set_position(pos)
 	set_char_mode(Data.CharMode.ENLARGE)
 

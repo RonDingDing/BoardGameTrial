@@ -3,7 +3,6 @@ onready var TweenMove = get_node("/root/Main/Tween")
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var mode = Data.CardMode.ENLARGE
-onready var center = get_viewport_rect().size / 2
 onready var enlarging = ""
 
 
@@ -25,7 +24,7 @@ func assassinate(char_name: String) -> void:
 			[
 				$KillSword,
 				"global_position",
-				Vector2(-900, $CharacterCard.global_position.y),
+				Vector2(Data.SWORD_START, $CharacterCard.global_position.y),
 				$CharacterCard.global_position,
 				2
 			]
@@ -34,7 +33,7 @@ func assassinate(char_name: String) -> void:
 	yield(TweenMove, "tween_all_completed")
 	set_mode(Data.CardMode.ENLARGE)
 	$CharacterCard.hide()
-	$KillSword.set_global_position(Vector2(-99999, -99999))
+	$KillSword.set_global_position(Data.FAR_AWAY)
 
 
 func steal(char_name: String) -> void:
@@ -47,7 +46,7 @@ func steal(char_name: String) -> void:
 				$StealPocket,
 				"global_position",
 				$CharacterCard.global_position,
-				Vector2(2000, $CharacterCard.global_position.y),
+				Vector2(Data.POCKET_END, $CharacterCard.global_position.y),
 				2
 			]
 		]
@@ -55,20 +54,19 @@ func steal(char_name: String) -> void:
 	yield(TweenMove, "tween_all_completed")
 	set_mode(Data.CardMode.ENLARGE)
 	$CharacterCard.hide()
-	$StealPocket.set_global_position(Vector2(-99999, -99999))
+	$StealPocket.set_global_position(Data.FAR_AWAY)
 
 
 func on_sgin_card_focused(card_name: String) -> void:
 	if mode == Data.CardMode.ENLARGE:# and enlarging != card_name:
 		$CharacterCard.hide()
 		enlarging = card_name
-		var card_info = Data.get_card_info(card_name)
+#		var card_info = Data.get_card_info(card_name)
 		$Card0.show()
 		$Card0.init_card(
 			card_name,
-			card_info["up_offset"],
-			Vector2(0.6, 0.6),
-			center,
+			Data.CARD_SIZE_BIG,
+			Data.CENTER,
 			true,
 			Data.CardMode.ENLARGE
 		)
@@ -80,7 +78,7 @@ func on_sgin_card_unfocused() -> void:
 		$Card0.hide()
 
 
-func on_sgin_char_focused(char_name: String, forced: bool=false) -> void:
+func on_sgin_char_focused(char_name: String, _forced: bool=false) -> void:
 #	var condition = true
 #	if not forced:
 #		condition = enlarging != char_name
@@ -93,8 +91,8 @@ func on_sgin_char_focused(char_name: String, forced: bool=false) -> void:
 			char_name,
 			char_info["char_num"],
 			char_info["char_up_offset"],
-			Vector2(0.5, 0.5),
-			center,
+			Data.CHAR_SIZE_BIG,
+			Data.CENTER,
 			true
 		)
 
@@ -140,8 +138,8 @@ func char_enter(char_name: String, start_pos: Vector2, end_pos: Vector2, start_s
 
 func reset_characters() -> void:
 	set_mode(Data.CardMode.ENLARGE)
-	$CharacterCard.set_global_position(center)
-	$CharacterCard.set_scale(Vector2(0.5, 0.5))
+	$CharacterCard.set_global_position(Data.CENTER)
+	$CharacterCard.set_scale(Data.CHAR_SIZE_BIG)
 	$CharacterCard.hide()
 
 
@@ -149,32 +147,32 @@ func reset_cards() -> void:
 	set_mode(Data.CardMode.ENLARGE)
 	for i in range(3):
 		var card = get_node(str("Card", i))
-		card.set_global_position(center)
-		card.set_scale(Vector2(0.5, 0.5))
+		card.set_global_position(Data.CENTER)
+		card.set_scale(Data.CHAR_SIZE_BIG)
 		card.set_can_be_top(false)
 		card.hide()
 
 
 func selectable_cards(cards: Array) -> void:
 	set_mode(Data.CardMode.SELECT)
-	var poss = [center, center, center]
+	var poss = [Data.CENTER, Data.CENTER, Data.CENTER]
 	if cards.size() == 1:
 		$Card0.show()
 		$Card0.set_can_be_top(true)
 		$Card1.hide()
 		$Card2.hide()
 	elif cards.size() == 2:
-		poss[0] += Vector2(-250, 0)
-		poss[1] += Vector2(250, 0)
+		poss[0] += Data.TWO_CARDS_POSITION_1
+		poss[1] += Data.TWO_CARDS_POSITION_2
 		$Card0.show()
 		$Card0.set_can_be_top(true)
 		$Card1.show()
 		$Card1.set_can_be_top(true)
 		$Card2.hide()
 	elif cards.size() == 3:
-		poss[0] += (Vector2(-450, 0))
-		poss[1] += (Vector2(0, 0))
-		poss[2] += (Vector2(450, 0))
+		poss[0] += Data.THREE_CARDS_POSITION_1
+		poss[1] += Data.THREE_CARDS_POSITION_2
+		poss[2] += Data.THREE_CARDS_POSITION_3
 		$Card0.show()
 		$Card0.set_can_be_top(true)
 		$Card1.show()
@@ -183,7 +181,7 @@ func selectable_cards(cards: Array) -> void:
 		$Card2.set_can_be_top(true)
 
 	for i in range(cards.size()):
-		var card_info = Data.get_card_info(cards[i])
+#		var card_info = Data.get_card_info(cards[i])
 		get_node(str("Card", i)).init_card(
-			cards[i], card_info["up_offset"], Vector2(0.6, 0.6), poss[i], true, Data.CardMode.SELECT
+			cards[i], Data.CARD_SIZE_BIG, poss[i], true, Data.CardMode.SELECT
 		)

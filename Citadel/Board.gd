@@ -3,8 +3,6 @@ extends Node2D
 onready var current_turn_num = 1
 onready var first_person_num = 0
 onready var opponent_length = 3#6
-onready var deck_position = $Deck.position
-onready var bank_position = $Bank.position
 onready var discarded_hidden_position = $Employment/DiscardedHidden.position
 onready var lang = "zh_CN"
 onready var Signal = get_node("/root/Main/Signal")
@@ -15,30 +13,22 @@ onready var started = false
 const Crown = preload("res://Crown.tscn")
 const Money = preload("res://Money.tscn")
 
-const deck_num = -1
-const bank_num = -2
-const unfound = -3
-onready var center = get_viewport_rect().size / 2
+
 
 #Game
 onready var city_finished = []
 
 
 #Skill
-onready var stolen = [unfound, "Unchosen"]
-onready var assassinated = [unfound, "Unchosen"]
-onready var destroyed = [unfound, "Unchosen"]
+onready var stolen = [Data.unfound, "Unchosen"]
+onready var assassinated = [Data.unfound, "Unchosen"]
+onready var destroyed = [Data.unfound, "Unchosen"]
 
 
 func _ready() -> void:
 	TranslationServer.set_locale(lang)
-	$Player.set_deck_position(deck_position)
-	$Player.set_bank_position(bank_position)
-	for i in range(1, 9):
-		var opponent = get_node(str("Opponent", i))
-		opponent.set_deck_position(deck_position)
-		opponent.set_bank_position(bank_position)
-
+	Data.set_deck_position($Deck.global_position)
+	Data.set_bank_position($Bank.global_position)
 	$Employment.set_discarded_hidden_position(discarded_hidden_position)
 	show_player()
 	on_sgin_set_reminder("")
@@ -135,9 +125,9 @@ func select_player_obj_by(find_mode: int, clue) -> Node:
 	for n in range(-2, opponent_length + 1):
 		if n == 0:
 			player_obj = $Player
-		elif n == bank_num:
+		elif n == Data.bank_num:
 			player_obj = $Bank
-		elif n == deck_num:
+		elif n == Data.deck_num:
 			player_obj = $Deck
 		else:
 			player_obj = get_node(str("Opponent", n))
@@ -166,9 +156,9 @@ func show_player() -> void:
 		node.position = $OpponentPath2D/PathFollow2D.position
 
 
-func on_sgin_draw_card(player_num: int, face_is_up: bool, from_pos: Vector2 = deck_position):
+func on_sgin_draw_card(player_num: int, face_is_up: bool, from_pos: Vector2 = Data.DECK_POSITION):
 	if from_pos == null:
-		from_pos = deck_position
+		from_pos = Data.DECK_POSITION
 	var card_name = $Deck.pop()
 	if card_name != "":
 		var player_obj = select_obj_by_player_num(player_num)
@@ -205,7 +195,7 @@ func on_sgin_card_dealt(all_player_length: int) -> void:
 			TimerGlobal.set_wait_time(0.1)
 			TimerGlobal.start()
 			yield(TimerGlobal, "timeout")
-			on_sgin_gold_transfer(bank_num, p_num)
+			on_sgin_gold_transfer(Data.bank_num, p_num)
 	if TweenMove.is_active():
 		yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_ready_game")
@@ -411,15 +401,15 @@ func make_params(player_obj: Node, employee_num: int, employee_name: String) -> 
 	var end_pos
 	var scaling
 	if player_obj == null or is_assassinated(employee_num, employee_name):
-		end_pos = center
-		scaling = Vector2(0, 0)
+		end_pos = Data.CENTER
+		scaling = Data.ZERO
 	else:
 		end_pos = player_obj.get_node("Employee").global_position
 		if player_obj.player_num == first_person_num:
-			scaling = Vector2(0.04, 0.04)
+			scaling = Data.CHAR_SIZE_SMALL
 		else:
-			scaling = Vector2(0.02, 0.02)
-	var params = Params.new(center, end_pos, Vector2(0.5, 0.5), scaling)
+			scaling = Data.CHAR_SIZE_TINY
+	var params = Params.new(Data.CENTER, end_pos, Data.CHAR_SIZE_BIG, scaling)
 	return params
 
 
@@ -532,7 +522,7 @@ func on_sgin_resource_need(what: int) -> void:
 
 func gain_gold() -> void:
 	var gold_to_gain = check_skill_resource_draw_gold($Player.built)
-	gold_move(bank_num, $Player.player_num, gold_to_gain, "sgin_player_gold_ready")
+	gold_move(Data.bank_num, $Player.player_num, gold_to_gain, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	Signal.emit_signal("sgin_resource_end")
 
@@ -712,9 +702,9 @@ func on_sgin_one_round_finished() -> void:
 		$Employment.reset_available()
 		$Employment.reset_discard_hidden()
 		employee_reset()
-		stolen = [unfound, "Unchosen"]
-		assassinated = [unfound, "Unchosen"]
-		destroyed = [unfound, "Unchosen"]
+		stolen = [Data.unfound, "Unchosen"]
+		assassinated = [Data.unfound, "Unchosen"]
+		destroyed = [Data.unfound, "Unchosen"]
 		$Player.set_assassinated("Unchosen")
 		$Player.set_stolen("Unchosen")
 		character_selection(crown_player_num)
@@ -959,7 +949,7 @@ func magician_select_deck() -> void:
 	for c in $Player.get_handscript_children():
 		TweenMove.animate(
 			[
-				[c, "global_position", c.global_position, deck_position, 1],
+				[c, "global_position", c.global_position, Data.DECK_POSITION, 1],
 			]
 		)
 		TimerGlobal.set_wait_time(0.1)
@@ -1016,7 +1006,7 @@ func on_sgin_magician_opponent_selected(player_num: int) -> void:
 			true,
 			switch_opponent.get_node("HandsInfo").global_position,
 			1,
-			Vector2(0.03, 0.03)
+			Data.CARD_SIZE_SMALL
 		)
 		switch_opponent.remove_hand(card_name)
 
@@ -1040,7 +1030,7 @@ func charskill_play_passive_queen(in_turn: bool=true) -> void:
 	elif four_pnum in [first_person_num -1,  first_person_num + 1]:
 		caught_king = true
 	if caught_king:
-		gold_move(bank_num, first_person_num, 3, "sgin_player_gold_ready")
+		gold_move(Data.bank_num, first_person_num, 3, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 
 func charskill_play_passive_king() -> void:
@@ -1052,14 +1042,14 @@ func charskill_play_passive_king() -> void:
 	var emoloyee_4 = select_obj_by_player_num(emoloyee_4_pnum)
 	var to_pos = emoloyee_4.get_node("Crown").global_position
 	var start_scale = (
-		Vector2(0.15, 0.15)
+		Data.CROWN_SIZE_MEDIUM
 		if crown_pnum == $Player.player_num
-		else Vector2(0.07, 0.07)
+		else Data.CROWN_SIZE_SMALL
 	)
 	var end_scale = (
-		Vector2(0.15, 0.15)
+		Data.CROWN_SIZE_MEDIUM
 		if emoloyee_4_pnum == $Player.player_num
-		else Vector2(0.07, 0.07)
+		else Data.CROWN_SIZE_SMALL
 	)
 
 	var crown = Crown.instance()
@@ -1091,8 +1081,8 @@ func charskill_play_passive_king() -> void:
 func on_sgin_gold_transfer(from_pnum: int, to_pnum: int) -> void:
 	var from_player = select_obj_by_player_num(from_pnum)
 	var to_player = select_obj_by_player_num(to_pnum)
-	var start_scale = Vector2(1.7, 1.7) if from_pnum == $Player.player_num else Vector2(1, 1)
-	var end_scale = Vector2(1.7, 1.7) if to_pnum == $Player.player_num else Vector2(1, 1)
+	var start_scale = Data.GOLD_SIZE_MEDIUM if from_pnum == $Player.player_num else Data.GOLD_SIZE_SMALL
+	var end_scale = Data.GOLD_SIZE_MEDIUM if to_pnum == $Player.player_num else Data.GOLD_SIZE_SMALL
 	var from_pos = from_player.get_node("MoneyIcon").global_position
 	var to_pos = to_player.get_node("MoneyIcon").global_position
 	var money = Money.instance()
@@ -1121,14 +1111,14 @@ func on_sgin_merchant_gold(mode: int) -> void:
 	$Player.hide_scripts()
 	if mode == Data.MerchantGold.ONE:
 		$Player.disable_play()
-		gold_move(bank_num, $Player.player_num, 1, "sgin_player_gold_ready")
+		gold_move(Data.bank_num, $Player.player_num, 1, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 	else:
 		var gained = gain_gold_by_color("green")
 		var wait = handle_resource_skill_reaction("green", gained, $Player.built)
 		if wait:
 			gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")
-		gold_move(bank_num, $Player.player_num, gained, "sgin_player_gold_ready")
+		gold_move(Data.bank_num, $Player.player_num, gained, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn(Data.ActivateMode.SKILL2, false)
@@ -1190,7 +1180,7 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 		elif component == "selected":
 			$Player.selected = []
 		elif component == "destroy":
-			destroyed = [unfound, "Unchosen"]
+			destroyed = [Data.unfound, "Unchosen"]
 		elif component == "built":
 			$Player.rearrange_built()
 			yield(TweenMove, "tween_all_completed")
@@ -1242,7 +1232,7 @@ func charskill_play_active_king() -> void:
 	var wait = handle_resource_skill_reaction("yellow", gained, $Player.built)
 	if wait:
 		gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")	
-	gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
+	gold_move(Data.bank_num, first_person_num, gained, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn(Data.ActivateMode.ALL, false)
@@ -1254,7 +1244,7 @@ func charskill_play_active_bishop() -> void:
 	var wait = handle_resource_skill_reaction("blue", gained, $Player.built)
 	if wait:
 		gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")
-	gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
+	gold_move(Data.bank_num, first_person_num, gained, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	if gained == 0:
 		$Player.set_employee_activated_this_turn(Data.ActivateMode.ALL, false)
@@ -1315,7 +1305,7 @@ func card_skill_play_smithy() -> void:
 	elif $Player.gold < 2:
 		return
 	$Player.set_card_skill_activated("Smithy", true) 
-	gold_move(first_person_num, bank_num, 2, "sgin_player_gold_ready")
+	gold_move(first_person_num, Data.bank_num, 2, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	card_gain(first_person_num, 3, "sgin_player_draw_ready")
 	yield(Signal, "sgin_player_draw_ready")
@@ -1358,7 +1348,7 @@ func card_skill_game_over_dragon_gate() -> int:
 
 func card_skill_end_turn_poor_house(gold: int) -> void:
 	if gold == 0:
-		gold_move(bank_num, first_person_num, 1, "sgin_player_gold_ready")
+		gold_move(Data.bank_num, first_person_num, 1, "sgin_player_gold_ready")
 		yield(Signal, "sgin_player_gold_ready")
 
 
@@ -1387,7 +1377,7 @@ func card_skill_play_framework(play_name: String, price: int) -> void:
 			var frame_pos = frame_obj.global_position
 			card_enlarge_to_center(frame_obj, frame_pos)
 			yield(Signal, "sgin_card_move_done")
-			frame_obj.global_position = center
+			frame_obj.global_position = Data.CENTER
 			center_card_shrink_to_away(frame_obj, frame_scale)
 			yield(Signal, "sgin_card_move_done")
 			$Player.remove_built("Framework")
@@ -1428,7 +1418,7 @@ func card_skill_play_thieves_den(play_name: String, price: int, gold: int) -> vo
 		var hand_pos = hand_obj.global_position
 		card_enlarge_to_center(hand_obj, hand_pos)
 		yield(Signal, "sgin_card_move_done")
-		hand_obj.global_position = center
+		hand_obj.global_position = Data.CENTER
 		center_card_shrink_to_away(hand_obj, hand_scale)
 		yield(Signal, "sgin_card_move_done")
 		$Player.remove_hand(h)
@@ -1456,7 +1446,7 @@ func card_skill_play_necropolis(_card_name: String, price: int) -> void:
 		var card_pos = remove_selected[1]
 		card_enlarge_to_center(card_obj, card_pos)
 		yield(Signal, "sgin_card_move_done")
-		card_obj.global_position = center
+		card_obj.global_position = Data.CENTER
 		center_card_shrink_to_away(card_obj, card_scale)
 		yield(Signal, "sgin_card_move_done")
 		$Player.remove_built(remove_selected[0])
@@ -1524,13 +1514,13 @@ func card_skill_selection_theater(player_num: int) -> void:
 		var temp = [my_employ_num, my_employee]
 		$Player.set_employee(his_employ_num, his_employee)
 		switch_player.set_employee(temp[0], temp[1])
-		$AnyCardEnlarge.char_enter(temp[1], $Player/Employee.global_position, center, Vector2(0.04, 0.04), Vector2(0.5, 0.5))
+		$AnyCardEnlarge.char_enter(temp[1], $Player/Employee.global_position, Data.CENTER, Data.CHAR_SIZE_SMALL, Data.CHAR_SIZE_BIG)
 		yield(TweenMove, "tween_all_completed")
-		$AnyCardEnlarge.char_enter(temp[1], center, switch_player.get_node("Employee").global_position, Vector2(0.5, 0.5), Vector2(0.02, 0.02))
+		$AnyCardEnlarge.char_enter(temp[1], Data.CENTER, switch_player.get_node("Employee").global_position, Data.CHAR_SIZE_BIG, Data.CHAR_SIZE_TINY)
 		yield(TweenMove, "tween_all_completed")
-		$AnyCardEnlarge.char_enter(his_employee, switch_player.get_node("Employee").global_position, center, Vector2(0.02, 0.02), Vector2(0.5, 0.5))
+		$AnyCardEnlarge.char_enter(his_employee, switch_player.get_node("Employee").global_position, Data.CENTER, Data.CHAR_SIZE_TINY, Data.CHAR_SIZE_BIG)
 		yield(TweenMove, "tween_all_completed")
-		$AnyCardEnlarge.char_enter(his_employee, center, $Player/Employee.global_position, Vector2(0.5, 0.5), Vector2(0.04, 0.04))
+		$AnyCardEnlarge.char_enter(his_employee, Data.CENTER, $Player/Employee.global_position, Data.CHAR_SIZE_BIG, Data.CHAR_SIZE_SMALL)
 		yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal("sgin_theater_reaction_completed")
 	
@@ -1630,7 +1620,7 @@ func on_sgin_warlord_choice(mode: int) -> void:
 		var wait = handle_resource_skill_reaction("red", gained, $Player.built)
 		if wait:
 			gained = yield(Signal, "sgin_all_resource_skill_reaction_completed")
-		gold_move(bank_num, first_person_num, gained, "sgin_player_gold_ready")
+		gold_move(Data.bank_num, first_person_num, gained, "sgin_player_gold_ready")
 		if gained == 0:
 			$Player.set_employee_activated_this_turn(Data.ActivateMode.SKILL2, false)
 		on_sgin_enable_player_play()
@@ -1665,13 +1655,13 @@ func on_sgin_card_laboratory_selected(card_name: String, from_pos: Vector2) -> v
 	var original_scale = card_obj.scale
 	card_enlarge_to_center(card_obj, from_pos)
 	yield(Signal, "sgin_card_move_done")
-	card_obj.global_position = center
+	card_obj.global_position = Data.CENTER
 	center_card_shrink_to_away(card_obj, original_scale)
 	yield(Signal, "sgin_card_move_done")	
 	$Player.remove_hand(card_name)
 	$Player.rearrange_hands()
 	yield(TweenMove, "tween_all_completed")
-	gold_move(bank_num, first_person_num, 2, "sgin_player_gold_ready")
+	gold_move(Data.bank_num, first_person_num, 2, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	$Deck.append(card_name)
 	$Player.set_card_skill_activated("Laboratory", true)
@@ -1693,7 +1683,7 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 	if card_obj == null:
 		return	
 	on_sgin_disable_player_play()
-	gold_move(first_person_num, bank_num, price, "sgin_player_gold_ready")
+	gold_move(first_person_num, Data.bank_num, price, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	card_obj.on_mouse_exited()
 	var original_scale = card_obj.scale
@@ -1705,7 +1695,7 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 			c.set_visible(false)	
 	card_enlarge_to_center(card_obj, from_pos)
 	yield(Signal, "sgin_card_move_done")
-	card_obj.global_position = center
+	card_obj.global_position = Data.CENTER
 	center_card_shrink_to_away(card_obj, original_scale)
 	yield(Signal, "sgin_card_move_done")
 	war_opponent.remove_built(card_name)
@@ -1736,10 +1726,10 @@ func card_move(card_obj: Node, start_pos: Vector2, end_pos: Vector2, start_scale
 	Signal.call_deferred("emit_signal", done_signal)
 
 func card_enlarge_to_center(card_obj: Node, start_pos: Vector2, done_signal: String = "sgin_card_move_done") -> void:
-	card_move(card_obj, start_pos, center, card_obj.scale, Vector2(0.6, 0.6), done_signal)
+	card_move(card_obj, start_pos, Data.CENTER, card_obj.scale, Data.CARD_SIZE_BIG, done_signal)
 
 func center_card_shrink_to_away(card_obj: Node, end_scale: Vector2, done_signal: String = "sgin_card_move_done") -> void:
-	card_move(card_obj, center, Vector2(3000, center.y), Vector2(0.6, 0.6), end_scale, done_signal)
+	card_move(card_obj, Data.CENTER, Vector2(Data.CARD_END, Data.CENTER.y), Data.CARD_SIZE_BIG, end_scale, done_signal)
 	
 
 func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:	
@@ -1771,7 +1761,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 	var armory_scale = armory_obj.scale
 	card_enlarge_to_center(armory_obj, armory_obj.global_position)
 	yield(Signal, "sgin_card_move_done")
-	armory_obj.global_position = center
+	armory_obj.global_position = Data.CENTER
 	center_card_shrink_to_away(armory_obj, armory_scale)
 	yield(Signal, "sgin_card_move_done")
 	$Player.remove_built("Armory")
@@ -1797,7 +1787,7 @@ func on_sgin_card_museum_selected(card_name: String, _global_position: Vector2) 
 	var card_obj = $Player.get_hand_obj(card_name)
 	var museum_obj = $Player.get_built_obj("Museum")
 	var museum_text_pos = museum_obj.global_position
-	card_move(card_obj, card_obj.global_position, museum_text_pos, card_obj.scale, Vector2(0.02, 0.02), "sgin_card_move_done")
+	card_move(card_obj, card_obj.global_position, museum_text_pos, card_obj.scale, Data.CHAR_SIZE_TINY, "sgin_card_move_done")
 	yield(Signal, "sgin_card_move_done")
 	$Player.remove_hand(card_name)
 	$Player.rearrange_hands()

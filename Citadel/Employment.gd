@@ -4,17 +4,7 @@ onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var CharacterCard = preload("res://CharacterCard.tscn")
 onready var TweenMove = get_node("/root/Main/Tween")
-onready var available_characters = {
-	1: "Assassin",
-	2: "Thief",
-	3: "Magician",
-	4: "King",
-	5: "Bishop",
-	6: "Merchant",
-	7: "Architect",
-	8: "Warlord",
-	9: "Queen"
-}
+onready var available_characters = {1: "Assassin", 2: "Thief", 3: "Magician", 4: "King", 5: "Bishop", 6: "Merchant", 7: "Architect", 8: "Warlord", 9: "Queen"}
 onready var nine_chars = true
 onready var full_num = 10 if nine_chars else 9
 onready var available = available_characters.keys()
@@ -22,8 +12,8 @@ onready var discarded = []
 onready var hidden = []
 
 onready var state = Data.EmploymentState.IDLE
-onready var discarded_hidden_position = Vector2(-9999, -9999)
-onready var char_pos = Vector2(-9999, -9999)
+onready var discarded_hidden_position = Data.FAR_AWAY
+onready var char_pos = Data.FAR_AWAY
 
 
 func _ready():
@@ -117,9 +107,7 @@ func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 	Signal.emit_signal("sgin_char_not_ready", incoming_char)
 	sub_node.add_child(incoming_char)
 	sub_node.store.append(char_info)
-	incoming_char.init_char(
-		animation_name, number, up_offset, Vector2(0.13, 0.13), from_pos, init_face_up
-	)
+	incoming_char.init_char(animation_name, number, up_offset, Data.CHAR_BANNED, from_pos, init_face_up)
 	TweenMove.animate(
 		[
 			[
@@ -131,8 +119,8 @@ func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 			[
 				incoming_char,
 				"scale",
-				Vector2(0.175, 0.175),
-				Vector2(0.04, 0.04),
+				Data.CARD_SIZE_MEDIUM,
+				Data.CHAR_SIZE_SMALL,
 			],
 			[
 				incoming_char.get_node("Face"),
@@ -151,7 +139,7 @@ func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 
 	yield(TweenMove, "tween_all_completed")
 	if mode == Data.EmploymentState.SELECTING:
-		incoming_char.global_position = Vector2(9999, 9999)
+		incoming_char.global_position = Data.FAR_AWAY
 #		sub_node.store.erase(char_name)
 	incoming_char.set_char_mode(Data.CharMode.ENLARGE)
 	Signal.emit_signal(emite, number, char_name)
@@ -206,7 +194,7 @@ func put_char_num(char_array: Array, face_up: bool, char_mode: int) -> void:
 	for i in range(1, full_num):
 		var node_name = str("Characters/CharacterCard", i)
 		var node = get_node(node_name)
-		node.position = Vector2(-99999, -99999)
+		node.position = Data.FAR_AWAY
 
 	var array_len = char_array.size()
 	var positions = get_card_positions(char_array)
@@ -217,13 +205,11 @@ func put_char_num(char_array: Array, face_up: bool, char_mode: int) -> void:
 		node.show()
 		var animation_name = available_characters[char_num]
 		var up_offset = Data.get_up_offset_char(animation_name)
-		node.init_char(
-			animation_name, char_num, up_offset, Vector2(0.13, 0.13), positions[n], face_up
-		)
+		node.init_char(animation_name, char_num, up_offset, Data.CHAR_BANNED, positions[n], face_up)
 		node.set_char_mode(char_mode)
 
 
-func wait(mode: int, remove: int, info: Array=[]) -> void:
+func wait(mode: int, remove: int, info: Array = []) -> void:
 	var note
 	var once
 	var alls
@@ -345,14 +331,13 @@ func on_char_clicked(char_num: int) -> void:
 		Data.EmploymentState.SELECTING:
 			move_char_to_selected(char_num)
 		Data.EmploymentState.ASSASSINATING:
-			Signal.emit_signal(
-				"sgin_assassin_once_finished", char_num, available_characters[char_num]
-			)
+			Signal.emit_signal("sgin_assassin_once_finished", char_num, available_characters[char_num])
 		Data.EmploymentState.STEALING:
 			Signal.emit_signal("sgin_thief_once_finished", char_num, available_characters[char_num])
 
 	state = Data.EmploymentState.IDLE
-	
+
+
 func reset_discard_hidden():
 	for c in $DiscardedHidden/Discarded.get_children():
 		$DiscardedHidden/Discarded.remove_child(c)

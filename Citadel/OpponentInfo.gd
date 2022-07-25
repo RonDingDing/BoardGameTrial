@@ -7,9 +7,7 @@ onready var TweenMove = get_node("/root/Main/Tween")
 onready var Data = get_node("/root/Main/Data")
 
 onready var opponent_state = Data.OpponentState.IDLE
-onready var bank_position = Vector2(-9999, -9999)
-onready var deck_position = Vector2(-9999, -9999)
-onready var original_position = Vector2(-9999, -9999)
+onready var original_position = Data.FAR_AWAY
 
 
 func _ready() -> void:
@@ -18,14 +16,6 @@ func _ready() -> void:
 
 func set_opponent_state(state: int) -> void:
 	opponent_state = state
-
-
-func set_bank_position(pos: Vector2) -> void:
-	bank_position = pos
-
-
-func set_deck_position(pos: Vector2) -> void:
-	deck_position = pos
 
 
 # Data : {"player_num": 1, "username": "username", "money": 0, "employee": "unknown", "hand": ["<建筑名>"], "built": ["<建筑名>"]}
@@ -41,28 +31,14 @@ func remove_hand(card_name: String) -> void:
 	$HandsInfo/HandNum.text = str(hands.size())
 
 
-func draw(
-	card_name: String,
-	_face_is_up: bool,
-	from_pos: Vector2,
-	animation_time: float,
-	start_scale: Vector2 = Vector2(0.175, 0.175),
-	end_scale: Vector2 = Vector2(0.03, 0.03)
-) -> void:
+func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_SMALL) -> void:
 #	var card_info = Data.get_card_info(card_name)
 	var incoming_card = Card.instance()
 	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
 	add_child(incoming_card)
-	incoming_card.init_card(
-		"Unknown", 0, start_scale, from_pos, false, Data.CardMode.ENLARGE
-	)
-	TweenMove.animate(
-		[
-			[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time],
-			[incoming_card, "scale", start_scale, end_scale, animation_time]
-		]
-	)
+	incoming_card.init_card("Unknown", start_scale, from_pos, false, Data.CardMode.ENLARGE)
+	TweenMove.animate([[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time], [incoming_card, "scale", start_scale, end_scale, animation_time]])
 	hands.append(card_name)
 	$HandsInfo/HandNum.text = str(hands.size())
 	yield(TweenMove, "tween_all_completed")
@@ -70,37 +46,7 @@ func draw(
 	incoming_card.queue_free()
 	Signal.emit_signal("sgin_opponent_draw_ready", incoming_card)
 
-
-#
-#func on_draw_gold(from_pos: Vector2) -> void:
-#	var incoming_gold = Gold.instance()
-#	var my_card_back_pos = Vector2(
-#		$MoneyIcon.global_position.x - 61, $MoneyIcon.global_position.y - 4
-#	)
-#	incoming_gold.to_coin(Vector2(1, 1), from_pos)
-#	add_child(incoming_gold)
-#	TweenMove.animate(
-#		[
-#			[
-#				incoming_gold,
-#				"global_position",
-#				from_pos,
-#				my_card_back_pos,
-#			],
-#			[
-#				incoming_gold,
-#				"scale",
-#				Vector2(1, 1),
-#				Vector2(1, 1),
-#			],
-#		]
-#	)
-#	gold += 1
-#	$MoneyIcon/MoneyNum.text = str(gold)
-#	yield(TweenMove, "tween_all_completed")
-#	remove_child(incoming_gold)
-#	incoming_gold.queue_free()
-#	Signal.emit_signal("sgin_opponent_gold_ready")
+ 
 
 
 func set_gold(money: int) -> void:
@@ -129,9 +75,10 @@ func on_player_info(data: Dictionary) -> void:
 	$Built/BuiltNum.text = str(built.size())
 	has_crown = data.get("has_crown", has_crown)
 	set_crown(has_crown)
-	if original_position == Vector2(-9999, -9999):
-		original_position = position	
+	if original_position == Data.FAR_AWAY:
+		original_position = position
 	set_museum_num(data.get("museum_num", 0))
+
 
 func set_museum_num(num: int) -> void:
 	museum_num = num
@@ -151,9 +98,6 @@ func set_employee(num: int, employ: String) -> void:
 func set_crown(with_crown: bool) -> void:
 	has_crown = with_crown
 	$Crown.set_visible(has_crown)
-
-
-
 
 
 func show_employee() -> void:
@@ -183,13 +127,9 @@ func on_input_event(_viewport, event, _shape_idx):
 			Data.OpponentState.MAGICIAN_CLICKABLE:
 				Signal.emit_signal("sgin_magician_opponent_selected", player_num)
 			Data.OpponentState.WARLORD_CLICKABLE:
-				Signal.emit_signal(
-					"sgin_warlord_opponent_selected", player_num, employee, username, built
-				)
+				Signal.emit_signal("sgin_warlord_opponent_selected", player_num, employee, username, built)
 			Data.OpponentState.ARMORY_CLICKABLE:
-				Signal.emit_signal(
-					"sgin_armory_opponent_selected", player_num, employee, username, built
-				)
+				Signal.emit_signal("sgin_armory_opponent_selected", player_num, employee, username, built)
 			Data.OpponentState.THEATER_CLICKABLE:
 				Signal.emit_signal("sgin_theater_opponent_selected", player_num)
 

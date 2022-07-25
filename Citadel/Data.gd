@@ -1,9 +1,8 @@
-extends Node
+extends Node2D
 
 ## Data : {"player_num": 1, "username": "username", "money": 0, "charater": "unknown", "hand": ["<建筑名>"), "built": ["<建筑名>")}
 
 # BuildingData:  {"<建筑名>" : {"name": "<建筑名>"， "star": 0, "kind": "blue", "description"： "<特殊效果描述>", special_effect": <带int的signal>}}
-
 const up_offset = {
 	"en":
 	{
@@ -58,6 +57,7 @@ const up_offset = {
 }
 
 const card_data = {
+	"Unknown": {"star": 0, "kind": "none"},
 	# Purple
 	"Library": {"star": 6, "kind": "purple"},
 	"Park": {"star": 6, "kind": "purple"},
@@ -171,5 +171,70 @@ enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
 enum WarlordChoice { DESTROY, RED }
 
+onready var CENTER = get_viewport_rect().size / 2
 
 const CARD_UP_OFFSET_START = 282
+const CARD_SIZE_BIG = Vector2(0.6, 0.6)
+const CARD_SIZE_MEDIUM = Vector2(0.175, 0.175)
+const CARD_SIZE_SMALL = Vector2(0.03, 0.03)
+
+const CHAR_SIZE_BIG = Vector2(0.5, 0.5)
+const CHAR_SIZE_MEDIUM = Vector2(0.175, 0.175)
+const CHAR_SIZE_SMALL = Vector2(0.04, 0.04)
+const CHAR_SIZE_TINY = Vector2(0.02, 0.02)
+
+const CROWN_SIZE_MEDIUM = Vector2(0.15, 0.15)
+const CROWN_SIZE_SMALL = Vector2(0.07, 0.07)
+
+
+const GOLD_SIZE_MEDIUM = Vector2(1.7, 1.7)
+const GOLD_SIZE_SMALL = Vector2(1, 1)
+
+const TWO_CARDS_POSITION_1 = Vector2(-250, 0)
+const TWO_CARDS_POSITION_2 = Vector2(250, 0)
+
+const THREE_CARDS_POSITION_1 = Vector2(-450, 0)
+const THREE_CARDS_POSITION_2 = Vector2(0, 0)
+const THREE_CARDS_POSITION_3 = Vector2(450, 0)
+
+const SWORD_START = -1000
+const POCKET_END = 2000
+const CARD_END = 2000
+
+const ZERO = Vector2(0, 0)
+const FAR_AWAY = Vector2(-99999, -99999)
+const CHAR_BANNED = Vector2(0.13, 0.13)
+
+# https://colors.artyclick.com/color-name-finder/?color=#162739
+const GRAY = Color(0.76171875, 0.76171875, 0.76171875)
+const WHITE = Color(1, 1, 1)
+const WHITE_SMOKE = Color(0.95703125, 0.95703125, 0.95703125)
+const WHITE_LILAC = Color(0.96875, 0.96484375, 0.984375)
+const JAGUAR = Color(0.0315, 0.00390625, 0.0625)
+const BLACK = Color(0, 0, 0)
+const DARK = Color(0.10546875, 0.140625, 0.19140625)
+const PALATINATE_PURPLE = Color(0.40625, 0.15625, 0.375)
+const DARK_LILAC = Color(0.609375, 0.42578125, 0.64453125)
+const GRAPE_PURPLE = Color(0.36328125, 0.078125, 0.31640625)
+const BASKET_BALL_ORANGE = Color(0.96875, 0.50390625, 0.34375)
+const GREEN_TEAL = Color(0.046875, 0.70703125, 0.46484375)
+const SHAMROCK_GREEN = Color(0, 0.6171875, 0.375)
+const GREEN = Color(0, 1, 0)
+const RED = Color(1, 0, 0)
+const CHERRY = Color(0.80859375, 0.0078125, 0.203125)
+const VENETIAN_RED = Color(0.78125, 0.03125, 0.08203125)
+const BLUE_KOI = Color(0.39453125, 0.6171875, 0.77734375)
+const YELLOW = Color(1, 1, 0)
+
+const deck_num = -1
+const bank_num = -2
+const unfound = -3
+
+onready var DECK_POSITION = FAR_AWAY
+onready var BANK_POSITION = FAR_AWAY
+
+func set_deck_position(pos: Vector2) -> void:
+	DECK_POSITION = pos
+
+func set_bank_position(pos: Vector2) -> void:
+	BANK_POSITION = pos

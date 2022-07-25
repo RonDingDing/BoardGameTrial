@@ -10,22 +10,20 @@ onready var desc_trans = ""
 onready var name_text = ""
 
 
-
-func _init(animation_name: String, scales: Vector2, pos: Vector2, face_is_up: bool, modes: int) -> void:
+func init_card(animation_name: String, scales: Vector2, pos: Vector2, face_is_up: bool, modes: int) -> void:
 	card_name = animation_name
 	var new_name = Data.rid_num(animation_name)
 	var desc = str("DESC_", new_name.to_upper().replace(" ", "_"))
 	var csde = tr(str("DESC_", new_name.to_upper().replace(" ", "_")))
 	desc_trans = csde if desc != csde else ""
 	name_text = tr(str("NAME_", new_name.to_upper().replace(" ", "_")))
-	var up_offset = Data.get_card_info(new_name)['up_offset']
+	var up_offset = Data.get_card_info(new_name)["up_offset"]
 	card_up_offset = up_offset
 	$Face/Description.rect_position.y = Data.CARD_UP_OFFSET_START - up_offset
 	set_face_up(face_is_up)
 	set_card_mode(modes)
 	set_scale(scales)
 	set_global_position(pos)
-
 
 
 func set_face_up(face_is_up: bool) -> void:
@@ -113,6 +111,6 @@ func add_museum_num() -> void:
 	$MuseumNum.set_text(str(int($MuseumNum.text) + 1))
 	$MuseumNum.show()
 
+
 func set_museum_num(num: int) -> void:
 	$MuseumNum.set_text(str(num))
-
