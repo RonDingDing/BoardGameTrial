@@ -170,3 +170,6 @@ enum ActivateMode { ALL, SKILL1, SKILL2 }
 enum MagicianSwitch { DECK, PLAYER }
 enum MerchantGold { ONE, GREEN }
 enum WarlordChoice { DESTROY, RED }
+
+
+const CARD_UP_OFFSET_START = 282
