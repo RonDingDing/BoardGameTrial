@@ -10,6 +10,7 @@ onready var desc_trans = ""
 onready var name_text = ""
 
 
+
 func init_card(animation_name: String, scales: Vector2, pos: Vector2, face_is_up: bool, modes: int) -> void:
 	card_name = animation_name
 	var new_name = Data.rid_num(animation_name)

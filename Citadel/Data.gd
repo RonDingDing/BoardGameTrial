@@ -1,7 +1,6 @@
 extends Node2D
 
 ## Data : {"player_num": 1, "username": "username", "money": 0, "charater": "unknown", "hand": ["<建筑名>"), "built": ["<建筑名>")}
-
 # BuildingData:  {"<建筑名>" : {"name": "<建筑名>"， "star": 0, "kind": "blue", "description"： "<特殊效果描述>", special_effect": <带int的signal>}}
 const up_offset = {
 	"en":
@@ -200,6 +199,7 @@ const THREE_CARDS_POSITION_3 = Vector2(450, 0)
 const SWORD_START = -1000
 const POCKET_END = 2000
 const CARD_END = 2000
+onready var CARD_END2 = Vector2(2000, CENTER.y)
 
 const ZERO = Vector2(0, 0)
 const FAR_AWAY = Vector2(-99999, -99999)

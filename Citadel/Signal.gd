@@ -1,4 +1,4 @@
-extends Node
+extends Node2D
 onready var Data = get_node("/root/Main/Data")
 
 #warning-ignore:unused_signal
@@ -203,6 +203,8 @@ signal sgin_theater_reaction_completed
 signal sgin_all_selection_skill_reaction_completed
 #warning-ignore:unused_signal
 signal sgin_card_museum_selected(card_name, global_position)
+#warning-ignore:unused_signal
+signal all_ani_completed
 
 
 

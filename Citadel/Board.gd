@@ -8,10 +8,12 @@ onready var lang = "zh_CN"
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var TweenMove = get_node("/root/Main/Tween")
+onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var TimerGlobal = get_node("/root/Main/Timer")
-onready var started = false
 const Crown = preload("res://Crown.tscn")
 const Money = preload("res://Money.tscn")
+const Card = preload("res://Card.tscn")
+onready var started = false
 
 
 
@@ -45,14 +47,15 @@ func to_be_delete():
 		{
 			"player_num": 0,
 			"username": "zero",
-			"money": 0,
-			"built": ["Framework"],
-			"hands": ["Necropolis", "Thieves' Den", "Tavern1", "Tavern2", "Tavern3", "Tavern4"]
+			"money": 5,
+			"built": ["Laboratory"],
+			"hands": []
 		},
 		{
 			"player_num": 1,
 			"username": "one",
 			"money": 0,
+			"built": ["Tavern"],
 		},
 		{
 			"player_num": 2,
@@ -1172,7 +1175,7 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 			for p in range(opponent_length + 1):
 				var opponent = select_obj_by_relative_to_first_person(p)
 				opponent.set_opponent_state(Data.OpponentState.IDLE)
-		elif component == "scripts":	
+		elif component == "scripts":
 			$Player.hide_scripts()
 		elif component == "opponent_built":
 			$Player.set_opponent_built_mode(Data.OpponentBuiltMode.SHOW)
@@ -1652,15 +1655,18 @@ func on_sgin_card_laboratory_selected(card_name: String, from_pos: Vector2) -> v
 	var card_obj = $Player.get_hand_obj(card_name)
 	if card_obj == null:
 		return
-	var original_scale = card_obj.scale
-	card_enlarge_to_center(card_obj, from_pos)
-	yield(Signal, "sgin_card_move_done")
-	card_obj.global_position = Data.CENTER
-	center_card_shrink_to_away(card_obj, original_scale)
-	yield(Signal, "sgin_card_move_done")	
+#	var original_scale = card_obj.scale
+#	card_enlarge_to_center(card_obj, from_pos)
+#	yield(Signal, "sgin_card_move_done")
+#	card_obj.global_position = Data.CENTER
+#	center_card_shrink_to_away(card_obj, original_scale)
+#	yield(Signal, "sgin_card_move_done")	
+	TweenMotion.ani_card_move_center_then_away(card_obj)
+#	yield(Signal, "all_ani_completed")
+
 	$Player.remove_hand(card_name)
 	$Player.rearrange_hands()
-	yield(TweenMove, "tween_all_completed")
+#	yield(TweenMove, "tween_all_completed")
 	gold_move(Data.bank_num, first_person_num, 2, "sgin_player_gold_ready")
 	yield(Signal, "sgin_player_gold_ready")
 	$Deck.append(card_name)
@@ -1692,12 +1698,16 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 		if c != null:
 			card_move(c, c.global_position, from_pos, c.scale, original_scale, "sgin_card_move_done")
 			yield(Signal, "sgin_card_move_done")
-			c.set_visible(false)	
-	card_enlarge_to_center(card_obj, from_pos)
-	yield(Signal, "sgin_card_move_done")
-	card_obj.global_position = Data.CENTER
-	center_card_shrink_to_away(card_obj, original_scale)
-	yield(Signal, "sgin_card_move_done")
+			c.set_visible(false)
+#	card_enlarge_to_center(card_obj, from_pos)
+#	yield(Signal, "sgin_card_move_done")
+#	card_obj.global_position = Data.CENTER
+#	center_card_shrink_to_away(card_obj, original_scale)
+#	yield(Signal, "sgin_card_move_done")
+	TweenMotion.ani_card_move_center_then_away(card_obj)
+	yield(Signal, "all_ani_completed")
+
+
 	war_opponent.remove_built(card_name)
 	$Deck.append(card_name)
 	on_sgin_cancel_skill(["opponent", "opponent_built", "destroyed"])
@@ -1732,6 +1742,9 @@ func center_card_shrink_to_away(card_obj: Node, end_scale: Vector2, done_signal:
 	card_move(card_obj, Data.CENTER, Vector2(Data.CARD_END, Data.CENTER.y), Data.CARD_SIZE_BIG, end_scale, done_signal)
 	
 
+
+
+
 func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:	
 	$AnyCardEnlarge.reset_cards()
 	$AnyCardEnlarge.reset_characters()
@@ -1749,26 +1762,38 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 			yield(Signal, "sgin_card_move_done")
 			c.set_visible(false)				
 	
-	card_enlarge_to_center(card_obj, from_pos)
-	yield(Signal, "sgin_card_move_done")
-	center_card_shrink_to_away(card_obj, card_obj.scale)
-	yield(Signal, "sgin_card_move_done")
+#	card_enlarge_to_center(card_obj, from_pos)
+#	yield(Signal, "sgin_card_move_done")
+#	center_card_shrink_to_away(card_obj, card_obj.scale)
+#	yield(Signal, "sgin_card_move_done")
+	
+	TweenMotion.ani_card_move_center_then_away(card_obj)
+	yield(Signal, "all_ani_completed")
+
 	war_opponent.remove_built(card_name)
 	$Deck.append(card_name)
 	
 	# remove armory
 	var armory_obj = $Player.get_built_obj("Armory")
-	var armory_scale = armory_obj.scale
-	card_enlarge_to_center(armory_obj, armory_obj.global_position)
-	yield(Signal, "sgin_card_move_done")
-	armory_obj.global_position = Data.CENTER
-	center_card_shrink_to_away(armory_obj, armory_scale)
-	yield(Signal, "sgin_card_move_done")
+#	var armory_scale = armory_obj.scale
+#	card_enlarge_to_center(armory_obj, armory_obj.global_position)
+#	yield(Signal, "sgin_card_move_done")
+#	armory_obj.global_position = Data.CENTER
+#	center_card_shrink_to_away(armory_obj, armory_scale)
+
+	TweenMotion.ani_card_move_center_then_away(armory_obj)
+	yield(Signal, "all_ani_completed")
+	
+#	TweenMotion.ani_card_move_center_then_away(armory_obj)
+
+
+
+#	yield(Signal, "sgin_card_move_done")
 	$Player.remove_built("Armory")
 	$Player.rearrange_built()
 	$Deck.append("Armory")
-	if TweenMove.is_active():
-		yield(TweenMove, "tween_all_completed")
+#	if TweenMove.is_active():
+#		yield(TweenMove, "tween_all_completed")
 	
 	# reset
 	on_sgin_cancel_skill(["opponent", "opponent_built", "destroyed"])
