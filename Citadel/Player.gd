@@ -692,7 +692,7 @@ func card_played(card_name: String, price: int) -> void:
 func rearrange_built() -> void:
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
 	yield(TweenMove, "tween_all_completed")
-
+	$BuiltScript.global_position = built_script_pos
 
 func rearrange_hands() -> void:
 	rearrange($HandScript, get_hand_positions_with_new_card(), 1)

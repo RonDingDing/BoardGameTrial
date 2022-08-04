@@ -8,7 +8,7 @@
 
 [node name="Main" type="Node"]
 
-[node name="Signal" type="Node" parent="."]
+[node name="Signal" type="Node2D" parent="."]
 script = ExtResource( 9 )
 
 [node name="Data" type="Node2D" parent="."]
