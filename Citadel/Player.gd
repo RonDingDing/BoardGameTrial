@@ -3,6 +3,7 @@ const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
 onready var TweenMove = get_node("/root/Main/Tween")
+onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var Data = get_node("/root/Main/Data")
 
@@ -428,7 +429,7 @@ func wait_laboratory() -> void:
 
 
 
-func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_is_up: bool, animation_time: float, start_scale: Vector2, end_scale: Vector2) -> void:
+func player_draw_built(mode: String, card_name: String, from_pos: Vector2, end_face_up: bool, animation_time: float, start_scale: Vector2, end_scale: Vector2) -> void:
 	var list
 	var node
 	var not_ready_signal
@@ -454,10 +455,12 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 	var action_list = [
 		[incoming_card, "global_position", from_pos, positions[-1] + $HandScript.global_position, animation_time],
 		[incoming_card, "scale", start_scale, end_scale, animation_time],
-		[incoming_card.get_node("Back"), "visible", true, not face_is_up, animation_time],
-		[incoming_card.get_node("Face"), "visible", false, face_is_up, animation_time],
+		[incoming_card.get_node("Back"), "visible", true, not end_face_up, animation_time],
+		[incoming_card.get_node("Face"), "visible", false, end_face_up, animation_time],
 	]
-	if face_is_up:
+
+
+	if end_face_up:
 		action_list.insert(
 			1,
 			[
@@ -479,7 +482,8 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, face_
 			]
 		)
 	TweenMove.animate(action_list)
-
+	#TweenMotion.ani_flip_to_face_up_move(incoming_card, end_face_up, positions[-1] + $HandScript.global_position, end_scale)
+	#yield(Signal, "all_ani_completed")
 	rearrange(node, positions, animation_time + 0.01)
 	yield(TweenMove, "tween_all_completed")
 	Signal.emit_signal(ready_signal, incoming_card)

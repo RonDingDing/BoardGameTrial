@@ -1,7 +1,7 @@
 extends Node2D
 onready var Card = preload("res://Card.tscn")
 onready var Data = get_node("/root/Main/Data")
-onready var TweenMove = get_node("/root/Main/TweenMotion")
+onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var Signal = get_node("/root/Main/Signal")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 
@@ -22,15 +22,17 @@ func _ready():
 #	add_child(incoming_card2)
 	
 	
-#	var a1 = TweenMove.ScalingMotion.new(incoming_card1, from_pos1, Vector2(400, 400), Vector2(0.4, 0.4), Vector2(1,1))
-#	var t1 = TweenMove.Interval.new(1)
-#	var a2 = TweenMove.ScalingMotion.new(incoming_card1, Vector2(400, 400), from_pos1, Vector2(1, 1), Vector2(0.5,0.5))
+#	var a1 = TweenMotion.ScalingMotion.new(incoming_card1, from_pos1, Vector2(400, 400), Vector2(0.4, 0.4), Vector2(1,1))
+#	var t1 = TweenMotion.Interval.new(1)
+#	var a2 = TweenMotion.ScalingMotion.new(incoming_card1, Vector2(400, 400), from_pos1, Vector2(1, 1), Vector2(0.5,0.5))
 #
-#	var a3 = TweenMove.ScalingMotion.new(incoming_card2, from_pos2, Vector2(800, 800), Vector2(0.4, 0.4), Vector2(1,1))
-#	var a4 = TweenMove.ScalingMotion.new(incoming_card2, Vector2(800, 800), from_pos2, Vector2(1, 1), Vector2(0.5,0.5))
+#	var a3 = TweenMotion.ScalingMotion.new(incoming_card2, from_pos2, Vector2(800, 800), Vector2(0.4, 0.4), Vector2(1,1))
+#	var a4 = TweenMotion.ScalingMotion.new(incoming_card2, Vector2(800, 800), from_pos2, Vector2(1, 1), Vector2(0.5,0.5))
 #
 #
-#	TweenMove.animate([a1, a2])
-#	TweenMove.animate([a3, t1, a4])
-#	TweenMove.ani_move_center_then_away(incoming_card1)
-	TweenMove.ani_move(incoming_card1, Vector2(600, 400), Vector2(0.175, 0.175))
+#	TweenMotion.animate([a1, a2])
+#	TweenMotion.animate([a3, t1, a4])
+#	TweenMotion.ani_move_center_then_away(incoming_card1)
+#	TweenMotion.ani_move(incoming_card1, Vector2(600, 400), Vector2(0.4, 0.4))
+	TweenMotion.ani_flip_to_face_up_move(incoming_card1, false, Vector2(600, 400), Vector2(0.175, 0.175))
+	

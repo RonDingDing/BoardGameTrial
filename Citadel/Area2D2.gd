@@ -3,6 +3,10 @@ extends Area2D
 onready var mouse_collided = false
 onready var can_be_top = true
 
+func set_face_up(_face_is_up: bool) -> void:
+	pass
+
+
 func set_can_be_top(top: bool) -> void:
 	can_be_top = top
 	

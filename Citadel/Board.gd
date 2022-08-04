@@ -1706,9 +1706,11 @@ func on_sgin_card_warlord_selected(card_name: String, from_pos: Vector2) -> void
 	if destroyed[0] == first_person_num:
 		var c = $Player.get_built_obj(card_name)
 		if c != null:
-			card_move(c, c.global_position, from_pos, c.scale, original_scale, "sgin_card_move_done")
-			yield(Signal, "sgin_card_move_done")
-			c.set_visible(false)
+#			card_move(c, c.global_position, from_pos, c.scale, original_scale, "sgin_card_move_done")
+#			yield(Signal, "sgin_card_move_done")
+#			c.set_visible(false)
+			
+			TweenMotion.ani_move(c, from_pos, c.scale, false) 
 #	card_enlarge_to_center(card_obj, from_pos)
 #	yield(Signal, "sgin_card_move_done")
 #	card_obj.global_position = Data.CENTER
@@ -1733,16 +1735,16 @@ func on_sgin_card_clickable_clicked(card_name: String, _global_position: Vector2
 		card_skill_play_museum()
 		
 
-func card_move(card_obj: Node, start_pos: Vector2, end_pos: Vector2, start_scale: Vector2, end_scale: Vector2, done_signal: String) -> void:
-	var z_index = card_obj.z_index
-	card_obj.z_index = 4096
-	var animations = []
-	animations.append([card_obj, "global_position", start_pos, end_pos])
-	animations.append([card_obj, "scale", start_scale, end_scale])
-	TweenMove.animate(animations)
-	yield(TweenMove, "tween_all_completed")
-	card_obj.z_index = z_index
-	Signal.call_deferred("emit_signal", done_signal)
+#func card_move(card_obj: Node, start_pos: Vector2, end_pos: Vector2, start_scale: Vector2, end_scale: Vector2, done_signal: String) -> void:
+#	var z_index = card_obj.z_index
+#	card_obj.z_index = 4096
+#	var animations = []
+#	animations.append([card_obj, "global_position", start_pos, end_pos])
+#	animations.append([card_obj, "scale", start_scale, end_scale])
+#	TweenMove.animate(animations)
+#	yield(TweenMove, "tween_all_completed")
+#	card_obj.z_index = z_index
+#	Signal.call_deferred("emit_signal", done_signal)
 
 # func card_enlarge_to_center(card_obj: Node, start_pos: Vector2, done_signal: String = "sgin_card_move_done") -> void:
 	# card_move(card_obj, start_pos, Data.CENTER, card_obj.scale, Data.CARD_SIZE_BIG, done_signal)
@@ -1767,11 +1769,11 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 		# my built to center
 		var c = $Player.get_built_obj(card_name)
 		if c != null:
-			card_move(c, c.global_position, from_pos, c.scale, card_obj.scale, "sgin_card_move_done")
-			yield(Signal, "sgin_card_move_done")
-			c.set_visible(false)				
+#			card_move(c, c.global_position, from_pos, c.scale, card_obj.scale, "sgin_card_move_done")
+#			yield(Signal, "sgin_card_move_done")
+#			c.set_visible(false)				
 			
-			TweenMotion.ani_move(c, from_pos )
+			TweenMotion.ani_move(c, from_pos, c.scale, false)
 
 
 #	card_enlarge_to_center(card_obj, from_pos)
@@ -1780,7 +1782,7 @@ func on_sgin_card_armory_selected(card_name: String, from_pos: Vector2) -> void:
 #	yield(Signal, "sgin_card_move_done")
 	
 	TweenMotion.ani_move_center_then_away(card_obj)
-	yield(Signal, "all_ani_completed")
+	
 
 	war_opponent.remove_built(card_name)
 	$Deck.append(card_name)
@@ -1820,8 +1822,9 @@ func on_sgin_card_museum_selected(card_name: String, _global_position: Vector2) 
 	var card_obj = $Player.get_hand_obj(card_name)
 	var museum_obj = $Player.get_built_obj("Museum")
 	var museum_text_pos = museum_obj.global_position
-	card_move(card_obj, card_obj.global_position, museum_text_pos, card_obj.scale, Data.CHAR_SIZE_TINY, "sgin_card_move_done")
-	yield(Signal, "sgin_card_move_done")
+#	card_move(card_obj, card_obj.global_position, museum_text_pos, card_obj.scale, Data.CHAR_SIZE_TINY, "sgin_card_move_done")
+#	yield(Signal, "sgin_card_move_done")
+	TweenMotion.ani_move(card_obj, museum_obj.global_position, Data.CARD_SIZE_TINY, true)
 	$Player.remove_hand(card_name)
 	$Player.rearrange_hands()
 	yield(TweenMove, "tween_all_completed")
