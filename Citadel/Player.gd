@@ -490,9 +490,15 @@ func player_draw_built(mode: String, card_name: String, from_pos: Vector2, end_f
 
 
 func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_MEDIUM) -> void:
-	player_draw_built("hands", card_name, from_pos, face_is_up, animation_time, start_scale, end_scale)
-
-
+	hands.append(card_name)
+	var incoming_card = Card.instance()
+	$HandScript.add_child(incoming_card)
+	incoming_card.init_card(card_name, start_scale, from_pos, false, Data.CardMode.ENLARGE)
+	var positions = get_hand_positions_with_new_card()
+	TweenMotion.ani_flip_move(incoming_card, positions[-1] + $HandScript.global_position, end_scale, true, face_is_up)
+	
+	
+	
 func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 	var hands_obj = node.get_children()
 	for index in range(hands_obj.size()):

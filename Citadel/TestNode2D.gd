@@ -34,5 +34,4 @@ func _ready():
 #	TweenMotion.animate([a3, t1, a4])
 #	TweenMotion.ani_move_center_then_away(incoming_card1)
 #	TweenMotion.ani_move(incoming_card1, Vector2(600, 400), Vector2(0.4, 0.4))
-	TweenMotion.ani_flip_to_face_up_move(incoming_card1, false, Vector2(600, 400), Vector2(0.175, 0.175))
-	
+	TweenMotion.ani_flip_move(incoming_card1, Vector2(600, 400), Vector2(0.5, 0.5), true, true)

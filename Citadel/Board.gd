@@ -47,15 +47,15 @@ func to_be_delete():
 		{
 			"player_num": 0,
 			"username": "zero",
-			"money": 5,
-			"built": ["Laboratory", "Armory"],
+			"money": 0,
+			"built": [],
 			"hands": []
 		},
 		{
 			"player_num": 1,
 			"username": "one",
 			"money": 0,
-			"built": ["Tavern"],
+			"built": [],
 		},
 		{
 			"player_num": 2,
@@ -177,19 +177,20 @@ func start_game():
 func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
-	for _i in range(4):
-		for p_num in range(all_player_length):
-			TimerGlobal.set_wait_time(0.1)
-			TimerGlobal.start()
-			yield(TimerGlobal, "timeout")
-			on_sgin_draw_card(p_num, false)
-	for _i in range(4):
-		for p_num in range(all_player_length):
-			if p_num == $Player.player_num:
-				yield(Signal, "sgin_player_draw_ready")
-			else:
-				yield(Signal, "sgin_opponent_draw_ready")
-	Signal.emit_signal("sgin_card_dealt", all_player_length)
+#	for _i in range(4):
+#		for p_num in range(all_player_length):
+#			TimerGlobal.set_wait_time(0.1)
+#			TimerGlobal.start()
+#			yield(TimerGlobal, "timeout")
+#			on_sgin_draw_card(p_num, false)
+	on_sgin_draw_card(0, false)
+#	for _i in range(4):
+#		for p_num in range(all_player_length):
+#			if p_num == $Player.player_num:
+#				yield(Signal, "sgin_player_draw_ready")
+#			else:
+#				yield(Signal, "sgin_opponent_draw_ready")
+#	Signal.emit_signal("sgin_card_dealt", all_player_length)
 
 
 func on_sgin_card_dealt(all_player_length: int) -> void:
