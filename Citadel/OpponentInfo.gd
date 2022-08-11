@@ -3,7 +3,8 @@ extends "res://BasePlayer.gd"
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
-onready var TweenMove = get_node("/root/Main/Tween")
+# onready var TweenMove = get_node("/root/Main/Tween")
+onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var Data = get_node("/root/Main/Data")
 
 onready var opponent_state = Data.OpponentState.IDLE
@@ -31,22 +32,16 @@ func remove_hand(card_name: String) -> void:
 	$HandsInfo/HandNum.text = str(hands.size())
 
 
-func draw(card_name: String, _face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_SMALL) -> void:
-#	var card_info = Data.get_card_info(card_name)
+func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_SMALL) -> void:
+	hands.append(card_name)
 	var incoming_card = Card.instance()
-	Signal.emit_signal("sgin_opponent_draw_not_ready", incoming_card)
 	var my_card_back_pos = $HandsInfo/HandBack.global_position
 	add_child(incoming_card)
 	incoming_card.init_card("Unknown", start_scale, from_pos, false, Data.CardMode.ENLARGE)
-	TweenMove.animate([[incoming_card, "global_position", from_pos, my_card_back_pos, animation_time], [incoming_card, "scale", start_scale, end_scale, animation_time]])
-	hands.append(card_name)
 	$HandsInfo/HandNum.text = str(hands.size())
-	yield(TweenMove, "tween_all_completed")
+	TweenMotion.ani_flip_move(incoming_card, my_card_back_pos, end_scale, true, face_is_up)
 	remove_child(incoming_card)
 	incoming_card.queue_free()
-	Signal.emit_signal("sgin_opponent_draw_ready", incoming_card)
-
- 
 
 
 func set_gold(money: int) -> void:

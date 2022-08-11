@@ -2,7 +2,7 @@ extends "res://BasePlayer.gd"
 const Card = preload("res://Card.tscn")
 const Gold = preload("res://Money.tscn")
 onready var Signal = get_node("/root/Main/Signal")
-onready var TweenMove = get_node("/root/Main/Tween")
+#onready var TweenMove = get_node("/root/Main/Tween")
 onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 onready var Data = get_node("/root/Main/Data")
@@ -428,65 +428,65 @@ func wait_laboratory() -> void:
 
 
 
-
-func player_draw_built(mode: String, card_name: String, from_pos: Vector2, end_face_up: bool, animation_time: float, start_scale: Vector2, end_scale: Vector2) -> void:
-	var list
-	var node
-	var not_ready_signal
-	var ready_signal
-	if mode == "hands":
-		list = hands
-		node = $HandScript
-		not_ready_signal = "sgin_player_draw_not_ready"
-		ready_signal = "sgin_player_draw_ready"
-	else:
-		list = built
-		node = $BuiltScript
-		not_ready_signal = "sgin_player_built_not_ready"
-		ready_signal = "sgin_player_built_ready"
-
-#	var card_info = Data.get_card_info(card_name)
-	var incoming_card = Card.instance()
-	list.append(card_name)
-	node.add_child(incoming_card)
-	incoming_card.init_card(card_name, start_scale, from_pos, true, Data.CardMode.ENLARGE)
-	Signal.emit_signal(not_ready_signal, incoming_card)
-	var positions = get_positions_with_new_card(node)
-	var action_list = [
-		[incoming_card, "global_position", from_pos, positions[-1] + $HandScript.global_position, animation_time],
-		[incoming_card, "scale", start_scale, end_scale, animation_time],
-		[incoming_card.get_node("Back"), "visible", true, not end_face_up, animation_time],
-		[incoming_card.get_node("Face"), "visible", false, end_face_up, animation_time],
-	]
-
-
-	if end_face_up:
-		action_list.insert(
-			1,
-			[
-				incoming_card,
-				"scale:y",
-				incoming_card.scale.y,
-				0.01,
-				animation_time / 2,
-			]
-		)
-		action_list.insert(
-			2,
-			[
-				incoming_card,
-				"scale:y",
-				0.01,
-				incoming_card.scale.y,
-				animation_time / 2,
-			]
-		)
-	TweenMove.animate(action_list)
-	#TweenMotion.ani_flip_to_face_up_move(incoming_card, end_face_up, positions[-1] + $HandScript.global_position, end_scale)
-	#yield(Signal, "all_ani_completed")
-	rearrange(node, positions, animation_time + 0.01)
-	yield(TweenMove, "tween_all_completed")
-	Signal.emit_signal(ready_signal, incoming_card)
+#
+#func player_draw_built(mode: String, card_name: String, from_pos: Vector2, end_face_up: bool, animation_time: float, start_scale: Vector2, end_scale: Vector2) -> void:
+#	var list
+#	var node
+#	var not_ready_signal
+#	var ready_signal
+#	if mode == "hands":
+#		list = hands
+#		node = $HandScript
+#		not_ready_signal = "sgin_player_draw_not_ready"
+#		ready_signal = "sgin_player_draw_ready"
+#	else:
+#		list = built
+#		node = $BuiltScript
+#		not_ready_signal = "sgin_player_built_not_ready"
+#		ready_signal = "sgin_player_built_ready"
+#
+##	var card_info = Data.get_card_info(card_name)
+#	var incoming_card = Card.instance()
+#	list.append(card_name)
+#	node.add_child(incoming_card)
+#	incoming_card.init_card(card_name, start_scale, from_pos, true, Data.CardMode.ENLARGE)
+#	Signal.emit_signal(not_ready_signal, incoming_card)
+#	var positions = get_positions_with_new_card(node)
+#	var action_list = [
+#		[incoming_card, "global_position", from_pos, positions[-1] + $HandScript.global_position, animation_time],
+#		[incoming_card, "scale", start_scale, end_scale, animation_time],
+#		[incoming_card.get_node("Back"), "visible", true, not end_face_up, animation_time],
+#		[incoming_card.get_node("Face"), "visible", false, end_face_up, animation_time],
+#	]
+#
+#
+#	if end_face_up:
+#		action_list.insert(
+#			1,
+#			[
+#				incoming_card,
+#				"scale:y",
+#				incoming_card.scale.y,
+#				0.01,
+#				animation_time / 2,
+#			]
+#		)
+#		action_list.insert(
+#			2,
+#			[
+#				incoming_card,
+#				"scale:y",
+#				0.01,
+#				incoming_card.scale.y,
+#				animation_time / 2,
+#			]
+#		)
+#	TweenMove.animate(action_list)
+#	#TweenMotion.ani_flip_to_face_up_move(incoming_card, end_face_up, positions[-1] + $HandScript.global_position, end_scale)
+#	#yield(Signal, "all_ani_completed")
+#	rearrange(node, positions, animation_time + 0.01)
+#	yield(TweenMove, "tween_all_completed")
+#	Signal.emit_signal(ready_signal, incoming_card)
 
 
 func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_MEDIUM) -> void:
@@ -494,19 +494,25 @@ func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time
 	var incoming_card = Card.instance()
 	$HandScript.add_child(incoming_card)
 	incoming_card.init_card(card_name, start_scale, from_pos, false, Data.CardMode.ENLARGE)
-	var positions = get_hand_positions_with_new_card()
-	TweenMotion.ani_flip_move(incoming_card, positions[-1] + $HandScript.global_position, end_scale, true, face_is_up)
-	
-	
+#	var positions = get_hand_positions_with_new_card()
+#	var card_position = positions[-1] + $HandScript.global_position
+#	if animation_time > 0:
+#		TweenMotion.ani_flip_move(incoming_card, card_position, end_scale, true, face_is_up)
+#	else:
+#		incoming_card.set_global_position(card_position)
+#		incoming_card.set_face_up(face_is_up)
+#	yield(Signal, "all_ani_completed")
+#	rearrange_hands(animation_time)
 	
 func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 	var hands_obj = node.get_children()
 	for index in range(hands_obj.size()):
 		var each_card = hands_obj[index]
+		var card_position = positions[index] + node.global_position
 		if animation_time > 0:
-			TweenMove.animate([[each_card, "global_position", each_card.global_position, positions[index] + node.global_position, animation_time]])
+			TweenMotion.ani_flip_move(each_card, card_position, each_card.scale, true, each_card.face_up)
 		else:
-			each_card.global_position = positions[index] + node.global_position
+			each_card.set_global_position(card_position)
 
 
 func get_positions_with_new_card(obj: Node) -> Array:
@@ -617,8 +623,19 @@ func set_museum_num(num: int) -> void:
 
 
 func build(card_name: String, from_pos: Vector2, animation_time: float, start_scale: Vector2 = Data.CARD_SIZE_MEDIUM, end_scale: Vector2 = Data.CARD_SIZE_MEDIUM) -> void:
-	player_draw_built("built", card_name, from_pos, true, animation_time, start_scale, end_scale)
-
+	built.append(card_name)
+	var incoming_card = Card.instance()
+	$BuiltScript.add_child(incoming_card)
+	incoming_card.init_card(card_name, start_scale, from_pos, false, Data.CardMode.ENLARGE)
+	var positions = get_hand_positions_with_new_card()
+	var card_position = positions[-1] + $BuiltScript.global_position
+	if animation_time > 0:
+		TweenMotion.ani_flip_move(incoming_card, card_position, end_scale, true, true)
+	else:
+		incoming_card.set_global_position(card_position)
+		incoming_card.set_face_up(true)
+	rearrange_built()
+	
 
 func set_hide_employee(hide: bool) -> void:
 	hide_employee = hide
@@ -673,40 +690,48 @@ func card_played(card_name: String, price: int) -> void:
 	card_obj.z_index = 4096
 	var original_scale = card_obj.scale
 	disable_enlarge()
-	TweenMove.animate(
-		[
-			[card_obj, "global_position", from_pos, Data.CENTER],
-			[card_obj, "scale", original_scale, Data.CARD_SIZE_BIG],
-		]
-	)
-	yield(TweenMove, "tween_all_completed")
+	# TweenMove.animate(
+	# 	[
+	# 		[card_obj, "global_position", from_pos, Data.CENTER],
+	# 		[card_obj, "scale", original_scale, Data.CARD_SIZE_BIG],
+	# 	]
+	# )
+	# yield(TweenMove, "tween_all_completed")
+
+	TweenMotion. ani_flip_move(card_obj, Data.CENTER, Data.CARD_SIZE_BIG)
+	yield(Signal, "all_ani_completed")
 	$HandScript.remove_child(card_obj)
 	$BuiltScript.add_child(card_obj)
 	card_obj.global_position = Data.CENTER
-	TweenMove.animate(
-		[
-			[card_obj, "global_position", Data.CENTER, $BuiltScript.global_position + get_built_positions_with_new_card()[-1]],
-			[card_obj, "scale", Data.CARD_SIZE_BIG, original_scale],
-		]
-	)
-	yield(TweenMove, "tween_all_completed")
+	# TweenMove.animate(
+	# 	[
+	# 		[card_obj, "global_position", Data.CENTER, $BuiltScript.global_position + get_built_positions_with_new_card()[-1]],
+	# 		[card_obj, "scale", Data.CARD_SIZE_BIG, original_scale],
+	# 	]
+	# )
+	# yield(TweenMove, "tween_all_completed")
+	TweenMotion. ani_flip_move(card_obj, $BuiltScript.global_position + get_built_positions_with_new_card()[-1], original_scale)
+	yield(Signal, "all_ani_completed")
 	card_obj.z_index = z_index
 	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
 	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
-	yield(TweenMove, "tween_all_completed")
+	# yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	enable_play()
 	played_this_turn.append(card_name)
 	Signal.emit_signal("sgin_card_played_finished", card_name)
 
 
-func rearrange_built() -> void:
-	rearrange($BuiltScript, get_built_positions_with_new_card(), 1)
-	yield(TweenMove, "tween_all_completed")
+func rearrange_built(ani_time: int = 1) -> void:
+	rearrange($BuiltScript, get_built_positions_with_new_card(), ani_time)
+	# yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	$BuiltScript.global_position = built_script_pos
 
-func rearrange_hands() -> void:
-	rearrange($HandScript, get_hand_positions_with_new_card(), 1)
-	yield(TweenMove, "tween_all_completed")
+func rearrange_hands(ani_time: int = 1) -> void:
+	rearrange($HandScript, get_hand_positions_with_new_card(), ani_time)
+	# yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 
 
 func after_end_turn() -> void:

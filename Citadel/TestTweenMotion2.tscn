@@ -38,5 +38,3 @@ __meta__ = {
 
 [connection signal="sgin_char_not_ready" from="Signal" to="Signal" method="on_sgin_char_not_ready"]
 [connection signal="sgin_char_ready" from="Signal" to="Signal" method="on_sgin_char_ready"]
-[connection signal="sgin_player_draw_not_ready" from="Signal" to="Signal" method="on_sgin_player_draw_not_ready"]
-[connection signal="sgin_player_draw_ready" from="Signal" to="Signal" method="on_sgin_player_draw_ready"]

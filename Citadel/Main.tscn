@@ -74,8 +74,6 @@ __meta__ = {
 [connection signal="sgin_magician_switch" from="Signal" to="Game/Board" method="on_sgin_magician_switch"]
 [connection signal="sgin_merchant_gold" from="Signal" to="Game/Board" method="on_sgin_merchant_gold"]
 [connection signal="sgin_one_round_finished" from="Signal" to="Game/Board" method="on_sgin_one_round_finished"]
-[connection signal="sgin_player_draw_not_ready" from="Signal" to="Signal" method="on_sgin_player_draw_not_ready"]
-[connection signal="sgin_player_draw_ready" from="Signal" to="Signal" method="on_sgin_player_draw_ready"]
 [connection signal="sgin_ready_game" from="Signal" to="Game/Board" method="on_sgin_ready_game"]
 [connection signal="sgin_resource_need" from="Signal" to="Game/Board" method="on_sgin_resource_need"]
 [connection signal="sgin_selected_char_once_finished" from="Signal" to="Game/Board" method="on_sgin_selected_char_once_finished"]

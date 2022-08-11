@@ -111,7 +111,7 @@ const card_data = {
 	"Temple": {"star": 1, "kind": "blue"},
 }
 
-const char_data = {"Magistrate": 1, "Witch": 1, "Assassin": 1, "Thief": 2, "Spy": 2, "Blackmailer": 2, "Magician": 3, "Wizard": 3, "Seer": 3, "Patrician": 4, "King": 4, "Emperor": 4, "Bishop": 5, "Abbot": 5, "Cardinal": 5, "Alchemist": 6, "Merchant": 6, "Trader": 6, "Navigator": 7, "Scholar": 7, "Architect": 7, "Marshal": 8, "Diplomat": 8, "Warlord": 8, "Artist": 9, "Queen": 9, "Tax Collector": 9}
+const char_data = {"Unchosen": 0, "Magistrate": 1, "Witch": 1, "Assassin": 1, "Thief": 2, "Spy": 2, "Blackmailer": 2, "Magician": 3, "Wizard": 3, "Seer": 3, "Patrician": 4, "King": 4, "Emperor": 4, "Bishop": 5, "Abbot": 5, "Cardinal": 5, "Alchemist": 6, "Merchant": 6, "Trader": 6, "Navigator": 7, "Scholar": 7, "Architect": 7, "Marshal": 8, "Diplomat": 8, "Warlord": 8, "Artist": 9, "Queen": 9, "Tax Collector": 9}
 
 const up_offset_char = {"en": {"Magistrate": 0, "Witch": 0, "Assassin": -45, "Thief": -50, "Spy": -30, "Blackmailer": 0, "Magician": -35, "Wizard": -15, "Seer": -15, "Patrician": -45, "King": -40, "Emperor": -15, "Bishop": -40, "Abbot": -30, "Cardinal": -15, "Alchemist": -30, "Merchant": -50, "Trader": -40, "Navigator": -55, "Scholar": -40, "Architect": -70, "Marshal": -15, "Diplomat": -20, "Warlord": -35, "Artist": -40, "Queen": -55, "Tax Collector": -20}, "zh_CN": {"Magistrate": -20, "Witch": -30, "Assassin": -65, "Thief": -45, "Spy": -30, "Blackmailer": 0, "Magician": -65, "Wizard": -45, "Seer": -65, "Patrician": -70, "King": -70, "Emperor": -45, "Bishop": -55, "Abbot": -55, "Cardinal": -35, "Alchemist": -45, "Merchant": -70, "Trader": -50, "Navigator": -70, "Scholar": -55, "Architect": -100, "Marshal": -10, "Diplomat": -5, "Warlord": -55, "Artist": -35, "Queen": -75, "Tax Collector": -60}}
 
@@ -144,7 +144,7 @@ func get_card_info(name: String) -> Dictionary:
 
 
 func get_up_offset_char(animation_name: String) -> int:
-	return up_offset_char[TranslationServer.get_locale()][animation_name]
+	return up_offset_char[TranslationServer.get_locale()].get(animation_name, 0)
 
 
 func get_char_info(char_name: String) -> Dictionary:
@@ -181,6 +181,7 @@ const CHAR_SIZE_BIG = Vector2(0.5, 0.5)
 const CHAR_SIZE_MEDIUM = Vector2(0.175, 0.175)
 const CHAR_SIZE_SMALL = Vector2(0.04, 0.04)
 const CHAR_SIZE_TINY = Vector2(0.02, 0.02)
+const CHAR_BANNED = Vector2(0.13, 0.13)
 
 const CROWN_SIZE_MEDIUM = Vector2(0.15, 0.15)
 const CROWN_SIZE_SMALL = Vector2(0.07, 0.07)
@@ -203,7 +204,6 @@ onready var CARD_END2 = Vector2(2000, CENTER.y)
 
 const ZERO = Vector2(0, 0)
 const FAR_AWAY = Vector2(-99999, -99999)
-const CHAR_BANNED = Vector2(0.13, 0.13)
 
 # https://colors.artyclick.com/color-name-finder/?color=#162739
 const GRAY = Color(0.76171875, 0.76171875, 0.76171875)

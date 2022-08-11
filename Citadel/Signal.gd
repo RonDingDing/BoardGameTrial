@@ -13,9 +13,9 @@ signal sgin_player_obj_built_card(player_obj, card_name, from_pos)
 #warning-ignore:unused_signal
 signal player_info(data)
 #warning-ignore:unused_signal
-signal sgin_player_draw_ready(card)
+#signal sgin_player_draw_ready(card)
 #warning-ignore:unused_signal
-signal sgin_player_draw_not_ready(card)
+#signal sgin_player_draw_not_ready(card)
 #warning-ignore:unused_signal
 signal sgin_player_built_not_ready(card)
 #warning-ignore:unused_signal

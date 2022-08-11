@@ -1,5 +1,6 @@
 extends Node2D
-onready var TweenMove = get_node("/root/Main/Tween")
+# onready var TweenMove = get_node("/root/Main/Tween")
+onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var mode = Data.CardMode.ENLARGE
@@ -19,18 +20,21 @@ func assassinate(char_name: String) -> void:
 	set_mode(Data.CardMode.ENLARGE)
 	on_sgin_char_focused(char_name, true)
 	set_mode(Data.CardMode.ASSASSINATING)
-	TweenMove.animate(
-		[
-			[
-				$KillSword,
-				"global_position",
-				Vector2(Data.SWORD_START, $CharacterCard.global_position.y),
-				$CharacterCard.global_position,
-				2
-			]
-		]
-	)
-	yield(TweenMove, "tween_all_completed")
+	$KillSword.set_global_position($CharacterCard.global_position)
+	TweenMotion.ani_flip_move($KillSword, $CharacterCard.global_position, Data.FAR_AWAY, true, true, 2)
+	# TweenMove.animate(
+	# 	[
+	# 		[
+	# 			$KillSword,
+	# 			"global_position",
+	# 			Vector2(Data.SWORD_START, $CharacterCard.global_position.y),
+	# 			$CharacterCard.global_position,
+	# 			2
+	# 		]
+	# 	]
+	# )
+	# yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	set_mode(Data.CardMode.ENLARGE)
 	$CharacterCard.hide()
 	$KillSword.set_global_position(Data.FAR_AWAY)
@@ -40,65 +44,45 @@ func steal(char_name: String) -> void:
 	set_mode(Data.CardMode.ENLARGE)
 	on_sgin_char_focused(char_name, true)
 	set_mode(Data.CardMode.STEALING)
-	TweenMove.animate(
-		[
-			[
-				$StealPocket,
-				"global_position",
-				$CharacterCard.global_position,
-				Vector2(Data.POCKET_END, $CharacterCard.global_position.y),
-				2
-			]
-		]
-	)
-	yield(TweenMove, "tween_all_completed")
+	$StealPocket.set_global_position($CharacterCard.global_position)
+	TweenMotion.ani_flip_move($StealPocket, Data.FAR_AWAY, Data.FAR_AWAY, true, true, 2)
+	# TweenMove.animate([[$StealPocket, "global_position", $CharacterCard.global_position, Vector2(Data.POCKET_END, $CharacterCard.global_position.y), 2]])
+	# yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	set_mode(Data.CardMode.ENLARGE)
 	$CharacterCard.hide()
 	$StealPocket.set_global_position(Data.FAR_AWAY)
 
 
 func on_sgin_card_focused(card_name: String) -> void:
-	if mode == Data.CardMode.ENLARGE:# and enlarging != card_name:
+	if mode == Data.CardMode.ENLARGE:  # and enlarging != card_name:
 		$CharacterCard.hide()
 		enlarging = card_name
 #		var card_info = Data.get_card_info(card_name)
 		$Card0.show()
-		$Card0.init_card(
-			card_name,
-			Data.CARD_SIZE_BIG,
-			Data.CENTER,
-			true,
-			Data.CardMode.ENLARGE
-		)
+		$Card0.init_card(card_name, Data.CARD_SIZE_BIG, Data.CENTER, true, Data.CardMode.ENLARGE)
 
 
 func on_sgin_card_unfocused() -> void:
-	if mode == Data.CardMode.ENLARGE: #and enlarging == card_name:
+	if mode == Data.CardMode.ENLARGE:  #and enlarging == card_name:
 		enlarging = "Unknown"
 		$Card0.hide()
 
 
-func on_sgin_char_focused(char_name: String, _forced: bool=false) -> void:
+func on_sgin_char_focused(char_name: String, _forced: bool = false) -> void:
 #	var condition = true
 #	if not forced:
 #		condition = enlarging != char_name
-	if mode == Data.CardMode.ENLARGE:# and condition:
+	if mode == Data.CardMode.ENLARGE:  # and condition:
 		$Card0.hide()
 		enlarging = char_name
 		var char_info = Data.get_char_info(char_name)
 		$CharacterCard.show()
-		$CharacterCard.init_char(
-			char_name,
-			char_info["char_num"],
-			char_info["char_up_offset"],
-			Data.CHAR_SIZE_BIG,
-			Data.CENTER,
-			true
-		)
+		$CharacterCard.init_char(char_name, char_info["char_num"], char_info["char_up_offset"], Data.CHAR_SIZE_BIG, Data.CENTER, true, Data.CharMode.STATIC)
 
 
 func on_sgin_char_unfocused() -> void:
-	if mode == Data.CardMode.ENLARGE:# and enlarging == char_name:
+	if mode == Data.CardMode.ENLARGE:  # and enlarging == char_name:
 		enlarging = "Unknown"
 		$CharacterCard.hide()
 
@@ -107,31 +91,27 @@ func char_enter(char_name: String, start_pos: Vector2, end_pos: Vector2, start_s
 	var char_info = Data.get_char_info(char_name)
 	set_mode(Data.CardMode.STATIC)
 	$CharacterCard.show()
-	$CharacterCard.init_char(
-		char_name,
-		char_info["char_num"],
-		char_info["char_up_offset"],
-		start_scale,
-		start_pos,
-		true
-	)
-	TweenMove.animate(
-		[
-			[
-				$CharacterCard,
-				"global_position",
-				start_pos,
-				end_pos,
-			],
-			[
-				$CharacterCard,
-				"scale",
-				start_scale,
-				end_scale,
-			]
-		]
-	)
-	yield(TweenMove, "tween_all_completed")
+	$CharacterCard.init_char(char_name, char_info["char_num"], char_info["char_up_offset"], start_scale, start_pos, true, Data.CharMode.STATIC)
+	# TweenMove.animate(
+	# 	[
+	# 		[
+	# 			$CharacterCard,
+	# 			"global_position",
+	# 			start_pos,
+	# 			end_pos,
+	# 		],
+	# 		[
+	# 			$CharacterCard,
+	# 			"scale",
+	# 			start_scale,
+	# 			end_scale,
+	# 		]
+	# 	]
+	# )
+	# yield(TweenMove, "tween_all_completed")
+	TweenMotion.ani_flip_move($CharacterCard, end_pos, end_scale)
+	yield(Signal, "all_ani_completed")
+
 	reset_characters()
 	Signal.emit_signal("sgin_char_entered")
 
@@ -140,6 +120,7 @@ func reset_characters() -> void:
 	set_mode(Data.CardMode.ENLARGE)
 	$CharacterCard.set_global_position(Data.CENTER)
 	$CharacterCard.set_scale(Data.CHAR_SIZE_BIG)
+	$CharacterCard.set_can_be_top(false)
 	$CharacterCard.hide()
 
 
@@ -182,6 +163,4 @@ func selectable_cards(cards: Array) -> void:
 
 	for i in range(cards.size()):
 #		var card_info = Data.get_card_info(cards[i])
-		get_node(str("Card", i)).init_card(
-			cards[i], Data.CARD_SIZE_BIG, poss[i], true, Data.CardMode.SELECT
-		)
+		get_node(str("Card", i)).init_card(cards[i], Data.CARD_SIZE_BIG, poss[i], true, Data.CardMode.SELECT)

@@ -3,7 +3,8 @@ extends Node2D
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var CharacterCard = preload("res://CharacterCard.tscn")
-onready var TweenMove = get_node("/root/Main/Tween")
+# onready var TweenMove = get_node("/root/Main/Tween")
+onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var available_characters = {1: "Assassin", 2: "Thief", 3: "Magician", 4: "King", 5: "Bishop", 6: "Merchant", 7: "Architect", 8: "Warlord", 9: "Queen"}
 onready var nine_chars = true
 onready var full_num = 10 if nine_chars else 9
@@ -107,41 +108,42 @@ func character_to(mode: int, char_name: String, from_pos: Vector2) -> void:
 	Signal.emit_signal("sgin_char_not_ready", incoming_char)
 	sub_node.add_child(incoming_char)
 	sub_node.store.append(char_info)
-	incoming_char.init_char(animation_name, number, up_offset, Data.CHAR_BANNED, from_pos, init_face_up)
-	TweenMove.animate(
-		[
-			[
-				incoming_char,
-				"global_position",
-				from_pos,
-				to_pos,
-			],
-			[
-				incoming_char,
-				"scale",
-				Data.CARD_SIZE_MEDIUM,
-				Data.CHAR_SIZE_SMALL,
-			],
-			[
-				incoming_char.get_node("Face"),
-				"visible",
-				face_visible_org,
-				face_visible_aft,
-			],
-			[
-				incoming_char.get_node("Back"),
-				"visible",
-				back_visible_org,
-				back_visible_aft,
-			]
-		]
-	)
+	incoming_char.init_char(animation_name, number, up_offset, Data.CHAR_BANNED, from_pos, init_face_up, Data.CharMode.STATIC)
+	# TweenMove.animate(
+	# 	[
+	# 		[
+	# 			incoming_char,
+	# 			"global_position",
+	# 			from_pos,
+	# 			to_pos,
+	# 		],
+	# 		[
+	# 			incoming_char,
+	# 			"scale",
+	# 			Data.CARD_SIZE_MEDIUM,
+	# 			Data.CHAR_SIZE_SMALL,
+	# 		],
+	# 		[
+	# 			incoming_char.get_node("Face"),
+	# 			"visible",
+	# 			face_visible_org,
+	# 			face_visible_aft,
+	# 		],
+	# 		[
+	# 			incoming_char.get_node("Back"),
+	# 			"visible",
+	# 			back_visible_org,
+	# 			back_visible_aft,
+	# 		]
+	# 	]
+	# )
 
-	yield(TweenMove, "tween_all_completed")
+	# yield(TweenMove, "tween_all_completed")
+	TweenMotion.ani_flip_move(incoming_char, to_pos, Data.CHAR_SIZE_SMALL, true, face_visible_aft) 
+	yield(Signal, "all_ani_completed")
 	if mode == Data.EmploymentState.SELECTING:
 		incoming_char.global_position = Data.FAR_AWAY
-#		sub_node.store.erase(char_name)
-	incoming_char.set_char_mode(Data.CharMode.ENLARGE)
+#	incoming_char.set_char_mode(Data.CharMode.ENLARGE)
 	Signal.emit_signal(emite, number, char_name)
 	Signal.emit_signal("sgin_char_ready", incoming_char)
 
@@ -187,7 +189,7 @@ func get_card_positions(array: Array) -> Array:
 	for i in range(num):
 		var pos = start + (end - start) / (num + 1) * (i + 1)
 		positions.append(Vector2(pos, 0))
-	return positions
+	return positions 
 
 
 func put_char_num(char_array: Array, face_up: bool, char_mode: int) -> void:
@@ -205,8 +207,7 @@ func put_char_num(char_array: Array, face_up: bool, char_mode: int) -> void:
 		node.show()
 		var animation_name = available_characters[char_num]
 		var up_offset = Data.get_up_offset_char(animation_name)
-		node.init_char(animation_name, char_num, up_offset, Data.CHAR_BANNED, positions[n], face_up)
-		node.set_char_mode(char_mode)
+		node.init_char(animation_name, char_num, up_offset, Data.CHAR_BANNED, positions[n] + $Characters.global_position, face_up, char_mode)
 
 
 func wait(mode: int, remove: int, info: Array = []) -> void:

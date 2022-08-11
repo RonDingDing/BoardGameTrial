@@ -5,20 +5,22 @@ onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
 onready var mode = Data.CardMode.STATIC
 onready var card_name = "Unknown"
+onready var card_name_cal = "Unknown"
 onready var card_up_offset = 0
-onready var face_up = false
+onready var face_up = false setget set_face_up
 onready var desc_trans = ""
 onready var name_text = ""
  
 
+
 func init_card(animation_name: String, scales: Vector2, pos: Vector2, face_is_up: bool, modes: int) -> void:
+	card_name_cal = Data.rid_num(animation_name)
 	card_name = animation_name
-	var new_name = Data.rid_num(animation_name)
-	var desc = str("DESC_", new_name.to_upper().replace(" ", "_"))
-	var csde = tr(str("DESC_", new_name.to_upper().replace(" ", "_")))
+	var desc = str("DESC_", card_name_cal.to_upper().replace(" ", "_"))
+	var csde = tr(str("DESC_", card_name_cal.to_upper().replace(" ", "_")))
 	desc_trans = csde if desc != csde else ""
-	name_text = tr(str("NAME_", new_name.to_upper().replace(" ", "_")))
-	var up_offset = Data.get_card_info(new_name)["up_offset"]
+	name_text = tr(str("NAME_", card_name_cal.to_upper().replace(" ", "_")))
+	var up_offset = Data.get_card_info(card_name_cal)["up_offset"]
 	card_up_offset = up_offset
 	$Face/Description.rect_position.y = Data.CARD_UP_OFFSET_START - up_offset
 	set_face_up(face_is_up)
@@ -44,28 +46,28 @@ func set_face_up(face_is_up: bool) -> void:
 	$Face.set_animation(temp_name)
 	$Face/Name.set_text(temp_text)
 	$Face/Description.set_text(temp_desc)
-	$Face.set_visible(face_is_up)
-	$Back.set_visible(not face_is_up)
+#	$Face.set_visible(face_is_up)
+#	$Back.set_visible(not face_is_up)
 
 
 func on_mouse_entered() -> void:
 	mouse_collided = true
 	var card = find_top_most_card_collide_with_mouse()
-	if face_up and (not mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
-		if card == null or card.get("card_name") == null:
-			Signal.emit_signal("sgin_card_unfocused")
-		else:
+	if card != null and card.get_script() == self.get_script():
+		if face_up and card.can_be_top and (not card.mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
 			Signal.emit_signal("sgin_card_focused", card.card_name)
 
 
 func on_mouse_exited() -> void:
 	mouse_collided = false
 	var card = find_top_most_card_collide_with_mouse()
-	if face_up and (not mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
-		if card == null or card.get("card_name") == null:
-			Signal.emit_signal("sgin_card_unfocused")
-		else:
-			Signal.emit_signal("sgin_card_focused", card.card_name)
+	if card != null and card.get_script() == self.get_script():
+#		if face_up and card.can_be_top and (not card.mode in [Data.CardMode.SELECT, Data.CardMode.STATIC]):
+#			Signal.emit_signal("sgin_card_focused", card.card_name)
+		pass
+	else:
+		Signal.emit_signal("sgin_card_unfocused")
+	
 
 
 func get_card_info() -> Dictionary:

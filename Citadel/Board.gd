@@ -7,7 +7,7 @@ onready var discarded_hidden_position = $Employment/DiscardedHidden.position
 onready var lang = "zh_CN"
 onready var Signal = get_node("/root/Main/Signal")
 onready var Data = get_node("/root/Main/Data")
-onready var TweenMove = get_node("/root/Main/Tween")
+# onready var TweenMove = get_node("/root/Main/Tween")
 onready var TweenMotion = get_node("/root/Main/TweenMotion")
 onready var TimerGlobal = get_node("/root/Main/Timer")
 const Crown = preload("res://Crown.tscn")
@@ -166,7 +166,7 @@ func on_sgin_draw_card(player_num: int, face_is_up: bool, from_pos: Vector2 = Da
 	if card_name != "":
 		var player_obj = select_obj_by_player_num(player_num)
 		player_obj.draw(card_name, face_is_up, from_pos, 1)
-
+	
 
 func start_game():
 	# 洗牌
@@ -177,20 +177,16 @@ func start_game():
 func deal_cards():
 	var all_player_length = opponent_length + 1
 	# 每个玩家派4张牌
-#	for _i in range(4):
-#		for p_num in range(all_player_length):
-#			TimerGlobal.set_wait_time(0.1)
-#			TimerGlobal.start()
-#			yield(TimerGlobal, "timeout")
-#			on_sgin_draw_card(p_num, false)
-	on_sgin_draw_card(0, false)
-#	for _i in range(4):
-#		for p_num in range(all_player_length):
-#			if p_num == $Player.player_num:
-#				yield(Signal, "sgin_player_draw_ready")
-#			else:
-#				yield(Signal, "sgin_opponent_draw_ready")
-#	Signal.emit_signal("sgin_card_dealt", all_player_length)
+	for _i in range(10):
+		for p_num in range(all_player_length):
+			TimerGlobal.set_wait_time(0.1)
+			TimerGlobal.start()
+			yield(TimerGlobal, "timeout")
+			on_sgin_draw_card(p_num, false)
+	TimerGlobal.set_wait_time(1)
+	TimerGlobal.start()
+	yield(TimerGlobal, "timeout")
+	Signal.emit_signal("sgin_card_dealt", all_player_length)
 
 
 func on_sgin_card_dealt(all_player_length: int) -> void:
@@ -200,8 +196,9 @@ func on_sgin_card_dealt(all_player_length: int) -> void:
 			TimerGlobal.start()
 			yield(TimerGlobal, "timeout")
 			on_sgin_gold_transfer(Data.bank_num, p_num)
-	if TweenMove.is_active():
-		yield(TweenMove, "tween_all_completed")
+	TimerGlobal.set_wait_time(1)
+	TimerGlobal.start()
+	yield(TimerGlobal, "timeout")
 	Signal.emit_signal("sgin_ready_game")
 
 func gold_move(from_pnum: int, to_pnum: int, gold_num: int, done_signal: String) -> void:
@@ -210,8 +207,9 @@ func gold_move(from_pnum: int, to_pnum: int, gold_num: int, done_signal: String)
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
 		on_sgin_gold_transfer(from_pnum, to_pnum)
-	if TweenMove.is_active():
-		yield(TweenMove, "tween_all_completed")
+	# if TweenMove.is_active():
+	# 	yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	Signal.call_deferred("emit_signal", done_signal)
 
 
@@ -221,8 +219,9 @@ func card_gain(player_num: int, card_num: int, done_signal: String) -> void:
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
 		on_sgin_draw_card(player_num, true)
-	if TweenMove.is_active():
-		yield(TweenMove, "tween_all_completed")
+	# if TweenMove.is_active():
+	# 	yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	Signal.call_deferred("emit_signal", done_signal, 0)
 
 func first_player() -> int:
@@ -507,8 +506,8 @@ func on_start_turn() -> void:
 	if is_assassinated(employee_4_player.employee_num, employee_4_player.employee):
 		charskill_play_passive_king()
 		charskill_play_passive_queen(false)
-	if TweenMove.is_active():
-		yield(TweenMove, "tween_all_completed")
+	# if TweenMove.is_active():
+	# 	yield(TweenMove, "tween_all_completed")
 	on_sgin_one_round_finished()
 
 
@@ -667,16 +666,13 @@ func on_sgin_card_played(play_name: String, from_pos: Vector2) -> void:
 	var wait = handle_play_skill_reaction(price, play_name, $Player.gold, $Player.built)
 	if wait:
 		price = yield(Signal, "sgin_all_play_reaction_completed")
-	print("judge price: ", price)
 	if not skill_can_play(play_name, price):
-		print("cannot play")
 		on_sgin_set_reminder("NOTE_CANNOT_PLAY")
 		TimerGlobal.set_wait_time(0.5)
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
 		on_sgin_enable_player_play()
 		return
-	print("success play")
 	on_sgin_disable_player_play()
 	var success_play = $Player.card_played(play_name, price)
 	if success_play:
@@ -917,7 +913,8 @@ func on_sgin_assassin_once_finished(char_num: int, char_name: String) -> void:
 	on_sgin_set_reminder("NOTE_PLAY")
 	assassinate(char_num, char_name)
 	$AnyCardEnlarge.assassinate(char_name)
-	yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
+	# yield(TweenMove, "tween_all_completed")
 	$Player.set_assassinated(char_name)
 	on_sgin_enable_player_play()
 
@@ -927,7 +924,8 @@ func on_sgin_thief_once_finished(char_num: int, char_name: String) -> void:
 	on_sgin_set_reminder("NOTE_PLAY")
 	steal(char_num, char_name)
 	$AnyCardEnlarge.steal(char_name)
-	yield(TweenMove, "tween_all_completed")
+	# yield(TweenMove, "tween_all_completed")
+	yield(Signal, "all_ani_completed")
 	$Player.set_stolen(char_name)
 	on_sgin_enable_player_play()
 
@@ -951,15 +949,18 @@ func magician_wait():
 func magician_select_deck() -> void:
 	on_sgin_disable_player_play()
 	for c in $Player.get_handscript_children():
-		TweenMove.animate(
-			[
-				[c, "global_position", c.global_position, Data.DECK_POSITION, 1],
-			]
-		)
+		# TweenMove.animate(
+		# 	[
+		# 		[c, "global_position", c.global_position, Data.DECK_POSITION, 1],
+		# 	]
+		# )
+		TweenMotion.ani_flip_move(c, Data.DECK_POSITION)
 		TimerGlobal.set_wait_time(0.1)
 		TimerGlobal.start()
 		yield(TimerGlobal, "timeout")
-	yield(TweenMove, "tween_all_completed")
+	# yield(TweenMove, "tween_all_completed")
+
+	yield(Signal, "all_ani_completed")
 
 	$Player.shuffle_hands()
 	var temp = $Player.hands
@@ -1059,23 +1060,26 @@ func charskill_play_passive_king() -> void:
 	var crown = Crown.instance()
 	crown.init(from_pos)
 	$Player.add_child(crown)
-	TweenMove.animate(
-		[
-			[
-				crown,
-				"global_position",
-				from_pos,
-				to_pos,
-			],
-			[
-				crown,
-				"scale",
-				start_scale,
-				end_scale,
-			],
-		]
-	)
-	yield(TweenMove, "tween_all_completed")
+	TweenMotion.ani_flip_move(crown, to_pos, end_scale)
+	# TweenMove.animate(
+	# 	[
+	# 		[
+	# 			crown,
+	# 			"global_position",
+	# 			from_pos,
+	# 			to_pos,
+	# 		],
+	# 		[
+	# 			crown,
+	# 			"scale",
+	# 			start_scale,
+	# 			end_scale,
+	# 		],
+	# 	]
+	# )
+	# yield(TweenMove, "tween_all_completed")
+
+	yield(Signal, "all_ani_completed")
 	original_crown_owner.set_crown(false)
 	emoloyee_4.set_crown(true)
 	$Player.remove_child(crown)
@@ -1092,13 +1096,10 @@ func on_sgin_gold_transfer(from_pnum: int, to_pnum: int) -> void:
 	var money = Money.instance()
 	money.to_coin(start_scale, from_pos)
 	$Bank.add_child(money)
-	var animations = []
-	animations.append([money, "global_position", from_pos, to_pos])
-	animations.append([money, "scale", start_scale, end_scale])
-	TweenMove.animate(animations)
 	from_player.add_gold(-1)
 	to_player.add_gold(1)
-	yield(TweenMove, "tween_all_completed")
+	
+	TweenMotion.ani_flip_move(money,to_pos, end_scale)
 	$Bank.remove_child(money)
 	money.queue_free()
 
@@ -1187,10 +1188,10 @@ func on_sgin_cancel_skill(components: Array, activate_key: String="", activate_m
 			destroyed = [Data.unfound, "Unchosen"]
 		elif component == "built":
 			$Player.rearrange_built()
-			yield(TweenMove, "tween_all_completed")
+			# yield(TweenMove, "tween_all_completed")
 		elif component == "hands":
 			$Player.rearrange_hands()
-			yield(TweenMove, "tween_all_completed")
+			# yield(TweenMove, "tween_all_completed")
 
 		if not activate_key:
 			pass
@@ -1436,7 +1437,7 @@ func card_skill_play_thieves_den(play_name: String, price: int, gold: int) -> vo
 		$Player.remove_hand(h)
 		$Deck.append(h)
 	$Player.rearrange_hands()
-	yield(TweenMove, "tween_all_completed")
+	# yield(TweenMove, "tween_all_completed")
 	on_sgin_set_reminder("NOTE_PLAY")
 	Signal.emit_signal("sgin_thieves_den_reaction_completed", real_price)
 		
@@ -1530,13 +1531,17 @@ func card_skill_selection_theater(player_num: int) -> void:
 		$Player.set_employee(his_employ_num, his_employee)
 		switch_player.set_employee(temp[0], temp[1])
 		$AnyCardEnlarge.char_enter(temp[1], $Player/Employee.global_position, Data.CENTER, Data.CHAR_SIZE_SMALL, Data.CHAR_SIZE_BIG)
-		yield(TweenMove, "tween_all_completed")
+		# yield(TweenMove, "tween_all_completed")
+		yield(Signal, "all_ani_completed")
 		$AnyCardEnlarge.char_enter(temp[1], Data.CENTER, switch_player.get_node("Employee").global_position, Data.CHAR_SIZE_BIG, Data.CHAR_SIZE_TINY)
-		yield(TweenMove, "tween_all_completed")
+		# yield(TweenMove, "tween_all_completed")
+		yield(Signal, "all_ani_completed")
 		$AnyCardEnlarge.char_enter(his_employee, switch_player.get_node("Employee").global_position, Data.CENTER, Data.CHAR_SIZE_TINY, Data.CHAR_SIZE_BIG)
-		yield(TweenMove, "tween_all_completed")
+		# yield(TweenMove, "tween_all_completed")
+		yield(Signal, "all_ani_completed")
 		$AnyCardEnlarge.char_enter(his_employee, Data.CENTER, $Player/Employee.global_position, Data.CHAR_SIZE_BIG, Data.CHAR_SIZE_SMALL)
-		yield(TweenMove, "tween_all_completed")
+		# yield(TweenMove, "tween_all_completed")
+		yield(Signal, "all_ani_completed")
 	Signal.emit_signal("sgin_theater_reaction_completed")
 	
 	
@@ -1828,7 +1833,7 @@ func on_sgin_card_museum_selected(card_name: String, _global_position: Vector2) 
 	TweenMotion.ani_move(card_obj, museum_obj.global_position, Data.CARD_SIZE_TINY, true)
 	$Player.remove_hand(card_name)
 	$Player.rearrange_hands()
-	yield(TweenMove, "tween_all_completed")
+	# yield(TweenMove, "tween_all_completed")
 	$Player.add_museum_num()
 	museum_obj.add_museum_num()
 	$Player.set_card_skill_activated("Museum", true)

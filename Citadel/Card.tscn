@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=2]
+[gd_scene load_steps=56 format=2]
 
 [ext_resource path="res://images/Architecture/Ivory Tower.png" type="Texture" id=1]
 [ext_resource path="res://images/Architecture/Armory.png" type="Texture" id=2]
@@ -302,14 +302,6 @@ font_data = ExtResource( 50 )
 size = 30
 font_data = ExtResource( 50 )
 
-[sub_resource type="SpriteFrames" id=5]
-animations = [ {
-"frames": [ ExtResource( 49 ) ],
-"loop": true,
-"name": "default",
-"speed": 5.0
-} ]
-
 [sub_resource type="RectangleShape2D" id=6]
 extents = Vector2( 335, 526 )
 
@@ -353,9 +345,6 @@ autowrap = true
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="Back" type="AnimatedSprite" parent="."]
-frames = SubResource( 5 )
 
 [node name="Collision" type="CollisionShape2D" parent="."]
 shape = SubResource( 6 )
