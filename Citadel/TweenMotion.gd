@@ -34,10 +34,10 @@ class Interval:
 func animate(action_list: Array) -> void:
 	var _useless
 	
+	var tween = Tween.new()
+	add_child(tween)
 	for action in action_list:
 		if action is Trans:
-			var tween = Tween.new()
-			add_child(tween)
 			for motion in action.motion_list:
 				var orgi_node = motion[0]
 				var copy_node = motion[1]
@@ -59,20 +59,18 @@ func animate(action_list: Array) -> void:
 					Tween.TRANS_CUBIC,
 					Tween.EASE_IN_OUT
 				)
+				
 			_useless = tween.start()
 			yield(tween, "tween_all_completed")
-			remove_child(tween)
-			tween.queue_free()
-			
 			
 			for motion in action.motion_list:
 				var orgi_node = motion[0]
-				action.copies.erase(orgi_node)
 				var copy_node = motion[1]
 				if is_instance_valid(orgi_node):
 					orgi_node.set_visible(true)
 					orgi_node.set_z_index(0)
 				if is_instance_valid(copy_node):
+					copy_node.set_z_index(0)
 					copy_node.queue_free()
 				
 		elif action is Interval:
@@ -80,6 +78,8 @@ func animate(action_list: Array) -> void:
 			TimerGlobal.start()
 			yield(TimerGlobal, "timeout")
 	
+	remove_child(tween)
+	tween.queue_free()
 	Signal.emit_signal("all_ani_completed")
 
  
@@ -91,17 +91,17 @@ func ani_flip_move(
 	end_face_up: bool = true,
 	ani_time: int = 1
 ) -> void:
-		if end_scale == Data.FAR_AWAY:
-			end_scale = obj.scale
-		if end_pos == Data.FAR_AWAY:
-			end_pos = obj.global_position
-		
-		var a1 = Trans.new()
-		var z_index = obj.z_index
-		a1.add(obj, "global_position", obj.global_position, end_pos, ani_time)
-		a1.add(obj, "scale", obj.scale, end_scale, ani_time)
-		a1.add(obj, "z_index", 1, 1, ani_time)
-		if "face_up" in obj:
-			a1.add(obj, "face_up", obj.face_up, end_face_up, ani_time)
-		animate([a1])
-		
+	if end_scale == Data.FAR_AWAY:
+		end_scale = obj.scale
+	if end_pos == Data.FAR_AWAY:
+		end_pos = obj.global_position
+	
+	var a1 = Trans.new()
+	var z_index = obj.z_index
+	a1.add(obj, "global_position", obj.global_position, end_pos, ani_time)
+	a1.add(obj, "scale", obj.scale, end_scale, ani_time)
+	a1.add(obj, "z_index", 1, 1, ani_time)
+	if "face_up" in obj:
+		a1.add(obj, "face_up", obj.face_up, end_face_up, ani_time)
+	animate([a1])
+	

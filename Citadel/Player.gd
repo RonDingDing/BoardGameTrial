@@ -494,15 +494,15 @@ func draw(card_name: String, face_is_up: bool, from_pos: Vector2, animation_time
 	var incoming_card = Card.instance()
 	$HandScript.add_child(incoming_card)
 	incoming_card.init_card(card_name, start_scale, from_pos, false, Data.CardMode.ENLARGE)
-#	var positions = get_hand_positions_with_new_card()
-#	var card_position = positions[-1] + $HandScript.global_position
-#	if animation_time > 0:
-#		TweenMotion.ani_flip_move(incoming_card, card_position, end_scale, true, face_is_up)
-#	else:
-#		incoming_card.set_global_position(card_position)
-#		incoming_card.set_face_up(face_is_up)
-#	yield(Signal, "all_ani_completed")
-#	rearrange_hands(animation_time)
+	var positions = get_hand_positions_with_new_card()
+	var card_position = positions[-1] + $HandScript.global_position
+	if animation_time > 0:
+		TweenMotion.ani_flip_move(incoming_card, card_position, end_scale, true, face_is_up)
+	else:
+		incoming_card.set_global_position(card_position)
+		incoming_card.set_face_up(face_is_up)
+	yield(Signal, "all_ani_completed")
+	rearrange_hands(animation_time)
 	
 func rearrange(node: Node, positions: Array, animation_time: float) -> void:
 	var hands_obj = node.get_children()
